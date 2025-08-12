@@ -1,0 +1,43 @@
+/* Estilos para asegurar que los botones sean clickeables */
+.clickable-button {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+}
+
+.clickable-button:hover {
+  opacity: 0.8;
+}
+
+/* Asegurar que los elementos de navegación sean clickeables */
+.MuiListItemButton-root {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.MuiButton-root {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.MuiIconButton-root {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* Prevenir que elementos padre bloqueen los clicks */
+.MuiDrawer-root,
+.MuiAppBar-root,
+.MuiToolbar-root {
+  pointer-events: auto !important;
+}
+
+/* Asegurar que los overlays no bloqueen los clicks */
+* {
+  pointer-events: auto !important;
+}
+
+/* Específicamente para Material-UI */
+.MuiBackdrop-root {
+  pointer-events: auto !important;
+}

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: racing-team-postgres
+    environment:
+      POSTGRES_DB: racing_team_db
+      POSTGRES_USER: racing_user
+      POSTGRES_PASSWORD: racing_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - racing-team-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U racing_user -d racing_team_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: racing-team-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/racing_team_db
+      SPRING_DATASOURCE_USERNAME: racing_user
+      SPRING_DATASOURCE_PASSWORD: racing_pass
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - racing-team-network
+    volumes:
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: racing-team-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - racing-team-network
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+
+  # Adminer para gestión de BD (opcional, solo desarrollo)
+  adminer:
+    image: adminer:4.8.1
+    container_name: racing-team-adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - racing-team-network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  racing-team-network:
+    driver: bridge
+
+# Configuración para diferentes entornos
+# Para desarrollo: docker-compose --profile dev up
+# Para producción: docker-compose up backend postgres

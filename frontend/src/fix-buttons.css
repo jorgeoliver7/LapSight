@@ -1,0 +1,83 @@
+/* Solución global para botones no clickeables */
+
+/* Asegurar que todos los botones sean clickeables */
+button,
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiListItemButton-root,
+.MuiMenuItem-root,
+.MuiButtonBase-root {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Prevenir que overlays bloqueen los clicks */
+.MuiBackdrop-root {
+  pointer-events: none !important;
+}
+
+/* Asegurar que los contenedores no bloqueen eventos */
+.MuiDrawer-root,
+.MuiAppBar-root,
+.MuiToolbar-root,
+.MuiCard-root,
+.MuiCardContent-root,
+.MuiBox-root {
+  pointer-events: auto !important;
+}
+
+/* Específicamente para elementos de navegación */
+.MuiList-root,
+.MuiListItem-root {
+  pointer-events: auto !important;
+}
+
+/* Hover effects para confirmar interactividad */
+button:hover,
+.MuiButton-root:hover,
+.MuiIconButton-root:hover,
+.MuiListItemButton-root:hover,
+.MuiMenuItem-root:hover {
+  opacity: 0.8 !important;
+  transform: scale(0.98) !important;
+  transition: all 0.1s ease !important;
+}
+
+/* Asegurar que los elementos padre no interfieran */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevenir problemas de z-index */
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiListItemButton-root,
+.MuiMenuItem-root {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Asegurar que los elementos de Material-UI sean interactivos */
+.MuiTouchRipple-root {
+  pointer-events: auto !important;
+}
+
+/* Prevenir que elementos absolutos bloqueen */
+.MuiPaper-root {
+  pointer-events: auto !important;
+}
+
+/* Específico para menús desplegables */
+.MuiMenu-root,
+.MuiMenu-paper {
+  pointer-events: auto !important;
+}
+
+/* Debug: agregar borde visible a elementos clickeables */
+.debug-clickable {
+  border: 2px solid red !important;
+}
