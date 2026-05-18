@@ -59,6 +59,7 @@ import {
   formatGap,
 } from '../../api/sessions';
 import ManualLapsEditor from './ManualLapsEditor';
+import ComparisonView from './ComparisonView';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import {
@@ -87,6 +88,8 @@ const Analytics: React.FC = () => {
   const [drivers, setDrivers] = useState<User[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [analytics, setAnalytics] = useState<SessionAnalytics | null>(null);
+  const [compareWithId, setCompareWithId] = useState<number | null>(null);
+  const [compareAnalytics, setCompareAnalytics] = useState<SessionAnalytics | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
@@ -153,7 +156,26 @@ const Analytics: React.FC = () => {
   useEffect(() => {
     if (selectedId != null) loadAnalytics(selectedId);
     else setAnalytics(null);
+    setCompareWithId(null);
+    setCompareAnalytics(null);
   }, [selectedId]);
+
+  useEffect(() => {
+    if (compareWithId == null) {
+      setCompareAnalytics(null);
+      return;
+    }
+    sessionsApi
+      .analytics(compareWithId)
+      .then(setCompareAnalytics)
+      .catch((e) => {
+        setSnack({
+          msg: e?.response?.data?.message || 'Error cargando sesión a comparar',
+          severity: 'error',
+        });
+        setCompareWithId(null);
+      });
+  }, [compareWithId]);
 
   const resetDialog = () => {
     setUploadOpen(false);
@@ -329,7 +351,37 @@ const Analytics: React.FC = () => {
               <CircularProgress />
             </Paper>
           ) : (
-            <AnalyticsDetail analytics={analytics} />
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography variant="body2" fontWeight={500}>
+                  Comparar con:
+                </Typography>
+                <TextField
+                  size="small"
+                  select
+                  value={compareWithId ?? ''}
+                  onChange={(e) =>
+                    setCompareWithId(e.target.value ? Number(e.target.value) : null)
+                  }
+                  sx={{ minWidth: 280 }}
+                >
+                  <MenuItem value="">— Vista individual —</MenuItem>
+                  {sessions
+                    .filter((s) => s.id !== selectedId)
+                    .map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name} ({new Date(s.sessionDate).toLocaleDateString('es-ES')})
+                      </MenuItem>
+                    ))}
+                </TextField>
+                {compareWithId != null && !compareAnalytics && <CircularProgress size={20} />}
+              </Paper>
+              {compareWithId != null && compareAnalytics ? (
+                <ComparisonView a={analytics} b={compareAnalytics} />
+              ) : (
+                <AnalyticsDetail analytics={analytics} />
+              )}
+            </Box>
           )}
         </Grid>
       </Grid>

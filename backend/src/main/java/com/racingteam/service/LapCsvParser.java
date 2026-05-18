@@ -2,6 +2,8 @@ package com.racingteam.service;
 
 import com.racingteam.model.LapTime;
 import com.racingteam.model.TireCompound;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -21,34 +23,52 @@ import java.util.Objects;
 /**
  * Parser CSV tolerante para tiempos por vuelta.
  *
- * Reconoce columnas (case-insensitive, varios alias):
- *   lap | lap_number | lapnumber | vuelta
- *   time | lap_time | laptime | tiempo
- *   s1 | sector1 | sector_1
- *   s2 | sector2 | sector_2
- *   s3 | sector3 | sector_3
- *   valid (true/false/1/0)
- *   compound | tyre | tire | neumatico
- *   fuel | fuel_kg | combustible
- *   notes | notas
+ * Reconoce columnas (case-insensitive, varios alias). Detecta automáticamente
+ * formatos populares y los registra en log:
+ *
+ *   - GENERIC: cabecera tipo lap, time, s1, s2, s3...
+ *   - IRACING: cabecera con "Lap Time", "Lap Delta", "Best Split N"
+ *   - MYLAPS:  cabecera de Speedhive con "Sector 1/2/3" o "Gap to Best"
+ *
+ * Alias soportados:
+ *   lap        lap | lap_number | lapnumber | vuelta | n | lap #
+ *   time       time | lap_time | lap time | laptime | tiempo | best time
+ *   s1..s3     sN | sectorN | sector_N | sector N | best split N | split N
+ *   valid      valid | validez | ok
+ *   compound   compound | tyre | tire | neumatico | neumático
+ *   fuel       fuel | fuel_kg | combustible
+ *   notes      notes | notas | comment
+ *
+ * Ignora columnas extra (driver, team, position, gap, kph, etc.).
  *
  * Tiempos admiten: "1:23.456", "83.456", "83456" (ms), "0:01:23.456".
- * Separador: `,` o `;` (autodetectado por la primera línea no vacía).
+ * Separador: `,` o `;` (autodetectado).
  */
 @Component
 public class LapCsvParser {
 
+    private static final Logger log = LoggerFactory.getLogger(LapCsvParser.class);
+
+    private enum CsvFormat { GENERIC, IRACING, MYLAPS }
+
     private static final Map<String, String> ALIASES = new HashMap<>();
     static {
-        for (String s : new String[]{"lap", "lap_number", "lapnumber", "vuelta", "n"}) ALIASES.put(s, "lap");
-        for (String s : new String[]{"time", "lap_time", "laptime", "tiempo"}) ALIASES.put(s, "time");
-        for (String s : new String[]{"s1", "sector1", "sector_1"}) ALIASES.put(s, "s1");
-        for (String s : new String[]{"s2", "sector2", "sector_2"}) ALIASES.put(s, "s2");
-        for (String s : new String[]{"s3", "sector3", "sector_3"}) ALIASES.put(s, "s3");
+        for (String s : new String[]{"lap", "lap_number", "lapnumber", "vuelta", "n", "lap #", "lap#"}) ALIASES.put(s, "lap");
+        for (String s : new String[]{"time", "lap_time", "lap time", "laptime", "tiempo", "best time", "lap time(s)"}) ALIASES.put(s, "time");
+        for (String s : new String[]{"s1", "sector1", "sector_1", "sector 1", "best split 1", "split 1"}) ALIASES.put(s, "s1");
+        for (String s : new String[]{"s2", "sector2", "sector_2", "sector 2", "best split 2", "split 2"}) ALIASES.put(s, "s2");
+        for (String s : new String[]{"s3", "sector3", "sector_3", "sector 3", "best split 3", "split 3"}) ALIASES.put(s, "s3");
         for (String s : new String[]{"valid", "validez", "ok"}) ALIASES.put(s, "valid");
         for (String s : new String[]{"compound", "tyre", "tire", "neumatico", "neumático"}) ALIASES.put(s, "compound");
         for (String s : new String[]{"fuel", "fuel_kg", "combustible"}) ALIASES.put(s, "fuel");
         for (String s : new String[]{"notes", "notas", "comment"}) ALIASES.put(s, "notes");
+    }
+
+    private static CsvFormat detectFormat(String headerLine) {
+        String lower = headerLine.toLowerCase(Locale.ROOT);
+        if (lower.contains("lap delta") || lower.contains("best split")) return CsvFormat.IRACING;
+        if (lower.contains("gap to best") || lower.contains("gap to leader") || lower.contains("transponder")) return CsvFormat.MYLAPS;
+        return CsvFormat.GENERIC;
     }
 
     public List<LapTime> parse(InputStream input) throws IOException {
@@ -59,6 +79,10 @@ public class LapCsvParser {
             }
 
             char sep = detectSeparator(headerLine);
+            CsvFormat format = detectFormat(headerLine);
+            if (format != CsvFormat.GENERIC) {
+                log.info("CSV: formato detectado = {}", format);
+            }
             String[] headers = splitAndTrim(headerLine, sep);
             Map<String, Integer> colIndex = mapColumns(headers);
 
