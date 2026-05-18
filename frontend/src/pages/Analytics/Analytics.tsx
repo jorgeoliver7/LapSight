@@ -29,6 +29,10 @@ import {
   Tabs,
   Tab,
   Link,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  Select,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -59,7 +63,7 @@ import {
   formatGap,
 } from '../../api/sessions';
 import ManualLapsEditor from './ManualLapsEditor';
-import ComparisonView from './ComparisonView';
+import MultiSessionComparison from './MultiSessionComparison';
 import AdvancedAnalytics from './AdvancedAnalytics';
 import TrackMap from './TrackMap';
 import InsightsPanel from './InsightsPanel';
@@ -91,8 +95,8 @@ const Analytics: React.FC = () => {
   const [drivers, setDrivers] = useState<User[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [analytics, setAnalytics] = useState<SessionAnalytics | null>(null);
-  const [compareWithId, setCompareWithId] = useState<number | null>(null);
-  const [compareAnalytics, setCompareAnalytics] = useState<SessionAnalytics | null>(null);
+  const [compareWithIds, setCompareWithIds] = useState<number[]>([]);
+  const [compareAnalytics, setCompareAnalytics] = useState<SessionAnalytics[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
@@ -159,26 +163,25 @@ const Analytics: React.FC = () => {
   useEffect(() => {
     if (selectedId != null) loadAnalytics(selectedId);
     else setAnalytics(null);
-    setCompareWithId(null);
-    setCompareAnalytics(null);
+    setCompareWithIds([]);
+    setCompareAnalytics([]);
   }, [selectedId]);
 
   useEffect(() => {
-    if (compareWithId == null) {
-      setCompareAnalytics(null);
+    if (compareWithIds.length === 0) {
+      setCompareAnalytics([]);
       return;
     }
-    sessionsApi
-      .analytics(compareWithId)
+    Promise.all(compareWithIds.map((id) => sessionsApi.analytics(id)))
       .then(setCompareAnalytics)
       .catch((e) => {
         setSnack({
-          msg: e?.response?.data?.message || 'Error cargando sesión a comparar',
+          msg: e?.response?.data?.message || 'Error cargando sesiones a comparar',
           severity: 'error',
         });
-        setCompareWithId(null);
+        setCompareWithIds([]);
       });
-  }, [compareWithId]);
+  }, [compareWithIds]);
 
   const resetDialog = () => {
     setUploadOpen(false);
@@ -355,32 +358,53 @@ const Analytics: React.FC = () => {
             </Paper>
           ) : (
             <Box display="flex" flexDirection="column" gap={2}>
-              <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="body2" fontWeight={500}>
-                  Comparar con:
-                </Typography>
-                <TextField
-                  size="small"
-                  select
-                  value={compareWithId ?? ''}
-                  onChange={(e) =>
-                    setCompareWithId(e.target.value ? Number(e.target.value) : null)
-                  }
-                  sx={{ minWidth: 280 }}
-                >
-                  <MenuItem value="">— Vista individual —</MenuItem>
-                  {sessions
-                    .filter((s) => s.id !== selectedId)
-                    .map((s) => (
-                      <MenuItem key={s.id} value={s.id}>
-                        {s.name} ({new Date(s.sessionDate).toLocaleDateString('es-ES')})
-                      </MenuItem>
-                    ))}
-                </TextField>
-                {compareWithId != null && !compareAnalytics && <CircularProgress size={20} />}
+              <Paper sx={{ p: 2 }}>
+                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                  <Typography variant="body2" fontWeight={500}>
+                    Comparar con:
+                  </Typography>
+                  <FormControl size="small" sx={{ minWidth: 320 }}>
+                    <InputLabel>Sesiones adicionales (máx 3)</InputLabel>
+                    <Select
+                      multiple
+                      value={compareWithIds}
+                      onChange={(e) => {
+                        const value = e.target.value as number[];
+                        // Limit to 3 extra sessions (4 total with the main)
+                        setCompareWithIds(value.slice(0, 3));
+                      }}
+                      input={<OutlinedInput label="Sesiones adicionales (máx 3)" />}
+                      renderValue={(selected) =>
+                        sessions
+                          .filter((s) => (selected as number[]).includes(s.id))
+                          .map((s) => s.name)
+                          .join(', ') || '— Vista individual —'
+                      }
+                    >
+                      {sessions
+                        .filter((s) => s.id !== selectedId)
+                        .map((s) => (
+                          <MenuItem key={s.id} value={s.id}>
+                            {s.name} ({new Date(s.sessionDate).toLocaleDateString('es-ES')})
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                  {compareWithIds.length > 0 && compareAnalytics.length === 0 && (
+                    <CircularProgress size={20} />
+                  )}
+                  {compareWithIds.length > 0 && (
+                    <Chip
+                      size="small"
+                      label={`${compareWithIds.length + 1} sesiones comparadas`}
+                      color="primary"
+                      onDelete={() => setCompareWithIds([])}
+                    />
+                  )}
+                </Box>
               </Paper>
-              {compareWithId != null && compareAnalytics ? (
-                <ComparisonView a={analytics} b={compareAnalytics} />
+              {compareWithIds.length > 0 && compareAnalytics.length === compareWithIds.length ? (
+                <MultiSessionComparison analytics={[analytics, ...compareAnalytics]} />
               ) : (
                 <>
                   <Box display="flex" justifyContent="flex-end">

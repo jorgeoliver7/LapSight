@@ -111,6 +111,59 @@ class LapCsvParserTest {
     }
 
     @Test
+    void parsesAimRaceStudioFormat() throws IOException {
+        // AiM exporta con "Sect.1", "Sect.2", "Sect.3"
+        String csv = """
+                "Lap Number","Lap Time","Sect.1","Sect.2","Sect.3"
+                "1","1:24.512","28.123","32.001","24.388"
+                "2","1:19.234","26.011","29.541","23.682"
+                """;
+        List<LapTime> laps = parse(csv);
+        assertThat(laps).hasSize(2);
+        assertThat(laps.get(0).getSector1Ms()).isEqualTo(28123L);
+        assertThat(laps.get(1).getLapTimeMs()).isEqualTo(79234L);
+    }
+
+    @Test
+    void parsesMotecFormat() throws IOException {
+        // MoTeC exporta segundos con [s] en las cabeceras
+        String csv = """
+                Lap Number,Lap Time [s],S1 [s],S2 [s],S3 [s]
+                1,84.512,28.123,32.001,24.388
+                2,79.234,26.011,29.541,23.682
+                """;
+        List<LapTime> laps = parse(csv);
+        assertThat(laps).hasSize(2);
+        assertThat(laps.get(0).getLapTimeMs()).isEqualTo(84512L);
+        assertThat(laps.get(0).getSector1Ms()).isEqualTo(28123L);
+    }
+
+    @Test
+    void parsesRaceChronoFormat() throws IOException {
+        String csv = """
+                Lap,Time,Sector 1,Sector 2,Sector 3,Distance,Avg Speed
+                1,1:24.512,28.123,32.001,24.388,4.50,180.5
+                2,1:19.234,26.011,29.541,23.682,4.50,191.2
+                """;
+        List<LapTime> laps = parse(csv);
+        assertThat(laps).hasSize(2);
+        // Distance y Avg Speed deben ignorarse (no son campos reconocidos)
+        assertThat(laps.get(0).getSector2Ms()).isEqualTo(32001L);
+    }
+
+    @Test
+    void parsesApexProFormat() throws IOException {
+        String csv = """
+                Lap,Lap Time,Best Sector 1,Best Sector 2,Best Sector 3
+                1,1:24.512,28.123,32.001,24.388
+                2,1:19.234,26.011,29.541,23.682
+                """;
+        List<LapTime> laps = parse(csv);
+        assertThat(laps).hasSize(2);
+        assertThat(laps.get(0).getSector1Ms()).isEqualTo(28123L);
+    }
+
+    @Test
     void throwsForEmptyCsv() {
         assertThatThrownBy(() -> parse("# only comments\n"))
                 .isInstanceOf(IllegalArgumentException.class);

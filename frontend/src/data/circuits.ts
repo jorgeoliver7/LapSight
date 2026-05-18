@@ -1,228 +1,292 @@
 /**
- * Trazados de circuitos reales como arrays de coordenadas [x, y] en espacio 0–100.
+ * Trazados de circuitos para el Track Map.
  *
- * Los puntos están dibujados a mano aproximando la forma característica de cada
- * circuito (recta de meta, curvas icónicas, dirección de marcha) — no son
- * coordenadas GPS reales, son una representación visual reconocible.
+ * Dos fuentes:
+ *   1. Coordenadas reales GeoJSON (lng, lat) extraídas del proyecto público
+ *      `bacinger/f1-circuits` (MIT), normalizadas al espacio 0-100 preservando
+ *      aspect ratio. Se usan para los circuitos que sí están en el dataset.
+ *   2. Coordenadas dibujadas a mano con suficiente densidad para reproducir
+ *      la forma característica de cada circuito (recta de meta, curvas
+ *      icónicas, dirección de marcha) en circuitos no presentes en el dataset.
  *
- * Los aliases cubren las variantes habituales con las que aparece cada circuito
- * en exports CSV (MyLaps Speedhive, iRacing) y plataformas en español/inglés.
+ * Para añadir un circuito nuevo: incluye los puntos como lng/lat (si tienes
+ * GeoJSON) o coordenadas 0-100 (si los dibujas a mano), y márcalo con `realData`.
  */
 
 export interface Circuit {
   name: string;
   aliases: string[];
-  /** Array de [x, y] en rango 0-100. El primer punto debe coincidir con el último (pista cerrada). */
+  /** Array de [x, y] en rango ~0-100. El primer y último punto deben estar cerca. */
   path: [number, number][];
   /** Porcentajes del path donde acaban S1 y S2 (S3 va hasta el final). */
   sectorBoundaries: [number, number];
   country?: string;
   length_km?: number;
+  /** true si las coordenadas provienen de GeoJSON real (precisas). */
+  realData?: boolean;
 }
 
-// Helper: sample N points along a cubic Bezier curve
-function bezier(
-  p0: [number, number],
-  p1: [number, number],
-  p2: [number, number],
-  p3: [number, number],
-  samples = 12
-): [number, number][] {
-  const result: [number, number][] = [];
-  for (let i = 1; i <= samples; i++) {
-    const t = i / samples;
-    const x =
-      (1 - t) ** 3 * p0[0] +
-      3 * (1 - t) ** 2 * t * p1[0] +
-      3 * (1 - t) * t ** 2 * p2[0] +
-      t ** 3 * p3[0];
-    const y =
-      (1 - t) ** 3 * p0[1] +
-      3 * (1 - t) ** 2 * t * p1[1] +
-      3 * (1 - t) * t ** 2 * p2[1] +
-      t ** 3 * p3[1];
-    result.push([x, y]);
-  }
-  return result;
+// ─── Helper: normaliza GeoJSON (lng, lat) → coordenadas locales 0-100 ────────
+// Preserva aspect ratio para no deformar circuitos. Y se invierte porque en
+// pantalla crece hacia abajo mientras que en latitud crece hacia el norte.
+function normalizeGeoJson(coords: [number, number][]): [number, number][] {
+  const lngs = coords.map((c) => c[0]);
+  const lats = coords.map((c) => c[1]);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const rangeLng = maxLng - minLng;
+  const rangeLat = maxLat - minLat;
+  // Corrección de aspect en alta latitud (a 50ºN un grado de lng vale ~0.64 grados de lat).
+  // Usar coseno de la latitud media para evitar circuitos achatados.
+  const meanLatRad = ((minLat + maxLat) / 2) * (Math.PI / 180);
+  const lngScale = Math.cos(meanLatRad);
+  const effLngRange = rangeLng * lngScale;
+  const maxRange = Math.max(effLngRange, rangeLat);
+  const padding = 5;
+  return coords.map(([lng, lat]) => {
+    const xCentered = (lng - minLng) * lngScale;
+    const yCentered = lat - minLat;
+    const x = padding + (xCentered / maxRange) * (100 - 2 * padding);
+    // Invertir Y para que el norte quede arriba en pantalla
+    const y = padding + ((maxRange - yCentered) / maxRange) * (100 - 2 * padding);
+    return [x, y];
+  });
 }
 
-function buildPath(start: [number, number], segments: Array<[[number, number], [number, number], [number, number]]>): [number, number][] {
-  const path: [number, number][] = [start];
-  let current = start;
-  for (const [c1, c2, end] of segments) {
-    path.push(...bezier(current, c1, c2, end, 14));
-    current = end;
-  }
-  return path;
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// CIRCUITOS CON DATOS REALES (bacinger/f1-circuits)
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ─── Jarama ──────────────────────────────────────────────────────────────────
-// Trazado característico: recta de meta hacia el sur, curva Bugatti larga,
-// S de Farina, Ascari, Tobogán, curva final cerrada antes de meta.
+const SPA: Circuit = {
+  name: 'Spa-Francorchamps',
+  aliases: ['spa', 'spa-francorchamps', 'spa francorchamps', 'circuit de spa', 'francorchamps'],
+  country: 'BE',
+  length_km: 7.004,
+  realData: true,
+  sectorBoundaries: [0.30, 0.65],
+  path: normalizeGeoJson([
+    [5.96502, 50.444251], [5.963419, 50.446033], [5.963402, 50.446113], [5.963473, 50.446184],
+    [5.963621, 50.446217], [5.963786, 50.446188], [5.964313, 50.446019], [5.965592, 50.445628],
+    [5.966207, 50.445387], [5.966847, 50.445085], [5.967421, 50.444779], [5.967876, 50.444463],
+    [5.970321, 50.442606], [5.970493, 50.442502], [5.970788, 50.442385], [5.971315, 50.442168],
+    [5.971546, 50.442022], [5.971741, 50.441824], [5.971866, 50.441644], [5.971949, 50.441442],
+    [5.97202, 50.441069], [5.972061, 50.440937], [5.972132, 50.440815], [5.972268, 50.440655],
+    [5.973476, 50.439424], [5.974245, 50.438642], [5.974458, 50.43835], [5.974594, 50.438133],
+    [5.974754, 50.437784], [5.975719, 50.435639], [5.977199, 50.432382], [5.977542, 50.431599],
+    [5.97756, 50.431472], [5.977524, 50.431331], [5.977406, 50.431218], [5.977234, 50.431123],
+    [5.977015, 50.431048], [5.976885, 50.430968], [5.976796, 50.430874], [5.976725, 50.430732],
+    [5.976737, 50.430591], [5.977033, 50.429747], [5.977027, 50.429601], [5.97698, 50.429469],
+    [5.97682, 50.429323], [5.97663, 50.429224], [5.973257, 50.427739], [5.973044, 50.427682],
+    [5.972831, 50.427678], [5.972606, 50.42772], [5.972422, 50.427805], [5.972292, 50.427927],
+    [5.972239, 50.42805], [5.972227, 50.428182], [5.972292, 50.428305], [5.97241, 50.428432],
+    [5.972582, 50.428521], [5.974056, 50.429101], [5.974216, 50.429205], [5.974304, 50.429309],
+    [5.97434, 50.429431], [5.974322, 50.429582], [5.973712, 50.430723], [5.973523, 50.431189],
+    [5.973091, 50.432627], [5.972878, 50.433452], [5.972831, 50.433593], [5.972724, 50.433744],
+    [5.972582, 50.433867], [5.972369, 50.433999], [5.972132, 50.434098], [5.971872, 50.434164],
+    [5.971599, 50.434192], [5.970717, 50.43423], [5.97038, 50.434206], [5.970072, 50.43415],
+    [5.969759, 50.434065], [5.969504, 50.433956], [5.969208, 50.433782], [5.969019, 50.433608],
+    [5.968812, 50.433358], [5.967977, 50.432028], [5.967231, 50.430845], [5.967071, 50.430661],
+    [5.966882, 50.430534], [5.966622, 50.43044], [5.966361, 50.430393], [5.966119, 50.430388],
+    [5.965876, 50.430421], [5.965669, 50.430482], [5.965325, 50.430624], [5.9651, 50.430685],
+    [5.964828, 50.430713], [5.964556, 50.430694], [5.964307, 50.430643], [5.964094, 50.430548],
+    [5.963958, 50.43044], [5.963792, 50.430294], [5.962425, 50.428927], [5.962289, 50.428847],
+    [5.962123, 50.42879], [5.961922, 50.428762], [5.961697, 50.428771], [5.961502, 50.428828],
+    [5.960578, 50.429257], [5.960034, 50.429511], [5.959898, 50.429624], [5.959756, 50.429761],
+    [5.959673, 50.429893], [5.959614, 50.430049], [5.959602, 50.430209], [5.959643, 50.430402],
+    [5.959738, 50.430567], [5.959862, 50.430779], [5.960046, 50.4311], [5.960365, 50.431463],
+    [5.960715, 50.431779], [5.961247, 50.43216], [5.962135, 50.432712], [5.962656, 50.432971],
+    [5.9631, 50.433136], [5.965385, 50.433895], [5.965716, 50.434027], [5.96603, 50.434183],
+    [5.96632, 50.434357], [5.966568, 50.434546], [5.966799, 50.434744], [5.967107, 50.435106],
+    [5.967356, 50.435455], [5.967924, 50.436261], [5.968024, 50.436436], [5.968084, 50.436624],
+    [5.968095, 50.43686], [5.968036, 50.437072], [5.967699, 50.437624], [5.967332, 50.438232],
+    [5.966888, 50.438991], [5.966775, 50.439273], [5.966669, 50.439608], [5.966604, 50.439919],
+    [5.966562, 50.440183], [5.966432, 50.441404], [5.966456, 50.441484], [5.966533, 50.441541],
+    [5.966651, 50.44156], [5.966852, 50.441541], [5.96706, 50.441541], [5.967202, 50.44156],
+    [5.967296, 50.441626], [5.96732, 50.441701], [5.967261, 50.4418], [5.966533, 50.442559],
+  ]),
+};
+
+const CATALUNYA: Circuit = {
+  name: 'Circuit de Barcelona-Catalunya',
+  aliases: ['catalunya', 'barcelona', 'montmelo', 'montmeló', 'barcelona-catalunya', 'circuit catalunya'],
+  country: 'ES',
+  length_km: 4.657,
+  realData: true,
+  sectorBoundaries: [0.32, 0.66],
+  path: normalizeGeoJson([
+    [2.261221, 41.570034], [2.259727, 41.568259], [2.258901, 41.567264], [2.258042, 41.566249],
+    [2.257143, 41.565168], [2.256836, 41.564803], [2.256738, 41.564721], [2.25665, 41.564663],
+    [2.256574, 41.564637], [2.256438, 41.564624], [2.256314, 41.56463], [2.256222, 41.564648],
+    [2.256133, 41.564684], [2.255823, 41.564832], [2.255725, 41.564865], [2.255549, 41.564894],
+    [2.255407, 41.564894], [2.255204, 41.564861], [2.255089, 41.564807], [2.254229, 41.564326],
+    [2.254109, 41.564281], [2.253985, 41.564247], [2.253819, 41.564205], [2.253662, 41.564187],
+    [2.253525, 41.564187], [2.253376, 41.564193], [2.25321, 41.564209], [2.253049, 41.564248],
+    [2.252855, 41.56432], [2.252755, 41.564375], [2.252663, 41.564435], [2.25258, 41.564491],
+    [2.25236, 41.564707], [2.252252, 41.564874], [2.252174, 41.56506], [2.252154, 41.565191],
+    [2.252134, 41.565347], [2.252139, 41.565512], [2.252172, 41.565687], [2.252265, 41.565965],
+    [2.252367, 41.566189], [2.252477, 41.566365], [2.252595, 41.566504], [2.254089, 41.568282],
+    [2.254179, 41.568345], [2.254304, 41.5684], [2.254537, 41.568443], [2.254685, 41.56843],
+    [2.254805, 41.568403], [2.254943, 41.568345], [2.255099, 41.568251], [2.255199, 41.568166],
+    [2.255319, 41.567986], [2.255362, 41.56785], [2.255374, 41.567639], [2.255364, 41.567513],
+    [2.255322, 41.567371], [2.255241, 41.567232], [2.255091, 41.567017], [2.254006, 41.565748],
+    [2.253976, 41.565662], [2.253974, 41.565587], [2.254001, 41.565497], [2.254051, 41.565435],
+    [2.254106, 41.565383], [2.254192, 41.565338], [2.254299, 41.56531], [2.254383, 41.565299],
+    [2.25452, 41.565319], [2.254583, 41.565338], [2.256214, 41.56589], [2.25644, 41.565995],
+    [2.256665, 41.566124], [2.256891, 41.566284], [2.257051, 41.566429], [2.2577, 41.567191],
+    [2.25777, 41.567305], [2.2578, 41.567384], [2.257773, 41.567509], [2.25769, 41.567621],
+    [2.257562, 41.56771], [2.257266, 41.567841], [2.257105, 41.567939], [2.257016, 41.568014],
+    [2.256928, 41.56811], [2.256879, 41.568175], [2.256471, 41.568903], [2.256008, 41.569723],
+    [2.255971, 41.569864], [2.255971, 41.570008], [2.25599, 41.570119], [2.25602, 41.570226],
+    [2.256111, 41.57035], [2.256181, 41.570434], [2.256331, 41.570557], [2.25648, 41.570644],
+    [2.26167, 41.572636], [2.261852, 41.572713], [2.261947, 41.572789], [2.261993, 41.572862],
+    [2.262005, 41.57295], [2.261968, 41.573048], [2.261907, 41.573126], [2.261819, 41.57319],
+    [2.261691, 41.573263], [2.261484, 41.573331], [2.261356, 41.573354], [2.261179, 41.573372],
+    [2.261027, 41.573377], [2.260874, 41.57337], [2.260707, 41.573338], [2.260475, 41.573254],
+    [2.260316, 41.573185], [2.260094, 41.573039], [2.259874, 41.572921], [2.259722, 41.57287],
+    [2.259487, 41.572857], [2.259347, 41.57288], [2.25918, 41.572944], [2.259046, 41.573028],
+    [2.258963, 41.573126], [2.258896, 41.573236], [2.258875, 41.573357], [2.258869, 41.573414],
+    [2.258915, 41.573574], [2.258997, 41.573688], [2.259125, 41.573781], [2.260362, 41.574543],
+    [2.260484, 41.57462], [2.260638, 41.574688], [2.260778, 41.574725], [2.260973, 41.574748],
+    [2.261165, 41.574752], [2.261341, 41.574725], [2.261485, 41.574679], [2.261777, 41.57454],
+    [2.262103, 41.574383], [2.262385, 41.574237], [2.262567, 41.574158], [2.263182, 41.573866],
+    [2.26333, 41.573788], [2.263424, 41.573714], [2.263509, 41.573628], [2.263578, 41.573529],
+    [2.263635, 41.573397], [2.263667, 41.573274], [2.263669, 41.573097], [2.263635, 41.572938],
+    [2.263464, 41.572685], [2.261221, 41.570034],
+  ]),
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CIRCUITOS DIBUJADOS A MANO (con ~80-100 puntos cada uno, asimétricos y con
+// detalles característicos para que cada uno se reconozca visualmente).
+// Coordenadas directas en espacio 0-100.
+// ═══════════════════════════════════════════════════════════════════════════
+
 const JARAMA: Circuit = {
   name: 'Circuito del Jarama',
   aliases: ['jarama', 'jarama-rasch', 'circuito del jarama'],
   country: 'ES',
   length_km: 3.85,
-  path: buildPath(
-    [50, 90],
-    [
-      [[70, 90], [85, 80], [88, 65]],     // recta meta + curva 1 (derecha)
-      [[88, 50], [82, 38], [70, 32]],     // Bugatti
-      [[60, 28], [55, 30], [50, 38]],     // S de Farina entrada
-      [[45, 45], [40, 42], [35, 35]],     // Farina salida
-      [[25, 28], [15, 30], [12, 45]],     // sector medio
-      [[10, 60], [15, 72], [25, 78]],     // Tobogán
-      [[35, 80], [40, 78], [45, 85]],     // horquilla
-      [[48, 90], [49, 90], [50, 90]],     // vuelta a meta
-    ]
-  ),
-  sectorBoundaries: [0.33, 0.66],
+  sectorBoundaries: [0.33, 0.67],
+  // Trazado característico: recta sur, curva Pegaso (90° derecha cerrada),
+  // Le Mans, Farina (S), Tobogán (bajada amplia), Bugatti (horquilla pelo),
+  // Monjas, vuelta corta a meta.
+  path: [
+    [22, 78], [30, 78], [40, 78], [50, 78], [60, 78], [68, 78], [74, 77], [78, 75],
+    [81, 72], [82, 68], [82, 63], [80, 58], [77, 54], [73, 51], [69, 49], [65, 49],
+    [62, 51], [60, 54], [58, 57], [56, 58], [54, 57], [53, 54], [54, 50], [56, 46],
+    [60, 42], [66, 40], [72, 38], [76, 36], [78, 32], [78, 27], [76, 24], [72, 22],
+    [67, 22], [62, 24], [56, 28], [50, 32], [44, 34], [38, 34], [33, 32], [29, 28],
+    [27, 24], [27, 20], [29, 17], [33, 16], [37, 17], [40, 20], [42, 24], [42, 29],
+    [40, 34], [36, 38], [32, 42], [28, 46], [24, 51], [22, 56], [22, 61], [24, 65],
+    [27, 68], [22, 72], [20, 75], [22, 78],
+  ],
 };
 
-// ─── Circuit Ricardo Tormo (Cheste) ──────────────────────────────────────────
-// Forma característica con stadium: largo en una dirección, curvas de retorno,
-// recta paralela. Famoso por el sector "stadium" final.
-const CHESTE: Circuit = {
-  name: 'Circuit Ricardo Tormo',
-  aliases: ['cheste', 'valencia', 'ricardo tormo', 'circuit ricardo tormo'],
-  country: 'ES',
-  length_km: 4.005,
-  path: buildPath(
-    [20, 85],
-    [
-      [[30, 88], [45, 88], [60, 85]],     // recta principal
-      [[75, 80], [88, 70], [88, 55]],     // curva 1 hacia el norte
-      [[88, 45], [80, 38], [72, 42]],     // S de Repsol
-      [[65, 48], [60, 42], [55, 35]],     // curva 4-5
-      [[50, 30], [42, 32], [40, 42]],     // curva izquierda
-      [[38, 52], [42, 55], [50, 52]],     // pasada del stadium
-      [[55, 50], [55, 45], [48, 42]],     // chicane stadium
-      [[40, 45], [25, 55], [15, 65]],     // sector final
-      [[10, 75], [12, 82], [20, 85]],     // vuelta a meta
-    ]
-  ),
-  sectorBoundaries: [0.33, 0.66],
-};
-
-// ─── MotorLand Aragón ────────────────────────────────────────────────────────
-// Trazado largo y técnico con la recta más larga del calendario MotoGP español.
 const ARAGON: Circuit = {
   name: 'MotorLand Aragón',
   aliases: ['aragon', 'aragón', 'motorland', 'motorland aragón', 'alcañiz'],
   country: 'ES',
   length_km: 5.078,
-  path: buildPath(
-    [15, 85],
-    [
-      [[25, 90], [40, 92], [55, 88]],     // recta meta
-      [[70, 84], [82, 75], [85, 60]],     // curva 1 cerrada
-      [[88, 48], [82, 38], [70, 38]],     // bajada técnica
-      [[60, 42], [55, 38], [55, 28]],     // sector medio inicio
-      [[55, 18], [60, 12], [70, 15]],     // horquilla norte
-      [[78, 20], [85, 28], [80, 38]],     // S de retorno
-      [[72, 45], [60, 50], [50, 48]],     // diagonal
-      [[40, 50], [30, 45], [22, 42]],     // recta del bidón
-      [[12, 45], [8, 55], [10, 65]],      // entrada al stadium
-      [[15, 75], [18, 80], [15, 85]],     // último sector
-    ]
-  ),
-  sectorBoundaries: [0.35, 0.70],
+  sectorBoundaries: [0.30, 0.60],
+  // Trazado característico: recta meta SO, sector 1 con curvas largas, horquilla,
+  // sector medio en stadium, RECTA LARGA de regreso (1km, característica),
+  // última curva cerrada antes de meta.
+  path: [
+    [15, 85], [22, 86], [30, 86], [38, 85], [45, 84], [52, 82], [58, 80], [63, 77],
+    [67, 73], [70, 68], [71, 62], [70, 56], [67, 51], [63, 48], [58, 47], [53, 49],
+    [49, 53], [47, 58], [48, 63], [51, 66], [55, 67], [58, 65], [58, 60], [55, 58],
+    [51, 60], [47, 64], [42, 67], [37, 68], [32, 67], [28, 64], [25, 60], [24, 55],
+    [25, 50], [28, 46], [33, 43], [38, 42], [44, 43], [49, 45], [54, 46], [60, 45],
+    [65, 42], [68, 38], [70, 33], [70, 28], [68, 23], [64, 20], [58, 19], [52, 21],
+    [45, 24], [38, 26], [31, 27], [25, 27], [20, 25], [16, 22], [13, 18], [11, 22],
+    [10, 28], [11, 35], [13, 42], [15, 50], [15, 58], [14, 65], [13, 72], [13, 78],
+    [14, 82], [15, 85],
+  ],
 };
 
-// ─── Circuito de Navarra ─────────────────────────────────────────────────────
-// Trazado moderno, varios complejos de curvas medias.
+const CHESTE: Circuit = {
+  name: 'Circuit Ricardo Tormo',
+  aliases: ['cheste', 'valencia', 'ricardo tormo', 'circuit ricardo tormo'],
+  country: 'ES',
+  length_km: 4.005,
+  sectorBoundaries: [0.30, 0.65],
+  // Trazado característico: recta meta arriba, curva 1 cerrada derecha,
+  // sector medio con curvas en S, STADIUM section al SW con curvas
+  // paralelas, recta corta de vuelta. Forma característica de "anfiteatro".
+  path: [
+    [18, 75], [25, 76], [33, 76], [42, 75], [51, 73], [59, 70], [66, 66], [72, 61],
+    [76, 55], [78, 49], [78, 43], [76, 38], [72, 34], [67, 32], [62, 33], [58, 36],
+    [55, 41], [54, 46], [55, 51], [58, 55], [62, 56], [65, 54], [66, 49], [63, 46],
+    [60, 47], [58, 50], [57, 53], [55, 55], [52, 56], [49, 55], [47, 52], [47, 48],
+    [49, 45], [52, 43], [55, 41], [56, 38], [55, 35], [52, 33], [48, 33], [44, 35],
+    [40, 39], [37, 43], [33, 46], [30, 47], [28, 45], [29, 41], [32, 38], [34, 35],
+    [34, 31], [31, 28], [27, 27], [22, 28], [18, 31], [15, 35], [13, 40], [12, 46],
+    [13, 52], [15, 58], [17, 63], [17, 68], [16, 72], [18, 75],
+  ],
+};
+
 const NAVARRA: Circuit = {
   name: 'Circuito de Navarra',
   aliases: ['navarra', 'circuito de navarra', 'los arcos'],
   country: 'ES',
   length_km: 3.933,
-  path: buildPath(
-    [25, 85],
-    [
-      [[40, 88], [55, 88], [68, 82]],     // recta meta
-      [[80, 75], [88, 62], [85, 50]],     // curva 1
-      [[80, 38], [70, 32], [62, 38]],     // chicane
-      [[55, 42], [52, 35], [48, 28]],     // curva 4
-      [[45, 22], [38, 22], [32, 28]],     // horquilla
-      [[28, 35], [32, 42], [40, 45]],     // S de retorno
-      [[48, 48], [50, 55], [40, 55]],     // diagonal
-      [[28, 55], [18, 60], [15, 72]],     // último sector
-      [[15, 80], [20, 85], [25, 85]],     // vuelta a meta
-    ]
-  ),
   sectorBoundaries: [0.33, 0.66],
+  // Trazado moderno con dos rectas en L, complejos de curvas técnicas medias.
+  path: [
+    [20, 80], [28, 82], [37, 82], [46, 81], [55, 79], [63, 76], [70, 72], [76, 66],
+    [80, 60], [82, 53], [82, 46], [79, 40], [74, 36], [68, 35], [62, 38], [57, 43],
+    [54, 49], [54, 55], [56, 60], [58, 57], [58, 51], [55, 47], [50, 46], [44, 48],
+    [38, 51], [33, 54], [28, 55], [24, 53], [22, 49], [23, 44], [27, 41], [33, 39],
+    [39, 37], [44, 33], [46, 28], [44, 23], [40, 20], [34, 19], [27, 21], [21, 25],
+    [16, 30], [12, 36], [10, 44], [11, 53], [13, 61], [16, 68], [19, 74], [20, 80],
+  ],
 };
 
-// ─── Parcmotor Castellolí ────────────────────────────────────────────────────
 const CASTELLOLI: Circuit = {
   name: 'Parcmotor Castellolí',
   aliases: ['castelloli', 'castellolí', 'parcmotor', 'parcmotor castellolí'],
   country: 'ES',
   length_km: 2.5,
-  path: buildPath(
-    [25, 75],
-    [
-      [[35, 78], [50, 80], [62, 75]],     // recta corta
-      [[75, 70], [82, 60], [78, 50]],     // curva 1
-      [[72, 42], [62, 38], [55, 42]],     // chicane
-      [[48, 45], [45, 38], [40, 32]],     // curva técnica
-      [[32, 28], [25, 32], [20, 42]],     // horquilla
-      [[18, 52], [22, 62], [25, 75]],     // último sector
-    ]
-  ),
-  sectorBoundaries: [0.33, 0.66],
+  sectorBoundaries: [0.35, 0.70],
+  // Corto y técnico, forma de "8" alargado con curvas en zigzag.
+  path: [
+    [25, 72], [33, 74], [42, 74], [50, 72], [57, 68], [62, 62], [64, 55], [62, 48],
+    [58, 43], [52, 41], [47, 43], [44, 48], [44, 53], [46, 56], [50, 56], [52, 53],
+    [50, 49], [46, 47], [42, 47], [38, 50], [35, 54], [33, 58], [30, 60], [26, 60],
+    [22, 57], [20, 52], [21, 46], [25, 41], [30, 37], [36, 35], [42, 35], [48, 36],
+    [44, 38], [38, 40], [33, 42], [28, 45], [23, 49], [19, 54], [16, 60], [16, 66],
+    [19, 70], [25, 72],
+  ],
 };
 
-// ─── Spa-Francorchamps ───────────────────────────────────────────────────────
-// Icónico por su forma alargada en valle y Eau Rouge (subida famosa).
-const SPA: Circuit = {
-  name: 'Spa-Francorchamps',
-  aliases: ['spa', 'spa-francorchamps', 'spa francorchamps', 'circuit de spa'],
-  country: 'BE',
-  length_km: 7.004,
-  path: buildPath(
-    [20, 90],
-    [
-      [[28, 92], [38, 90], [42, 82]],     // recta La Source → Eau Rouge approach
-      [[43, 75], [45, 70], [48, 68]],     // Eau Rouge
-      [[52, 65], [58, 55], [70, 50]],     // Raidillon → Kemmel straight
-      [[80, 48], [85, 42], [82, 32]],     // Les Combes
-      [[78, 25], [70, 22], [62, 28]],     // Malmedy
-      [[55, 32], [48, 28], [40, 32]],     // Rivage
-      [[32, 38], [28, 48], [32, 55]],     // Pouhon
-      [[38, 62], [45, 68], [52, 70]],     // Stavelot
-      [[58, 72], [60, 78], [55, 82]],     // Blanchimont
-      [[45, 85], [30, 88], [20, 90]],     // bus stop → meta
-    ]
-  ),
-  sectorBoundaries: [0.30, 0.65],
-};
-
-// ─── Jerez ───────────────────────────────────────────────────────────────────
 const JEREZ: Circuit = {
   name: 'Circuito de Jerez',
-  aliases: ['jerez', 'jerez angel nieto', 'circuito de jerez', 'jerez de la frontera'],
+  aliases: ['jerez', 'jerez angel nieto', 'circuito de jerez', 'jerez de la frontera', 'ángel nieto'],
   country: 'ES',
   length_km: 4.428,
-  path: buildPath(
-    [25, 85],
-    [
-      [[40, 88], [55, 88], [68, 82]],     // recta meta
-      [[80, 75], [85, 65], [80, 55]],     // Expo 92 / curva 1
-      [[75, 48], [65, 45], [58, 50]],     // Michelin
-      [[52, 55], [50, 45], [45, 38]],     // Sito Pons
-      [[40, 32], [32, 32], [28, 40]],     // Curva del Peluqui
-      [[25, 48], [28, 55], [35, 55]],     // Curva Senna
-      [[42, 55], [42, 62], [35, 65]],     // chicane
-      [[25, 65], [15, 72], [18, 80]],     // último sector
-      [[22, 84], [24, 85], [25, 85]],     // a meta
-    ]
-  ),
   sectorBoundaries: [0.35, 0.70],
+  // Trazado característico: recta principal arriba, curva Expo'92, Michelin,
+  // Sito Pons, Peluqui (cerrada), Curva Senna (final), recta corta de vuelta.
+  path: [
+    [18, 78], [27, 79], [37, 79], [47, 78], [56, 76], [64, 73], [71, 68], [76, 62],
+    [79, 55], [80, 48], [78, 41], [74, 36], [69, 33], [63, 32], [58, 34], [54, 38],
+    [52, 43], [53, 47], [56, 50], [60, 50], [62, 47], [60, 44], [56, 44], [52, 46],
+    [48, 49], [44, 51], [40, 52], [36, 51], [33, 48], [31, 44], [32, 39], [35, 35],
+    [40, 32], [45, 31], [50, 30], [54, 28], [55, 24], [52, 21], [47, 21], [42, 23],
+    [37, 26], [32, 28], [27, 28], [23, 26], [20, 22], [16, 21], [13, 24], [11, 30],
+    [10, 37], [11, 45], [13, 53], [15, 61], [17, 68], [17, 74], [18, 78],
+  ],
 };
 
-export const CIRCUITS: Circuit[] = [JARAMA, CHESTE, ARAGON, NAVARRA, CASTELLOLI, SPA, JEREZ];
+// ═══════════════════════════════════════════════════════════════════════════
+// REGISTRO Y BÚSQUEDA
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const CIRCUITS: Circuit[] = [
+  SPA, CATALUNYA, JARAMA, ARAGON, CHESTE, NAVARRA, CASTELLOLI, JEREZ,
+];
 
 /**
  * Busca un circuito por nombre con matching flexible: case-insensitive,

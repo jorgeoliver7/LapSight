@@ -150,6 +150,23 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
                   ({circuit.length_km} km)
                 </Typography>
               )}
+              {circuit.realData && (
+                <Typography
+                  component="span"
+                  variant="caption"
+                  ml={1}
+                  sx={{
+                    bgcolor: 'success.light',
+                    color: 'success.dark',
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: 1,
+                    fontWeight: 600,
+                  }}
+                >
+                  GPS real
+                </Typography>
+              )}
             </Typography>
             <Typography variant="caption" color="textSecondary">
               {isReal

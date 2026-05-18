@@ -49,25 +49,63 @@ public class LapCsvParser {
 
     private static final Logger log = LoggerFactory.getLogger(LapCsvParser.class);
 
-    private enum CsvFormat { GENERIC, IRACING, MYLAPS }
+    private enum CsvFormat { GENERIC, IRACING, MYLAPS, AIM, MOTEC, RACECHRONO, APEX_PRO, HARRYS }
 
     private static final Map<String, String> ALIASES = new HashMap<>();
     static {
-        for (String s : new String[]{"lap", "lap_number", "lapnumber", "vuelta", "n", "lap #", "lap#"}) ALIASES.put(s, "lap");
-        for (String s : new String[]{"time", "lap_time", "lap time", "laptime", "tiempo", "best time", "lap time(s)"}) ALIASES.put(s, "time");
-        for (String s : new String[]{"s1", "sector1", "sector_1", "sector 1", "best split 1", "split 1"}) ALIASES.put(s, "s1");
-        for (String s : new String[]{"s2", "sector2", "sector_2", "sector 2", "best split 2", "split 2"}) ALIASES.put(s, "s2");
-        for (String s : new String[]{"s3", "sector3", "sector_3", "sector 3", "best split 3", "split 3"}) ALIASES.put(s, "s3");
-        for (String s : new String[]{"valid", "validez", "ok"}) ALIASES.put(s, "valid");
-        for (String s : new String[]{"compound", "tyre", "tire", "neumatico", "neumático"}) ALIASES.put(s, "compound");
-        for (String s : new String[]{"fuel", "fuel_kg", "combustible"}) ALIASES.put(s, "fuel");
-        for (String s : new String[]{"notes", "notas", "comment"}) ALIASES.put(s, "notes");
+        // Lap number
+        for (String s : new String[]{
+                "lap", "lap_number", "lapnumber", "vuelta", "n", "lap #", "lap#",
+                "lap nr", "lap no", "lap no.", "#", "position"
+        }) ALIASES.put(s, "lap");
+
+        // Lap time
+        for (String s : new String[]{
+                "time", "lap_time", "lap time", "laptime", "tiempo", "best time", "lap time(s)",
+                "lap time [s]", "lap time (s)", "laptime [s]", "best lap time",
+                "total time", "current time"
+        }) ALIASES.put(s, "time");
+
+        // Sector 1
+        for (String s : new String[]{
+                "s1", "sector1", "sector_1", "sector 1", "best split 1", "split 1",
+                "sect.1", "sect. 1", "sect 1", "sector1 time", "sector 1 [s]", "s1 [s]",
+                "best sector 1", "best s1"
+        }) ALIASES.put(s, "s1");
+
+        // Sector 2
+        for (String s : new String[]{
+                "s2", "sector2", "sector_2", "sector 2", "best split 2", "split 2",
+                "sect.2", "sect. 2", "sect 2", "sector2 time", "sector 2 [s]", "s2 [s]",
+                "best sector 2", "best s2"
+        }) ALIASES.put(s, "s2");
+
+        // Sector 3
+        for (String s : new String[]{
+                "s3", "sector3", "sector_3", "sector 3", "best split 3", "split 3",
+                "sect.3", "sect. 3", "sect 3", "sector3 time", "sector 3 [s]", "s3 [s]",
+                "best sector 3", "best s3"
+        }) ALIASES.put(s, "s3");
+
+        for (String s : new String[]{"valid", "validez", "ok", "valid lap"}) ALIASES.put(s, "valid");
+        for (String s : new String[]{"compound", "tyre", "tire", "neumatico", "neumático", "compound type"}) ALIASES.put(s, "compound");
+        for (String s : new String[]{"fuel", "fuel_kg", "combustible", "fuel [kg]", "fuel_load"}) ALIASES.put(s, "fuel");
+        for (String s : new String[]{"notes", "notas", "comment", "comments", "remark"}) ALIASES.put(s, "notes");
     }
 
+    /**
+     * Detecta el formato del CSV mirando las cabeceras. Útil para logs y para
+     * un futuro routing a parsers específicos. Devuelve GENERIC si no hay indicios claros.
+     */
     private static CsvFormat detectFormat(String headerLine) {
         String lower = headerLine.toLowerCase(Locale.ROOT);
         if (lower.contains("lap delta") || lower.contains("best split")) return CsvFormat.IRACING;
-        if (lower.contains("gap to best") || lower.contains("gap to leader") || lower.contains("transponder")) return CsvFormat.MYLAPS;
+        if (lower.contains("transponder") || lower.contains("gap to best") || lower.contains("gap to leader")) return CsvFormat.MYLAPS;
+        if (lower.contains("sect.") || lower.contains("race studio")) return CsvFormat.AIM;
+        if (lower.contains("[s]") || lower.contains("motec")) return CsvFormat.MOTEC;
+        if (lower.contains("avg speed") || lower.contains("racechrono")) return CsvFormat.RACECHRONO;
+        if (lower.contains("best sector 1") && lower.contains("apex")) return CsvFormat.APEX_PRO;
+        if (lower.contains("harry") || lower.contains("hlt")) return CsvFormat.HARRYS;
         return CsvFormat.GENERIC;
     }
 
