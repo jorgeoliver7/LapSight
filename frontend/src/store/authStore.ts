@@ -1,30 +1,12 @@
-import { useState, useEffect } from 'react';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { AxiosError } from 'axios';
+import { authApi, LoginPayload, RegisterPayload } from '../api/auth';
+import { registerUnauthorizedHandler } from '../api/client';
+import type { User } from '../types';
 
-// Interfaces
-export interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  teamId: number;
-  teamName?: string;
-  phoneNumber?: string;
-  licenseNumber?: string;
-  licenseExpiry?: string;
-  active: boolean;
-}
-
-export enum UserRole {
-  MANAGER = 'MANAGER',
-  PILOT = 'PILOT',
-  MECHANIC = 'MECHANIC',
-  ENGINEER = 'ENGINEER',
-  LOGISTICS = 'LOGISTICS',
-  FINANCE = 'FINANCE',
-  MEDIA = 'MEDIA',
-  GUEST = 'GUEST'
-}
+export { UserRole } from '../types';
+export type { User } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -32,120 +14,116 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
+  logout: () => void;
+  hydrate: () => Promise<void>;
+  clearError: () => void;
 }
 
-// Estado global simple
-let authState: AuthState = {
-  user: {
-    id: 1,
-    email: 'demo@racing.com',
-    firstName: 'Demo',
-    lastName: 'User',
-    role: UserRole.MANAGER,
-    teamId: 1,
-    teamName: 'Racing Team Demo',
-    phoneNumber: '+1234567890',
-    licenseNumber: 'RT001',
-    licenseExpiry: '2025-12-31',
-    active: true
-  },
-  token: 'demo-token-auto',
-  isAuthenticated: true,
-  isLoading: false,
-  error: null
+const extractError = (err: unknown, fallback: string): string => {
+  if (err instanceof AxiosError) {
+    const data = err.response?.data as { message?: string } | undefined;
+    return data?.message || err.message || fallback;
+  }
+  return fallback;
 };
 
-const listeners: Array<() => void> = [];
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: null,
 
-const notifyListeners = () => {
-  listeners.forEach(listener => listener());
-};
+      login: async (email: string, password: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const payload: LoginPayload = { email, password };
+          const response = await authApi.login(payload);
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (err) {
+          const message = extractError(err, 'Error de autenticación');
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: message,
+          });
+          throw err;
+        }
+      },
 
-// Hook personalizado para el estado de autenticación
-export const useAuthStore = () => {
-  const [state, setState] = useState(authState);
+      register: async (payload: RegisterPayload) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authApi.register(payload);
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (err) {
+          const message = extractError(err, 'Error en el registro');
+          set({ isLoading: false, error: message });
+          throw err;
+        }
+      },
 
-  useEffect(() => {
-    const listener = () => setState({ ...authState });
-    listeners.push(listener);
-    
-    return () => {
-      const index = listeners.indexOf(listener);
-      if (index > -1) {
-        listeners.splice(index, 1);
-      }
-    };
-  }, []);
+      logout: () => {
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          error: null,
+        });
+      },
 
-  const login = async (email: string, password: string) => {
-    try {
-      authState.isLoading = true;
-      authState.error = null;
-      notifyListeners();
+      hydrate: async () => {
+        const { token } = get();
+        if (!token) {
+          set({ isLoading: false });
+          return;
+        }
+        set({ isLoading: true });
+        try {
+          const user = await authApi.me();
+          set({ user, isAuthenticated: true, isLoading: false });
+        } catch {
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      },
 
-      // Simulación de login
-      if (email === 'admin@racing.com' && password === 'admin123') {
-        authState.user = {
-          id: 1,
-          email: 'admin@racing.com',
-          firstName: 'Admin',
-          lastName: 'Racing',
-          role: UserRole.MANAGER,
-          teamId: 1,
-          teamName: 'Racing Team Demo',
-          phoneNumber: '+1234567890',
-          licenseNumber: 'RT001',
-          licenseExpiry: '2025-12-31',
-          active: true
-        };
-        authState.token = 'demo-token-123';
-        authState.isAuthenticated = true;
-      } else {
-        throw new Error('Credenciales incorrectas');
-      }
-
-      authState.isLoading = false;
-      notifyListeners();
-    } catch (error: any) {
-      authState.user = null;
-      authState.token = null;
-      authState.isAuthenticated = false;
-      authState.isLoading = false;
-      authState.error = error.message || 'Error de autenticación';
-      notifyListeners();
-      throw error;
+      clearError: () => set({ error: null }),
+    }),
+    {
+      name: 'rtm-auth',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
-  };
+  )
+);
 
-  const logout = () => {
-    authState.user = null;
-    authState.token = null;
-    authState.isAuthenticated = false;
-    authState.error = null;
-    notifyListeners();
-  };
-
-  const clearError = () => {
-    authState.error = null;
-    notifyListeners();
-  };
-
-  const setLoading = (loading: boolean) => {
-    authState.isLoading = loading;
-    notifyListeners();
-  };
-
-  const refreshUser = async () => {
-    // Simulación de refresh
-    return Promise.resolve();
-  };
-
-  return {
-    ...state,
-    login,
-    logout,
-    clearError,
-    setLoading,
-    refreshUser
-  };
-};
+registerUnauthorizedHandler(() => {
+  useAuthStore.getState().logout();
+});

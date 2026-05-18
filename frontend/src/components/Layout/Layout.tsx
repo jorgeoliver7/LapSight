@@ -19,7 +19,6 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import './Layout.css';
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,

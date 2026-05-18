@@ -1,23 +1,23 @@
-version: '3.8'
-
 services:
   # Base de datos PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: racing-team-postgres
     environment:
-      POSTGRES_DB: racing_team_db
-      POSTGRES_USER: racing_user
-      POSTGRES_PASSWORD: racing_pass
+      POSTGRES_DB: ${POSTGRES_DB:-racing_team_db}
+      POSTGRES_USER: ${POSTGRES_USER:-racing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-racing_pass}
     ports:
-      - "5432:5432"
+      # 5433 en el host para no chocar con Postgres locales del desarrollador.
+      # Dentro de la red de Docker sigue siendo 5432.
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - racing-team-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U racing_user -d racing_team_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-racing_user} -d ${POSTGRES_DB:-racing_team_db}"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,11 +30,17 @@ services:
     container_name: racing-team-backend
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/racing_team_db
-      SPRING_DATASOURCE_USERNAME: racing_user
-      SPRING_DATASOURCE_PASSWORD: racing_pass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-racing_team_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-racing_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-racing_pass}
+      JWT_SECRET: ${JWT_SECRET:-Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@racing.com}
+      APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD:-admin123}
     ports:
-      - "8080:8080"
+      # 8082 en el host para no chocar con otros servicios; dentro de la red Docker sigue siendo 8080
+      - "8082:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,23 +55,20 @@ services:
       retries: 3
       start_period: 60s
 
-  # Frontend React
+  # Frontend (Vite build servido por Nginx, con proxy /api → backend)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: racing-team-frontend
-    environment:
-      REACT_APP_API_URL: http://localhost:8080/api
     ports:
       - "3000:3000"
     depends_on:
       - backend
     networks:
       - racing-team-network
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
 
   # Adminer para gestión de BD (opcional, solo desarrollo)
   adminer:

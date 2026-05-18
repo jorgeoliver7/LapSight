@@ -1,24 +1,27 @@
-# Dockerfile simplificado para desarrollo
-FROM node:16-alpine
+# Stage 1: Build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY package*.json ./
+COPY package.json package-lock.json* ./
+RUN npm install
 
-# Instalar dependencias con configuración legacy
-RUN npm install --legacy-peer-deps
-
-# Copiar código fuente
 COPY . .
 
-# Exponer puerto
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
+
+RUN npm run build
+
+# Stage 2: Runtime (nginx sirve los estáticos + proxy a backend)
+FROM nginx:1.27-alpine
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 3000
 
-# Variables de entorno para deshabilitar ESLint
-ENV DISABLE_ESLINT_PLUGIN=true
-ENV TSC_COMPILE_ON_ERROR=true
-ENV GENERATE_SOURCEMAP=false
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q -O /dev/null http://localhost:3000/ || exit 1
 
-# Comando de desarrollo
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

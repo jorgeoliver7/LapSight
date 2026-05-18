@@ -223,6 +223,11 @@ Thumbs.db
 /frontend/build/
 /frontend/dist/
 
+# Vite + TS composite build artifacts
+/frontend/vite.config.d.ts
+/frontend/vite.config.js
+/frontend/*.tsbuildinfo
+
 # Spring Boot
 /backend/target/
 /backend/build/
