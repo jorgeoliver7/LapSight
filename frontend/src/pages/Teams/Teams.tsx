@@ -1,168 +1,287 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Grid,
-  Avatar,
-  Chip,
   Button,
-  IconButton
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Alert,
+  Snackbar,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Group as GroupIcon,
-  LocationOn as LocationIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon
-} from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { teamsApi, TeamRequest } from '../../api/teams';
+import { Team, VehicleCategory, UserRole } from '../../types';
+import { useAuthStore } from '../../store/authStore';
+
+const emptyForm: TeamRequest = {
+  name: '',
+  description: '',
+  logoUrl: '',
+  primaryCategory: VehicleCategory.CAR,
+  contactEmail: '',
+  contactPhone: '',
+  headquartersLocation: '',
+};
 
 const Teams: React.FC = () => {
-  // Datos de ejemplo
-  const teams = [
-    {
-      id: 1,
-      name: 'Racing Team España',
-      description: 'Equipo profesional de automovilismo con más de 10 años de experiencia',
-      primaryCategory: 'CAR',
-      contactEmail: 'info@racingteam.es',
-      contactPhone: '+34 600 123 456',
-      headquartersLocation: 'Madrid, España',
-      memberCount: 15,
-      vehicleCount: 8,
-      active: true,
-      logoUrl: null
-    }
-  ];
+  const { user } = useAuthStore();
+  const isManager = user?.role === UserRole.MANAGER;
 
-  const getCategoryColor = (category: string) => {
-    return category === 'CAR' ? 'primary' : 'secondary';
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<TeamRequest>(emptyForm);
+  const [snack, setSnack] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      const data = await teamsApi.list();
+      setTeams(data);
+      setError(null);
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Error cargando equipos');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getCategoryLabel = (category: string) => {
-    return category === 'CAR' ? 'Automóviles' : 'Motocicletas';
+  useEffect(() => {
+    load();
+  }, []);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (team: Team) => {
+    setEditingId(team.id);
+    setForm({
+      name: team.name,
+      description: team.description || '',
+      logoUrl: team.logoUrl || '',
+      primaryCategory: team.primaryCategory,
+      contactEmail: team.contactEmail || '',
+      contactPhone: team.contactPhone || '',
+      headquartersLocation: team.headquartersLocation || '',
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      if (editingId) {
+        await teamsApi.update(editingId, form);
+        setSnack({ msg: 'Equipo actualizado', severity: 'success' });
+      } else {
+        await teamsApi.create(form);
+        setSnack({ msg: 'Equipo creado', severity: 'success' });
+      }
+      setDialogOpen(false);
+      load();
+    } catch (e: any) {
+      setSnack({ msg: e?.response?.data?.message || 'Error al guardar', severity: 'error' });
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Desactivar este equipo?')) return;
+    try {
+      await teamsApi.remove(id);
+      setSnack({ msg: 'Equipo desactivado', severity: 'success' });
+      load();
+    } catch (e: any) {
+      setSnack({ msg: e?.response?.data?.message || 'Error al eliminar', severity: 'error' });
+    }
   };
 
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
             Equipos
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Gestiona la información de los equipos de racing
+            Gestiona los equipos de racing
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          size="large"
-        >
-          Nuevo Equipo
-        </Button>
+        {isManager && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+            Nuevo equipo
+          </Button>
+        )}
       </Box>
 
-      <Grid container spacing={3}>
-        {teams.map((team) => (
-          <Grid item xs={12} md={6} lg={4} key={team.id}>
-            <Card sx={{ height: '100%', position: 'relative' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" mb={2}>
-                  <Avatar
-                    sx={{
-                      width: 60,
-                      height: 60,
-                      bgcolor: 'primary.main',
-                      mr: 2
-                    }}
-                  >
-                    {team.logoUrl ? (
-                      <img src={team.logoUrl} alt={team.name} style={{ width: '100%', height: '100%' }} />
-                    ) : (
-                      <GroupIcon sx={{ fontSize: 30 }} />
-                    )}
-                  </Avatar>
-                  <Box flex={1}>
-                    <Typography variant="h6" component="h3" fontWeight="bold">
-                      {team.name}
-                    </Typography>
-                    <Chip
-                      label={getCategoryLabel(team.primaryCategory)}
-                      color={getCategoryColor(team.primaryCategory) as any}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Box>
-                  <IconButton size="small">
-                    <EditIcon />
-                  </IconButton>
-                </Box>
-
-                <Typography variant="body2" color="textSecondary" paragraph>
-                  {team.description}
-                </Typography>
-
-                <Box mb={2}>
-                  <Box display="flex" alignItems="center" mb={1}>
-                    <LocationIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      {team.headquartersLocation}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" mb={1}>
-                    <EmailIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      {team.contactEmail}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center">
-                    <PhoneIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      {team.contactPhone}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography variant="caption" color="textSecondary" display="block">
-                      Miembros: {team.memberCount}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary" display="block">
-                      Vehículos: {team.vehicleCount}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={team.active ? 'Activo' : 'Inactivo'}
-                    color={team.active ? 'success' : 'default'}
-                    size="small"
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {teams.length === 0 && (
-        <Card>
-          <CardContent sx={{ textAlign: 'center', py: 6 }}>
-            <GroupIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="textSecondary" gutterBottom>
-              No hay equipos registrados
-            </Typography>
-            <Typography variant="body2" color="textSecondary" paragraph>
-              Crea tu primer equipo para comenzar a gestionar tu organización de racing
-            </Typography>
-            <Button variant="contained" startIcon={<AddIcon />}>
-              Crear Primer Equipo
-            </Button>
-          </CardContent>
-        </Card>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
       )}
+
+      <Paper>
+        {loading ? (
+          <Box p={4} textAlign="center">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Categoría</TableCell>
+                  <TableCell>Ubicación</TableCell>
+                  <TableCell align="right">Miembros</TableCell>
+                  <TableCell align="right">Vehículos</TableCell>
+                  <TableCell>Estado</TableCell>
+                  {isManager && <TableCell align="right">Acciones</TableCell>}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {teams.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isManager ? 7 : 6} align="center" sx={{ py: 4 }}>
+                      <Typography color="textSecondary">No hay equipos todavía</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  teams.map((team) => (
+                    <TableRow key={team.id} hover>
+                      <TableCell>
+                        <Typography fontWeight={500}>{team.name}</Typography>
+                        {team.description && (
+                          <Typography variant="caption" color="textSecondary">
+                            {team.description}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={team.primaryCategory === VehicleCategory.CAR ? 'Coches' : 'Motos'}
+                          size="small"
+                          color={team.primaryCategory === VehicleCategory.CAR ? 'primary' : 'secondary'}
+                        />
+                      </TableCell>
+                      <TableCell>{team.headquartersLocation || '—'}</TableCell>
+                      <TableCell align="right">{team.membersCount}</TableCell>
+                      <TableCell align="right">{team.vehiclesCount}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={team.active ? 'Activo' : 'Inactivo'}
+                          size="small"
+                          color={team.active ? 'success' : 'default'}
+                        />
+                      </TableCell>
+                      {isManager && (
+                        <TableCell align="right">
+                          <IconButton size="small" onClick={() => openEdit(team)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleDelete(team.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Paper>
+
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingId ? 'Editar equipo' : 'Nuevo equipo'}</DialogTitle>
+        <DialogContent>
+          <Box display="flex" flexDirection="column" gap={2} pt={1}>
+            <TextField
+              label="Nombre"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Descripción"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={2}
+            />
+            <TextField
+              label="Categoría principal"
+              value={form.primaryCategory}
+              onChange={(e) => setForm({ ...form, primaryCategory: e.target.value as VehicleCategory })}
+              select
+              fullWidth
+            >
+              <MenuItem value={VehicleCategory.CAR}>Coches</MenuItem>
+              <MenuItem value={VehicleCategory.MOTORCYCLE}>Motos</MenuItem>
+            </TextField>
+            <TextField
+              label="Ubicación"
+              value={form.headquartersLocation}
+              onChange={(e) => setForm({ ...form, headquartersLocation: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Email de contacto"
+              type="email"
+              value={form.contactEmail}
+              onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Teléfono"
+              value={form.contactPhone}
+              onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="URL del logo"
+              value={form.logoUrl}
+              onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={handleSave} disabled={!form.name}>
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={!!snack}
+        autoHideDuration={3000}
+        onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        {snack ? <Alert severity={snack.severity}>{snack.msg}</Alert> : undefined}
+      </Snackbar>
     </Box>
   );
 };
