@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+app:
+  seed:
+    admin-email: admin@test.local
+    admin-password: test-password
+    team-name: Test Team
+    demo-data: false

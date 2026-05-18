@@ -88,3 +88,18 @@ class HeatmapResponse(BaseModel):
     sectors: List[str]  # ["S1", "S2", "S3"]
     gap_ms: List[List[Optional[int]]]  # gap_ms[sector_idx][lap_idx]
     best_ms_per_sector: List[Optional[int]]
+
+
+class ReportRequest(BaseModel):
+    """Petición de PDF: metadatos de sesión + lista de vueltas."""
+    session_name: Optional[str] = None
+    circuit: Optional[str] = None
+    session_date: Optional[str] = None
+    session_type: Optional[str] = None
+    track_condition: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    notes: Optional[str] = None
+    driver_name: Optional[str] = None
+    vehicle_name: Optional[str] = None
+    team_name: Optional[str] = None
+    laps: List[LapInput]

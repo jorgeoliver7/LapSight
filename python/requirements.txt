@@ -5,3 +5,5 @@ pandas==2.2.3
 numpy==2.2.1
 scipy==1.15.0
 scikit-learn==1.6.0
+matplotlib==3.10.0
+reportlab==4.2.5

@@ -61,6 +61,19 @@ public class PythonAnalyticsClient {
         return post("/analyze/heatmap", laps, HeatmapResponseDto.class);
     }
 
+    public byte[] generatePdf(Map<String, Object> reportPayload) {
+        try {
+            return client.post()
+                    .uri("/report/pdf")
+                    .body(reportPayload)
+                    .retrieve()
+                    .body(byte[].class);
+        } catch (RestClientException e) {
+            log.warn("Python PDF generation failed: {}", e.getMessage());
+            throw new RuntimeException("PDF report service unavailable: " + e.getMessage(), e);
+        }
+    }
+
     private <T> T post(String path, List<AnalyticsLapDto> laps, Class<T> responseType) {
         try {
             return client.post()

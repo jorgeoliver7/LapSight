@@ -24,6 +24,7 @@ public class DataInitializer implements CommandLineRunner {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DemoSeedService demoSeed;
     private final String adminEmail;
     private final String adminPassword;
     private final String demoTeamName;
@@ -31,12 +32,14 @@ public class DataInitializer implements CommandLineRunner {
     public DataInitializer(TeamRepository teamRepository,
                            UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
+                           DemoSeedService demoSeed,
                            @Value("${app.seed.admin-email:admin@racing.com}") String adminEmail,
                            @Value("${app.seed.admin-password:admin123}") String adminPassword,
                            @Value("${app.seed.team-name:Demo Racing Team}") String demoTeamName) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.demoSeed = demoSeed;
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
         this.demoTeamName = demoTeamName;
@@ -50,22 +53,24 @@ public class DataInitializer implements CommandLineRunner {
                 .findFirst()
                 .orElseGet(this::createDemoTeam);
 
-        if (userRepository.existsByEmail(adminEmail)) {
+        if (!userRepository.existsByEmail(adminEmail)) {
+            User admin = new User();
+            admin.setEmail(adminEmail);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setFirstName("Admin");
+            admin.setLastName("Racing");
+            admin.setRole(UserRole.MANAGER);
+            admin.setActive(true);
+            admin.setTeam(team);
+
+            userRepository.save(admin);
+            log.info("Usuario admin '{}' creado para el equipo '{}'", adminEmail, team.getName());
+        } else {
             log.info("Usuario admin '{}' ya existe — no se vuelve a crear", adminEmail);
-            return;
         }
 
-        User admin = new User();
-        admin.setEmail(adminEmail);
-        admin.setPassword(passwordEncoder.encode(adminPassword));
-        admin.setFirstName("Admin");
-        admin.setLastName("Racing");
-        admin.setRole(UserRole.MANAGER);
-        admin.setActive(true);
-        admin.setTeam(team);
-
-        userRepository.save(admin);
-        log.info("Usuario admin '{}' creado para el equipo '{}'", adminEmail, team.getName());
+        // Datos demo: pilotos, vehículos, sesiones con vueltas realistas
+        demoSeed.seedIfEmpty(team);
     }
 
     private Team createDemoTeam() {

@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI
+from fastapi.responses import Response
 
 from .analytics import (
     compute_degradation,
@@ -17,11 +18,13 @@ from .analytics import (
     detect_stints,
     laps_to_dataframe,
 )
+from .report import generate_pdf
 from .schemas import (
     AnomaliesResponse,
     DegradationResponse,
     HeatmapResponse,
     LapsPayload,
+    ReportRequest,
     StatsResponse,
     StintsResponse,
 )
@@ -72,3 +75,15 @@ def analyze_degradation(payload: LapsPayload) -> dict:
 def analyze_heatmap(payload: LapsPayload) -> dict:
     df = laps_to_dataframe(payload.laps)
     return compute_heatmap(df)
+
+
+@app.post("/report/pdf")
+def report_pdf(payload: ReportRequest) -> Response:
+    meta = payload.model_dump(exclude={"laps"})
+    pdf_bytes = generate_pdf(meta, payload.laps)
+    filename = f"session-{(payload.session_name or 'report').replace(' ', '-')}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

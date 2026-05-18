@@ -111,6 +111,35 @@ public class SessionController {
         return ResponseEntity.ok(pythonAnalytics.heatmap(getLapsForAdvancedAnalytics(id, current)));
     }
 
+    @GetMapping(value = "/{id}/report.pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> reportPdf(@PathVariable Long id,
+                                            @AuthenticationPrincipal User current) {
+        Session session = sessionRepository.findByIdAndTeamId(id, current.getTeam().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Sesión " + id + " no encontrada en el equipo"));
+
+        java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+        payload.put("session_name", session.getName());
+        payload.put("circuit", session.getCircuit());
+        payload.put("session_date", session.getSessionDate() != null ? session.getSessionDate().toString() : null);
+        payload.put("session_type", session.getSessionType() != null ? session.getSessionType().getDisplayName() : null);
+        payload.put("track_condition", session.getTrackCondition() != null ? session.getTrackCondition().getDisplayName() : null);
+        payload.put("duration_minutes", session.getDurationMinutes());
+        payload.put("notes", session.getNotes());
+        payload.put("driver_name", session.getDriver() != null ? session.getDriver().getFullName() : null);
+        payload.put("vehicle_name", session.getVehicle() != null ? session.getVehicle().getName() : null);
+        payload.put("team_name", session.getTeam() != null ? session.getTeam().getName() : null);
+        payload.put("laps", session.getLaps().stream().map(AnalyticsLapDto::fromEntity).toList());
+
+        byte[] pdf = pythonAnalytics.generatePdf(payload);
+        String safeName = session.getName().replaceAll("[^a-zA-Z0-9-]", "_");
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"report-" + safeName + ".pdf\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/pdf")
+                .body(pdf);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('MANAGER', 'ENGINEER', 'PILOT')")
     public ResponseEntity<SessionDto> upload(

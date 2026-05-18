@@ -61,6 +61,7 @@ import {
 import ManualLapsEditor from './ManualLapsEditor';
 import ComparisonView from './ComparisonView';
 import AdvancedAnalytics from './AdvancedAnalytics';
+import TrackMap from './TrackMap';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import {
@@ -381,7 +382,25 @@ const Analytics: React.FC = () => {
                 <ComparisonView a={analytics} b={compareAnalytics} />
               ) : (
                 <>
+                  <Box display="flex" justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      onClick={async () => {
+                        try {
+                          await sessionsApi.downloadReport(selectedId, analytics.sessionName);
+                        } catch (e: any) {
+                          setSnack({
+                            msg: e?.response?.data?.message || 'No se pudo generar el PDF',
+                            severity: 'error',
+                          });
+                        }
+                      }}
+                    >
+                      📄 Descargar informe PDF
+                    </Button>
+                  </Box>
                   <AnalyticsDetail analytics={analytics} />
+                  <TrackMap analytics={analytics} />
                   <AdvancedAnalytics sessionId={selectedId} base={analytics} />
                 </>
               )}

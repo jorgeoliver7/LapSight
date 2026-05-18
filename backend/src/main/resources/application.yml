@@ -63,6 +63,7 @@ app:
     admin-email: ${APP_SEED_ADMIN_EMAIL:admin@racing.com}
     admin-password: ${APP_SEED_ADMIN_PASSWORD:admin123}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
+    demo-data: ${APP_SEED_DEMO_DATA:true}
   analytics:
     python-url: ${PYTHON_ANALYTICS_URL:http://localhost:8000}
     timeout-ms: ${PYTHON_ANALYTICS_TIMEOUT_MS:10000}
