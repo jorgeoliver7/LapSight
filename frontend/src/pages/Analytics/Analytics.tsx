@@ -60,6 +60,7 @@ import {
 } from '../../api/sessions';
 import ManualLapsEditor from './ManualLapsEditor';
 import ComparisonView from './ComparisonView';
+import AdvancedAnalytics from './AdvancedAnalytics';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import {
@@ -379,7 +380,10 @@ const Analytics: React.FC = () => {
               {compareWithId != null && compareAnalytics ? (
                 <ComparisonView a={analytics} b={compareAnalytics} />
               ) : (
-                <AnalyticsDetail analytics={analytics} />
+                <>
+                  <AnalyticsDetail analytics={analytics} />
+                  <AdvancedAnalytics sessionId={selectedId} base={analytics} />
+                </>
               )}
             </Box>
           )}

@@ -230,6 +230,57 @@ export interface LapAnalytics {
   compound?: string;
 }
 
+// ─── Advanced analytics (Python microservice responses) ──────────────────────
+
+export interface StintCluster {
+  stintIndex: number;
+  lapNumbers: number[];
+  lapsCount: number;
+  meanMs: number;
+  bestMs: number;
+  degradationMsPerLap?: number;
+  dominantCompound?: string;
+}
+
+export interface StintsAnalysis {
+  method: string;
+  nStints: number;
+  stints: StintCluster[];
+  lapToStint: Record<string, number>;
+}
+
+export interface AnomalyResult {
+  lapNumber: number;
+  isAnomaly: boolean;
+  anomalyScore: number;
+}
+
+export interface AnomaliesAnalysis {
+  method: string;
+  anomalies: AnomalyResult[];
+  nAnomalies: number;
+}
+
+export interface DegradationModel {
+  degree: number;
+  coefficients: number[];
+  rSquared: number;
+  predictedAtLap: Record<string, number>;
+}
+
+export interface DegradationAnalysis {
+  linear: DegradationModel;
+  polynomial: DegradationModel;
+  chosen: 'linear' | 'polynomial';
+}
+
+export interface HeatmapAnalysis {
+  lapNumbers: number[];
+  sectors: string[];
+  gapMs: (number | null)[][];
+  bestMsPerSector: (number | null)[];
+}
+
 export interface SessionAnalytics {
   sessionId: number;
   sessionName: string;

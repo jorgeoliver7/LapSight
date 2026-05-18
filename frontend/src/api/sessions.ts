@@ -1,8 +1,12 @@
 import { apiClient } from './client';
 import type {
+  AnomaliesAnalysis,
+  DegradationAnalysis,
+  HeatmapAnalysis,
   Session,
   SessionAnalytics,
   SessionType,
+  StintsAnalysis,
   TireCompound,
   TrackCondition,
 } from '../types';
@@ -39,6 +43,14 @@ export const sessionsApi = {
   get: (id: number) => apiClient.get<Session>(`/sessions/${id}`).then((r) => r.data),
   analytics: (id: number) =>
     apiClient.get<SessionAnalytics>(`/sessions/${id}/analytics`).then((r) => r.data),
+  stints: (id: number) =>
+    apiClient.get<StintsAnalysis>(`/sessions/${id}/analytics/stints`).then((r) => r.data),
+  anomalies: (id: number) =>
+    apiClient.get<AnomaliesAnalysis>(`/sessions/${id}/analytics/anomalies`).then((r) => r.data),
+  degradationAdvanced: (id: number) =>
+    apiClient.get<DegradationAnalysis>(`/sessions/${id}/analytics/degradation`).then((r) => r.data),
+  heatmap: (id: number) =>
+    apiClient.get<HeatmapAnalysis>(`/sessions/${id}/analytics/heatmap`).then((r) => r.data),
   remove: (id: number) => apiClient.delete<void>(`/sessions/${id}`).then((r) => r.data),
   upload: (metadata: SessionMetadata, file: File) => {
     const form = new FormData();

@@ -5,9 +5,18 @@ import com.racingteam.dto.SessionAnalyticsDto;
 import com.racingteam.dto.SessionDto;
 import com.racingteam.dto.SessionManualRequest;
 import com.racingteam.dto.SessionRequest;
+import com.racingteam.dto.analytics.AnalyticsLapDto;
+import com.racingteam.dto.analytics.AnomaliesResponseDto;
+import com.racingteam.dto.analytics.DegradationResponseDto;
+import com.racingteam.dto.analytics.HeatmapResponseDto;
+import com.racingteam.dto.analytics.StintsResponseDto;
+import com.racingteam.model.Session;
 import com.racingteam.model.User;
+import com.racingteam.repository.SessionRepository;
+import com.racingteam.service.PythonAnalyticsClient;
 import com.racingteam.service.SessionAnalyticsService;
 import com.racingteam.service.SessionService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.springframework.http.HttpHeaders;
@@ -36,17 +45,30 @@ public class SessionController {
 
     private final SessionService sessionService;
     private final SessionAnalyticsService analyticsService;
+    private final PythonAnalyticsClient pythonAnalytics;
+    private final SessionRepository sessionRepository;
     private final ObjectMapper objectMapper;
     private final Validator validator;
 
     public SessionController(SessionService sessionService,
                              SessionAnalyticsService analyticsService,
+                             PythonAnalyticsClient pythonAnalytics,
+                             SessionRepository sessionRepository,
                              ObjectMapper objectMapper,
                              Validator validator) {
         this.sessionService = sessionService;
         this.analyticsService = analyticsService;
+        this.pythonAnalytics = pythonAnalytics;
+        this.sessionRepository = sessionRepository;
         this.objectMapper = objectMapper;
         this.validator = validator;
+    }
+
+    private List<AnalyticsLapDto> getLapsForAdvancedAnalytics(Long id, User user) {
+        Session session = sessionRepository.findByIdAndTeamId(id, user.getTeam().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Sesión " + id + " no encontrada en el equipo"));
+        return session.getLaps().stream().map(AnalyticsLapDto::fromEntity).toList();
     }
 
     @GetMapping
@@ -63,6 +85,30 @@ public class SessionController {
     public ResponseEntity<SessionAnalyticsDto> analytics(@PathVariable Long id,
                                                          @AuthenticationPrincipal User current) {
         return ResponseEntity.ok(analyticsService.compute(id, current.getTeam().getId()));
+    }
+
+    @GetMapping("/{id}/analytics/stints")
+    public ResponseEntity<StintsResponseDto> stints(@PathVariable Long id,
+                                                    @AuthenticationPrincipal User current) {
+        return ResponseEntity.ok(pythonAnalytics.stints(getLapsForAdvancedAnalytics(id, current)));
+    }
+
+    @GetMapping("/{id}/analytics/anomalies")
+    public ResponseEntity<AnomaliesResponseDto> anomalies(@PathVariable Long id,
+                                                          @AuthenticationPrincipal User current) {
+        return ResponseEntity.ok(pythonAnalytics.anomalies(getLapsForAdvancedAnalytics(id, current)));
+    }
+
+    @GetMapping("/{id}/analytics/degradation")
+    public ResponseEntity<DegradationResponseDto> degradationAdvanced(@PathVariable Long id,
+                                                                      @AuthenticationPrincipal User current) {
+        return ResponseEntity.ok(pythonAnalytics.degradation(getLapsForAdvancedAnalytics(id, current)));
+    }
+
+    @GetMapping("/{id}/analytics/heatmap")
+    public ResponseEntity<HeatmapResponseDto> heatmap(@PathVariable Long id,
+                                                      @AuthenticationPrincipal User current) {
+        return ResponseEntity.ok(pythonAnalytics.heatmap(getLapsForAdvancedAnalytics(id, current)));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

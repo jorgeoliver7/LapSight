@@ -22,6 +22,21 @@ services:
       timeout: 10s
       retries: 3
 
+  # Microservicio Python de analytics (FastAPI + pandas + sklearn)
+  python-analytics:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: racing-team-python-analytics
+    networks:
+      - racing-team-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   # Backend Spring Boot
   backend:
     build:
@@ -38,11 +53,14 @@ services:
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@racing.com}
       APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD:-admin123}
+      PYTHON_ANALYTICS_URL: ${PYTHON_ANALYTICS_URL:-http://python-analytics:8000}
     ports:
       # 8082 en el host para no chocar con otros servicios; dentro de la red Docker sigue siendo 8080
       - "8082:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      python-analytics:
         condition: service_healthy
     networks:
       - racing-team-network
