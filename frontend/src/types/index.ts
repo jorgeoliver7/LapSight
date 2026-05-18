@@ -162,6 +162,94 @@ export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
   [SessionType.TIME_ATTACK]: 'Time Attack',
 };
 
+// ─── Events ─────────────────────────────────────────────────────────────────
+
+export enum EventType {
+  RACE = 'RACE',
+  TEST = 'TEST',
+  PRACTICE = 'PRACTICE',
+  QUALIFYING = 'QUALIFYING',
+  TRAINING = 'TRAINING',
+  TRAVEL = 'TRAVEL',
+  MEETING = 'MEETING',
+  MAINTENANCE = 'MAINTENANCE',
+  PRESENTATION = 'PRESENTATION',
+  MEDIA = 'MEDIA',
+  SPONSOR_EVENT = 'SPONSOR_EVENT',
+  SHAKEDOWN = 'SHAKEDOWN',
+  TRACKDAY = 'TRACKDAY',
+  OTHER = 'OTHER',
+}
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  [EventType.RACE]: 'Carrera',
+  [EventType.TEST]: 'Test',
+  [EventType.PRACTICE]: 'Libres',
+  [EventType.QUALIFYING]: 'Clasificación',
+  [EventType.TRAINING]: 'Entrenamiento',
+  [EventType.TRAVEL]: 'Viaje',
+  [EventType.MEETING]: 'Reunión',
+  [EventType.MAINTENANCE]: 'Mantenimiento',
+  [EventType.PRESENTATION]: 'Presentación',
+  [EventType.MEDIA]: 'Medios',
+  [EventType.SPONSOR_EVENT]: 'Evento sponsor',
+  [EventType.SHAKEDOWN]: 'Shakedown',
+  [EventType.TRACKDAY]: 'Track day',
+  [EventType.OTHER]: 'Otro',
+};
+
+export enum EventStatus {
+  PLANNED = 'PLANNED',
+  CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  POSTPONED = 'POSTPONED',
+  WEATHER_DELAY = 'WEATHER_DELAY',
+  TECHNICAL_ISSUE = 'TECHNICAL_ISSUE',
+}
+
+export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
+  [EventStatus.PLANNED]: 'Planificado',
+  [EventStatus.CONFIRMED]: 'Confirmado',
+  [EventStatus.IN_PROGRESS]: 'En curso',
+  [EventStatus.COMPLETED]: 'Completado',
+  [EventStatus.CANCELLED]: 'Cancelado',
+  [EventStatus.POSTPONED]: 'Pospuesto',
+  [EventStatus.WEATHER_DELAY]: 'Retraso por clima',
+  [EventStatus.TECHNICAL_ISSUE]: 'Problema técnico',
+};
+
+export interface EventParticipant {
+  id: number;
+  fullName: string;
+  role?: string;
+}
+
+export interface EventVehicle {
+  id: number;
+  name: string;
+  vehicleType?: string;
+}
+
+export interface Event {
+  id: number;
+  name: string;
+  description?: string;
+  eventType: EventType;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  circuitName?: string;
+  status: EventStatus;
+  notes?: string;
+  budgetAllocated?: number;
+  actualCost?: number;
+  teamId: number;
+  participants: EventParticipant[];
+  vehicles: EventVehicle[];
+}
+
 export enum TrackCondition {
   DRY = 'DRY',
   WET = 'WET',
@@ -279,6 +367,17 @@ export interface HeatmapAnalysis {
   sectors: string[];
   gapMs: (number | null)[][];
   bestMsPerSector: (number | null)[];
+}
+
+export interface Insight {
+  severity: 'info' | 'success' | 'warning' | 'error';
+  icon: string;
+  title: string;
+  detail: string;
+}
+
+export interface InsightsAnalysis {
+  insights: Insight[];
 }
 
 export interface SessionAnalytics {

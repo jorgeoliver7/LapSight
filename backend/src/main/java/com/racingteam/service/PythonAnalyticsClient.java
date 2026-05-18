@@ -61,6 +61,11 @@ public class PythonAnalyticsClient {
         return post("/analyze/heatmap", laps, HeatmapResponseDto.class);
     }
 
+    public com.racingteam.dto.analytics.InsightsResponseDto insights(List<AnalyticsLapDto> laps) {
+        return post("/analyze/insights", laps,
+                com.racingteam.dto.analytics.InsightsResponseDto.class);
+    }
+
     public byte[] generatePdf(Map<String, Object> reportPayload) {
         try {
             return client.post()

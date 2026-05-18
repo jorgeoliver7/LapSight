@@ -3,39 +3,43 @@ import { Box, Card, CardContent, Typography, MenuItem, TextField, Chip } from '@
 import Plot from 'react-plotly.js';
 import { SessionAnalytics, LapAnalytics } from '../../types';
 import { formatLapTime } from '../../api/sessions';
+import { Circuit, findCircuit } from '../../data/circuits';
 
 interface Props {
   analytics: SessionAnalytics;
+  circuitName?: string | null;
 }
 
 const SECTOR_COLORS = {
-  good: '#1b5e20',    // verde oscuro: mejor que la mediana del sector
-  ok: '#f9a825',      // amarillo: cerca de la mediana
-  bad: '#c62828',     // rojo: peor que p75 del sector
+  good: '#1b5e20',
+  ok: '#f9a825',
+  bad: '#c62828',
   noData: '#9e9e9e',
 };
 
 /**
- * Genera un trazado sintético de circuito con 3 sectores.
- * Es una elipse irregular con varios "puntos de curva" para que parezca un circuito.
- * Los índices [0..33], [33..66], [66..100] son S1, S2, S3.
+ * Trazado sintético de fallback cuando el circuito no coincide con ninguno conocido.
  */
-function buildCircuitPath(): { x: number[]; y: number[] } {
-  const x: number[] = [];
-  const y: number[] = [];
+function buildSyntheticPath(): [number, number][] {
+  const path: [number, number][] = [];
   const N = 100;
   for (let i = 0; i <= N; i++) {
     const t = (i / N) * Math.PI * 2;
-    // Elipse base + perturbaciones para simular chicanas / horquillas
-    const rx = 4 + 0.6 * Math.sin(2 * t) + 0.3 * Math.cos(3 * t);
-    const ry = 3 + 0.5 * Math.cos(2 * t);
-    x.push(rx * Math.cos(t));
-    y.push(ry * Math.sin(t));
+    const rx = 40 + 6 * Math.sin(2 * t) + 3 * Math.cos(3 * t);
+    const ry = 30 + 5 * Math.cos(2 * t);
+    path.push([50 + rx * Math.cos(t), 50 + ry * Math.sin(t)]);
   }
-  return { x, y };
+  return path;
 }
 
-const TrackMap: React.FC<Props> = ({ analytics }) => {
+const SYNTHETIC: Circuit = {
+  name: 'Trazado genérico',
+  aliases: [],
+  path: buildSyntheticPath(),
+  sectorBoundaries: [0.33, 0.66],
+};
+
+const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
   const validLaps = analytics.perLap.filter((l) => l.valid);
   const [selectedLapNumber, setSelectedLapNumber] = useState<number>(
     analytics.bestLapNumber ?? validLaps[0]?.lapNumber ?? 1
@@ -43,8 +47,10 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
 
   const selectedLap = validLaps.find((l) => l.lapNumber === selectedLapNumber);
 
-  // Calcula percentiles de cada sector entre todas las vueltas válidas
-  // para clasificar el sector de la vuelta seleccionada como good/ok/bad.
+  const circuit = useMemo(() => findCircuit(circuitName) ?? SYNTHETIC, [circuitName]);
+  const isReal = circuit !== SYNTHETIC;
+
+  // Percentiles de cada sector entre todas las vueltas válidas
   const sectorPercentiles = useMemo(() => {
     const sec = (lap: LapAnalytics, n: 1 | 2 | 3) =>
       n === 1 ? lap.sector1Ms : n === 2 ? lap.sector2Ms : lap.sector3Ms;
@@ -73,39 +79,61 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
     return 'bad';
   };
 
-  const path = useMemo(buildCircuitPath, []);
+  const path = circuit.path;
+  const total = path.length;
+  const s1End = Math.max(1, Math.floor(total * circuit.sectorBoundaries[0]));
+  const s2End = Math.max(s1End + 1, Math.floor(total * circuit.sectorBoundaries[1]));
 
-  const sectorBoundaries = [33, 66];
-  const sectorRanges: Array<{ from: number; to: number; sector: 1 | 2 | 3 }> = [
-    { from: 0, to: sectorBoundaries[0], sector: 1 },
-    { from: sectorBoundaries[0], to: sectorBoundaries[1], sector: 2 },
-    { from: sectorBoundaries[1], to: path.x.length - 1, sector: 3 },
-  ];
-
-  const sectorTraces = sectorRanges.map((range) => {
-    const status = classifyForSelected(range.sector);
-    return {
-      x: path.x.slice(range.from, range.to + 1),
-      y: path.y.slice(range.from, range.to + 1),
+  const sectorTraces = [
+    {
+      x: path.slice(0, s1End + 1).map((p) => p[0]),
+      y: path.slice(0, s1End + 1).map((p) => p[1]),
       type: 'scatter' as const,
       mode: 'lines' as const,
-      name: `S${range.sector}`,
-      line: { color: SECTOR_COLORS[status], width: 8 },
+      name: 'S1',
+      line: { color: SECTOR_COLORS[classifyForSelected(1)], width: 7 },
       hoverinfo: 'name' as const,
-    };
-  });
+    },
+    {
+      x: path.slice(s1End, s2End + 1).map((p) => p[0]),
+      y: path.slice(s1End, s2End + 1).map((p) => p[1]),
+      type: 'scatter' as const,
+      mode: 'lines' as const,
+      name: 'S2',
+      line: { color: SECTOR_COLORS[classifyForSelected(2)], width: 7 },
+      hoverinfo: 'name' as const,
+    },
+    {
+      x: path.slice(s2End).map((p) => p[0]),
+      y: path.slice(s2End).map((p) => p[1]),
+      type: 'scatter' as const,
+      mode: 'lines' as const,
+      name: 'S3',
+      line: { color: SECTOR_COLORS[classifyForSelected(3)], width: 7 },
+      hoverinfo: 'name' as const,
+    },
+  ];
 
-  // Marca el inicio/línea de meta
   const startMarker = {
-    x: [path.x[0]],
-    y: [path.y[0]],
+    x: [path[0][0]],
+    y: [path[0][1]],
     type: 'scatter' as const,
     mode: 'markers+text' as const,
     name: 'Meta',
     text: ['🏁'],
     textposition: 'top center' as const,
-    marker: { color: '#000', size: 16, symbol: 'diamond' },
+    marker: { color: '#000', size: 18, symbol: 'diamond' },
     hoverinfo: 'text' as const,
+  };
+
+  const sectorMarkers = {
+    x: [path[s1End][0], path[s2End][0]],
+    y: [path[s1End][1], path[s2End][1]],
+    type: 'scatter' as const,
+    mode: 'markers' as const,
+    name: 'Cambio sector',
+    marker: { color: '#1976d2', size: 10, symbol: 'line-ns', line: { width: 3 } },
+    hoverinfo: 'name' as const,
   };
 
   const sectorLegendLabels: Record<1 | 2 | 3, string> = { 1: 'S1', 2: 'S2', 3: 'S3' };
@@ -116,11 +144,17 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
           <Box>
             <Typography variant="subtitle1" fontWeight="bold">
-              Track map · {analytics.sessionName}
+              Track map · {isReal ? circuit.name : 'Trazado genérico'}
+              {circuit.length_km && (
+                <Typography component="span" variant="caption" color="textSecondary" ml={1}>
+                  ({circuit.length_km} km)
+                </Typography>
+              )}
             </Typography>
             <Typography variant="caption" color="textSecondary">
-              Cada sector coloreado según el rendimiento de la vuelta seleccionada
-              (verde mejor que mediana · amarillo cerca · rojo peor que P75).
+              {isReal
+                ? `Trazado aproximado de ${circuit.name}. Sectores coloreados según rendimiento de la vuelta seleccionada (verde mejor que P50, amarillo cerca, rojo peor que P75).`
+                : 'Circuito no reconocido — usando trazado genérico. Sectores se colorean igual.'}
             </Typography>
           </Box>
           <TextField
@@ -129,7 +163,7 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
             label="Vuelta"
             value={selectedLapNumber}
             onChange={(e) => setSelectedLapNumber(Number(e.target.value))}
-            sx={{ minWidth: 200 }}
+            sx={{ minWidth: 220 }}
           >
             {validLaps.map((l) => (
               <MenuItem key={l.lapNumber} value={l.lapNumber}>
@@ -162,7 +196,7 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
         </Box>
 
         <Plot
-          data={[...sectorTraces, startMarker] as any}
+          data={[...sectorTraces, sectorMarkers, startMarker] as any}
           layout={{
             xaxis: { visible: false, scaleanchor: 'y', scaleratio: 1 },
             yaxis: { visible: false },
@@ -173,8 +207,8 @@ const TrackMap: React.FC<Props> = ({ analytics }) => {
             paper_bgcolor: '#fafafa',
           }}
           useResizeHandler
-          style={{ width: '100%', height: 320 }}
-          config={{ displayModeBar: false, staticPlot: false }}
+          style={{ width: '100%', height: 360 }}
+          config={{ displayModeBar: false }}
         />
       </CardContent>
     </Card>

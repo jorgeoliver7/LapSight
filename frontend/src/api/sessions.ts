@@ -3,6 +3,7 @@ import type {
   AnomaliesAnalysis,
   DegradationAnalysis,
   HeatmapAnalysis,
+  InsightsAnalysis,
   Session,
   SessionAnalytics,
   SessionType,
@@ -51,6 +52,8 @@ export const sessionsApi = {
     apiClient.get<DegradationAnalysis>(`/sessions/${id}/analytics/degradation`).then((r) => r.data),
   heatmap: (id: number) =>
     apiClient.get<HeatmapAnalysis>(`/sessions/${id}/analytics/heatmap`).then((r) => r.data),
+  insights: (id: number) =>
+    apiClient.get<InsightsAnalysis>(`/sessions/${id}/analytics/insights`).then((r) => r.data),
   downloadReport: async (id: number, sessionName: string) => {
     const response = await apiClient.get<Blob>(`/sessions/${id}/report.pdf`, {
       responseType: 'blob',

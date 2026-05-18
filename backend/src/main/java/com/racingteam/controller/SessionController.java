@@ -111,6 +111,13 @@ public class SessionController {
         return ResponseEntity.ok(pythonAnalytics.heatmap(getLapsForAdvancedAnalytics(id, current)));
     }
 
+    @GetMapping("/{id}/analytics/insights")
+    public ResponseEntity<com.racingteam.dto.analytics.InsightsResponseDto> insights(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User current) {
+        return ResponseEntity.ok(pythonAnalytics.insights(getLapsForAdvancedAnalytics(id, current)));
+    }
+
     @GetMapping(value = "/{id}/report.pdf", produces = "application/pdf")
     public ResponseEntity<byte[]> reportPdf(@PathVariable Long id,
                                             @AuthenticationPrincipal User current) {

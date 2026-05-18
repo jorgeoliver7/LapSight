@@ -62,6 +62,7 @@ import ManualLapsEditor from './ManualLapsEditor';
 import ComparisonView from './ComparisonView';
 import AdvancedAnalytics from './AdvancedAnalytics';
 import TrackMap from './TrackMap';
+import InsightsPanel from './InsightsPanel';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import {
@@ -399,8 +400,12 @@ const Analytics: React.FC = () => {
                       📄 Descargar informe PDF
                     </Button>
                   </Box>
+                  <InsightsPanel sessionId={selectedId} />
                   <AnalyticsDetail analytics={analytics} />
-                  <TrackMap analytics={analytics} />
+                  <TrackMap
+                    analytics={analytics}
+                    circuitName={sessions.find((s) => s.id === selectedId)?.circuit}
+                  />
                   <AdvancedAnalytics sessionId={selectedId} base={analytics} />
                 </>
               )}

@@ -82,6 +82,17 @@ class DegradationResponse(BaseModel):
     chosen: str  # "linear" o "polynomial" según mejor R²
 
 
+class Insight(BaseModel):
+    severity: str  # "info" | "success" | "warning" | "error"
+    icon: str      # emoji corto
+    title: str
+    detail: str
+
+
+class InsightsResponse(BaseModel):
+    insights: List[Insight]
+
+
 class HeatmapResponse(BaseModel):
     """Datos para heatmap sector × vuelta. Devuelve gap respecto al best sector."""
     lap_numbers: List[int]

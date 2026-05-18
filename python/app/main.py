@@ -18,11 +18,13 @@ from .analytics import (
     detect_stints,
     laps_to_dataframe,
 )
+from .insights import generate_insights
 from .report import generate_pdf
 from .schemas import (
     AnomaliesResponse,
     DegradationResponse,
     HeatmapResponse,
+    InsightsResponse,
     LapsPayload,
     ReportRequest,
     StatsResponse,
@@ -75,6 +77,12 @@ def analyze_degradation(payload: LapsPayload) -> dict:
 def analyze_heatmap(payload: LapsPayload) -> dict:
     df = laps_to_dataframe(payload.laps)
     return compute_heatmap(df)
+
+
+@app.post("/analyze/insights", response_model=InsightsResponse)
+def analyze_insights(payload: LapsPayload) -> dict:
+    df = laps_to_dataframe(payload.laps)
+    return {"insights": generate_insights(df)}
 
 
 @app.post("/report/pdf")
