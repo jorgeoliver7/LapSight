@@ -159,28 +159,7 @@ public class LapCsvParser {
     }
 
     private Long readTime(String[] cells, Integer index) {
-        String raw = readString(cells, index);
-        if (raw == null) return null;
-        try {
-            // Formato "h:mm:ss.mmm" o "m:ss.mmm"
-            if (raw.contains(":")) {
-                String[] parts = raw.split(":");
-                double seconds = 0;
-                for (int i = 0; i < parts.length; i++) {
-                    seconds = seconds * 60 + Double.parseDouble(parts[i].replace(',', '.'));
-                }
-                return Math.round(seconds * 1000);
-            }
-            double val = Double.parseDouble(raw.replace(',', '.'));
-            // Si val > 9999 se interpreta como ms directos (vuelta de >10 segundos no llega a >9999 en segundos sin decimal).
-            // Si tiene decimal o val <= 9999, se interpreta como segundos.
-            if (raw.contains(".") || val <= 9999) {
-                return Math.round(val * 1000);
-            }
-            return (long) val;
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return LapTimeFormatter.parseToMs(readString(cells, index));
     }
 
     private Integer readInt(String[] cells, Integer index) {

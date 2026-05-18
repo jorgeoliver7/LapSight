@@ -14,6 +14,7 @@ import Users from './pages/Users/Users';
 import Vehicles from './pages/Vehicles/Vehicles';
 import Events from './pages/Events/Events';
 import Calendar from './pages/Calendar/Calendar';
+import Analytics from './pages/Analytics/Analytics';
 import Login from './pages/Auth/Login';
 import { useAuthStore } from './store/authStore';
 
@@ -130,6 +131,7 @@ function App() {
                 <Route path="/vehicles" element={<Vehicles />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/calendar" element={<Calendar />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/login" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>

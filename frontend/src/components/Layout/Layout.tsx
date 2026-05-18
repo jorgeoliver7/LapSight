@@ -27,6 +27,7 @@ import {
   DirectionsCar as VehicleIcon,
   Event as EventIcon,
   CalendarToday as CalendarIcon,
+  ShowChart as AnalyticsIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
   Settings as SettingsIcon
@@ -79,6 +80,11 @@ const navigationItems: NavigationItem[] = [
     text: 'Calendario',
     icon: <CalendarIcon />,
     path: '/calendar'
+  },
+  {
+    text: 'Análisis',
+    icon: <AnalyticsIcon />,
+    path: '/analytics'
   }
 ];
 

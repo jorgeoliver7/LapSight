@@ -1,6 +1,8 @@
 package com.racingteam.service;
 
+import com.racingteam.dto.LapInputDto;
 import com.racingteam.dto.SessionDto;
+import com.racingteam.dto.SessionManualRequest;
 import com.racingteam.dto.SessionRequest;
 import com.racingteam.model.LapTime;
 import com.racingteam.model.Session;
@@ -53,6 +55,34 @@ public class SessionService {
     }
 
     @Transactional
+    public SessionDto createManual(Long teamId, SessionManualRequest request) {
+        List<LapTime> laps = new java.util.ArrayList<>(request.getLaps().size());
+        for (LapInputDto input : request.getLaps()) {
+            Long timeMs = LapTimeFormatter.parseToMs(input.getLapTime());
+            if (timeMs == null) {
+                throw new IllegalArgumentException(
+                        "Vuelta " + input.getLapNumber() + ": tiempo inválido '" + input.getLapTime() + "'");
+            }
+            LapTime lap = new LapTime(input.getLapNumber(), timeMs);
+            lap.setSector1Ms(LapTimeFormatter.parseToMs(input.getSector1()));
+            lap.setSector2Ms(LapTimeFormatter.parseToMs(input.getSector2()));
+            lap.setSector3Ms(LapTimeFormatter.parseToMs(input.getSector3()));
+            lap.setValid(input.getValid() == null ? Boolean.TRUE : input.getValid());
+            lap.setCompound(input.getCompound());
+            lap.setFuelKg(input.getFuelKg());
+            lap.setNotes(input.getNotes());
+            laps.add(lap);
+        }
+
+        Session session = buildSession(teamId,
+                request.getName(), request.getCircuit(), request.getSessionDate(),
+                request.getSessionType(), request.getTrackCondition(), request.getDurationMinutes(),
+                request.getNotes(), request.getVehicleId(), request.getDriverId());
+        laps.forEach(session::addLap);
+        return SessionDto.detail(sessionRepository.save(session));
+    }
+
+    @Transactional
     public SessionDto create(Long teamId, SessionRequest request, MultipartFile csv) {
         if (csv == null || csv.isEmpty()) {
             throw new IllegalArgumentException("El CSV de vueltas es obligatorio");
@@ -65,36 +95,47 @@ public class SessionService {
             throw new IllegalArgumentException("No se pudo leer el CSV: " + e.getMessage());
         }
 
+        Session session = buildSession(teamId,
+                request.getName(), request.getCircuit(), request.getSessionDate(),
+                request.getSessionType(), request.getTrackCondition(), request.getDurationMinutes(),
+                request.getNotes(), request.getVehicleId(), request.getDriverId());
+        laps.forEach(session::addLap);
+        Session saved = sessionRepository.save(session);
+        return SessionDto.detail(saved);
+    }
+
+    private Session buildSession(Long teamId,
+                                 String name, String circuit, java.time.LocalDateTime date,
+                                 com.racingteam.model.SessionType type,
+                                 com.racingteam.model.TrackCondition cond,
+                                 Integer durationMinutes, String notes,
+                                 Long vehicleId, Long driverId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + teamId));
 
         Session session = new Session();
-        session.setName(request.getName());
-        session.setCircuit(request.getCircuit());
-        session.setSessionDate(request.getSessionDate());
-        session.setSessionType(request.getSessionType());
-        session.setTrackCondition(request.getTrackCondition());
-        session.setDurationMinutes(request.getDurationMinutes());
-        session.setNotes(request.getNotes());
+        session.setName(name);
+        session.setCircuit(circuit);
+        session.setSessionDate(date);
+        session.setSessionType(type);
+        session.setTrackCondition(cond);
+        session.setDurationMinutes(durationMinutes);
+        session.setNotes(notes);
         session.setTeam(team);
 
-        if (request.getVehicleId() != null) {
-            Vehicle vehicle = vehicleRepository.findByIdAndTeamId(request.getVehicleId(), teamId)
+        if (vehicleId != null) {
+            Vehicle vehicle = vehicleRepository.findByIdAndTeamId(vehicleId, teamId)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Vehículo " + request.getVehicleId() + " no pertenece al equipo"));
+                            "Vehículo " + vehicleId + " no pertenece al equipo"));
             session.setVehicle(vehicle);
         }
-
-        if (request.getDriverId() != null) {
-            User driver = userRepository.findByIdAndTeamId(request.getDriverId(), teamId)
+        if (driverId != null) {
+            User driver = userRepository.findByIdAndTeamId(driverId, teamId)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Piloto " + request.getDriverId() + " no pertenece al equipo"));
+                            "Piloto " + driverId + " no pertenece al equipo"));
             session.setDriver(driver);
         }
-
-        laps.forEach(session::addLap);
-        Session saved = sessionRepository.save(session);
-        return SessionDto.detail(saved);
+        return session;
     }
 
     @Transactional

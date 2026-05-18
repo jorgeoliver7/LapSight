@@ -144,6 +144,113 @@ export interface Team {
   vehiclesCount: number;
 }
 
+export enum SessionType {
+  PRACTICE = 'PRACTICE',
+  QUALIFYING = 'QUALIFYING',
+  RACE = 'RACE',
+  TEST = 'TEST',
+  SHAKEDOWN = 'SHAKEDOWN',
+  TIME_ATTACK = 'TIME_ATTACK',
+}
+
+export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
+  [SessionType.PRACTICE]: 'Libres',
+  [SessionType.QUALIFYING]: 'Clasificación',
+  [SessionType.RACE]: 'Carrera',
+  [SessionType.TEST]: 'Test',
+  [SessionType.SHAKEDOWN]: 'Shakedown',
+  [SessionType.TIME_ATTACK]: 'Time Attack',
+};
+
+export enum TrackCondition {
+  DRY = 'DRY',
+  WET = 'WET',
+  MIXED = 'MIXED',
+  DAMP = 'DAMP',
+}
+
+export const TRACK_CONDITION_LABELS: Record<TrackCondition, string> = {
+  [TrackCondition.DRY]: 'Seco',
+  [TrackCondition.WET]: 'Lluvia',
+  [TrackCondition.MIXED]: 'Mixto',
+  [TrackCondition.DAMP]: 'Húmedo',
+};
+
+export enum TireCompound {
+  SOFT = 'SOFT',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD',
+  INTERMEDIATE = 'INTERMEDIATE',
+  WET = 'WET',
+  SLICK = 'SLICK',
+  RAIN = 'RAIN',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export interface LapTime {
+  id: number;
+  lapNumber: number;
+  lapTimeMs: number;
+  sector1Ms?: number;
+  sector2Ms?: number;
+  sector3Ms?: number;
+  valid: boolean;
+  compound?: TireCompound;
+  fuelKg?: number;
+  notes?: string;
+}
+
+export interface Session {
+  id: number;
+  name: string;
+  circuit?: string;
+  sessionDate: string;
+  sessionType: SessionType;
+  trackCondition?: TrackCondition;
+  durationMinutes?: number;
+  notes?: string;
+  teamId: number;
+  vehicleId?: number;
+  vehicleName?: string;
+  driverId?: number;
+  driverName?: string;
+  lapCount: number;
+  laps?: LapTime[];
+}
+
+export interface LapAnalytics {
+  lapNumber: number;
+  lapTimeMs: number;
+  sector1Ms?: number;
+  sector2Ms?: number;
+  sector3Ms?: number;
+  gapToBestMs?: number;
+  valid: boolean;
+  outlier: boolean;
+  compound?: string;
+}
+
+export interface SessionAnalytics {
+  sessionId: number;
+  sessionName: string;
+  totalLaps: number;
+  validLaps: number;
+  invalidLaps: number;
+  bestLapMs?: number;
+  bestLapNumber?: number;
+  worstLapMs?: number;
+  averageMs?: number;
+  medianMs?: number;
+  stdDevMs?: number;
+  bestSector1Ms?: number;
+  bestSector2Ms?: number;
+  bestSector3Ms?: number;
+  theoreticalBestLapMs?: number;
+  degradationMsPerLap?: number;
+  degradationR2?: number;
+  perLap: LapAnalytics[];
+}
+
 export interface Vehicle {
   id: number;
   name: string;
