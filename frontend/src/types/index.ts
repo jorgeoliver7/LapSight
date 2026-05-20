@@ -23,7 +23,7 @@ export enum VehicleStatus {
   TRANSPORT = 'TRANSPORT',
 }
 
-// Debe mantenerse sincronizado con com.racingteam.model.VehicleType
+// Debe mantenerse sincronizado con com.lapsight.model.VehicleType
 export enum VehicleType {
   // Coches - Fórmula
   FORMULA_1 = 'FORMULA_1',

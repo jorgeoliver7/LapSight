@@ -1,9 +1,9 @@
 # Configuración específica para Docker
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/racing_team_db
-    username: racing_user
-    password: racing_pass
+    url: jdbc:postgresql://postgres:5432/lapsight_db
+    username: lapsight_user
+    password: lapsight_pass
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
@@ -40,14 +40,14 @@ server:
 
 logging:
   level:
-    com.racingteam: INFO
+    com.lapsight: INFO
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: /app/logs/racing-team-management.log
+    name: /app/logs/lapsight.log
     max-size: 100MB
     max-history: 30
 
@@ -71,7 +71,7 @@ app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://frontend:3000}
   seed:
-    admin-email: ${APP_SEED_ADMIN_EMAIL:admin@racing.com}
+    admin-email: ${APP_SEED_ADMIN_EMAIL:admin@lapsight.app}
     admin-password: ${APP_SEED_ADMIN_PASSWORD:admin123}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
     demo-data: ${APP_SEED_DEMO_DATA:true}

@@ -1,5 +1,5 @@
 -- Migración inicial: Crear tablas principales
--- Racing Team Management System
+-- LapSight
 
 -- Tabla de equipos
 CREATE TABLE teams (

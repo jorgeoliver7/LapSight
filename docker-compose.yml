@@ -2,11 +2,11 @@ services:
   # Base de datos PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: racing-team-postgres
+    container_name: lapsight-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-racing_team_db}
-      POSTGRES_USER: ${POSTGRES_USER:-racing_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-racing_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-lapsight_db}
+      POSTGRES_USER: ${POSTGRES_USER:-lapsight_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lapsight_pass}
     ports:
       # 5433 en el host para no chocar con Postgres locales del desarrollador.
       # Dentro de la red de Docker sigue siendo 5432.
@@ -15,9 +15,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - racing-team-network
+      - lapsight-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-racing_user} -d ${POSTGRES_DB:-racing_team_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lapsight_user} -d ${POSTGRES_DB:-lapsight_db}"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -27,9 +27,9 @@ services:
     build:
       context: ./python
       dockerfile: Dockerfile
-    container_name: racing-team-python-analytics
+    container_name: lapsight-python-analytics
     networks:
-      - racing-team-network
+      - lapsight-network
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
       interval: 30s
@@ -42,16 +42,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: racing-team-backend
+    container_name: lapsight-backend
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-racing_team_db}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-racing_user}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-racing_pass}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-lapsight_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-lapsight_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-lapsight_pass}
       JWT_SECRET: ${JWT_SECRET:-Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
-      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@racing.com}
+      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@lapsight.app}
       APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD:-admin123}
       PYTHON_ANALYTICS_URL: ${PYTHON_ANALYTICS_URL:-http://python-analytics:8000}
     ports:
@@ -63,7 +63,7 @@ services:
       python-analytics:
         condition: service_healthy
     networks:
-      - racing-team-network
+      - lapsight-network
     volumes:
       - ./backend/logs:/app/logs
     healthcheck:
@@ -80,22 +80,22 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
-    container_name: racing-team-frontend
+    container_name: lapsight-frontend
     ports:
       - "3000:3000"
     depends_on:
       - backend
     networks:
-      - racing-team-network
+      - lapsight-network
 
   # Adminer para gestión de BD (opcional, solo desarrollo)
   adminer:
     image: adminer:4.8.1
-    container_name: racing-team-adminer
+    container_name: lapsight-adminer
     ports:
       - "8081:8080"
     networks:
-      - racing-team-network
+      - lapsight-network
     profiles:
       - dev
 
@@ -104,7 +104,7 @@ volumes:
     driver: local
 
 networks:
-  racing-team-network:
+  lapsight-network:
     driver: bridge
 
 # Configuración para diferentes entornos

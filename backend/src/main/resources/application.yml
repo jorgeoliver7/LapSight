@@ -3,9 +3,9 @@ spring:
     name: lapsight
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/racing_team_db}
-    username: ${SPRING_DATASOURCE_USERNAME:racing_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:racing_pass}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/lapsight_db}
+    username: ${SPRING_DATASOURCE_USERNAME:lapsight_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:lapsight_pass}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -49,7 +49,7 @@ management:
 
 logging:
   level:
-    com.racingteam: DEBUG
+    com.lapsight: DEBUG
     org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
@@ -60,7 +60,7 @@ app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
   seed:
-    admin-email: ${APP_SEED_ADMIN_EMAIL:admin@racing.com}
+    admin-email: ${APP_SEED_ADMIN_EMAIL:admin@lapsight.app}
     admin-password: ${APP_SEED_ADMIN_PASSWORD:admin123}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
     demo-data: ${APP_SEED_DEMO_DATA:true}

@@ -86,7 +86,7 @@ sesiones, pilotos y circuitos con tests estadísticos formales.
 1. **Clonar el repositorio**
    ```bash
    git clone <repository-url>
-   cd racing-team-management
+   cd lapsight
    ```
 
 2. **Ejecutar con Docker Compose**
@@ -105,10 +105,10 @@ sesiones, pilotos y circuitos con tests estadísticos formales.
 
 1. **Configurar base de datos PostgreSQL**
    ```bash
-   docker run --name postgres-racing \
-     -e POSTGRES_DB=racing_team \
-     -e POSTGRES_USER=racing_user \
-     -e POSTGRES_PASSWORD=racing_password \
+   docker run --name lapsight-postgres \
+     -e POSTGRES_DB=lapsight_db \
+     -e POSTGRES_USER=lapsight_user \
+     -e POSTGRES_PASSWORD=lapsight_pass \
      -p 5432:5432 -d postgres:15
    ```
 
@@ -134,10 +134,10 @@ sesiones, pilotos y circuitos con tests estadísticos formales.
 ## 📁 Estructura del Proyecto
 
 ```
-racing-team-management/
+lapsight/
 ├── backend/                    # Aplicación Spring Boot
 │   ├── src/main/java/
-│   │   └── com/racingteam/
+│   │   └── com/lapsight/
 │   │       ├── config/         # Configuraciones
 │   │       ├── controller/     # Controladores REST
 │   │       ├── entity/         # Entidades JPA
@@ -171,9 +171,9 @@ racing-team-management/
 #### Backend
 ```env
 SPRING_PROFILES_ACTIVE=docker
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/racing_team
-SPRING_DATASOURCE_USERNAME=racing_user
-SPRING_DATASOURCE_PASSWORD=racing_password
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lapsight_db
+SPRING_DATASOURCE_USERNAME=lapsight_user
+SPRING_DATASOURCE_PASSWORD=lapsight_pass
 JWT_SECRET=your-jwt-secret-key
 ```
 
@@ -308,14 +308,14 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ---
 
-**¿Necesitas ayuda?** Abre un [issue](https://github.com/tuusuario/racing-team-management/issues) o contacta al equipo de desarrollo.
+**¿Necesitas ayuda?** Abre un [issue](https://github.com/jorgeoliver7/LapSight/issues) o contacta al equipo de desarrollo.
 
 ## Instalación rápida
 
 ```bash
 # Clonar y arrancar con Docker
 git clone <repo>
-cd racing-team-management
+cd lapsight
 docker-compose up -d
 
 # La app estará en http://localhost:3000
