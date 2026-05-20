@@ -4,6 +4,7 @@ import com.racingteam.model.Session;
 import com.racingteam.model.SessionType;
 import com.racingteam.model.TrackCondition;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +18,12 @@ public class SessionDto {
     private TrackCondition trackCondition;
     private Integer durationMinutes;
     private String notes;
+
+    private BigDecimal trackTempC;
+    private BigDecimal ambientTempC;
+    private Integer humidityPct;
+    private BigDecimal windKph;
+    private String setupNotes;
 
     private Long teamId;
     private Long vehicleId;
@@ -50,6 +57,11 @@ public class SessionDto {
         dto.trackCondition = s.getTrackCondition();
         dto.durationMinutes = s.getDurationMinutes();
         dto.notes = s.getNotes();
+        dto.trackTempC = s.getTrackTempC();
+        dto.ambientTempC = s.getAmbientTempC();
+        dto.humidityPct = s.getHumidityPct();
+        dto.windKph = s.getWindKph();
+        dto.setupNotes = s.getSetupNotes();
         if (s.getTeam() != null) dto.teamId = s.getTeam().getId();
         if (s.getVehicle() != null) {
             dto.vehicleId = s.getVehicle().getId();
@@ -92,4 +104,14 @@ public class SessionDto {
     public void setLapCount(Integer lapCount) { this.lapCount = lapCount; }
     public List<LapTimeDto> getLaps() { return laps; }
     public void setLaps(List<LapTimeDto> laps) { this.laps = laps; }
+    public BigDecimal getTrackTempC() { return trackTempC; }
+    public void setTrackTempC(BigDecimal trackTempC) { this.trackTempC = trackTempC; }
+    public BigDecimal getAmbientTempC() { return ambientTempC; }
+    public void setAmbientTempC(BigDecimal ambientTempC) { this.ambientTempC = ambientTempC; }
+    public Integer getHumidityPct() { return humidityPct; }
+    public void setHumidityPct(Integer humidityPct) { this.humidityPct = humidityPct; }
+    public BigDecimal getWindKph() { return windKph; }
+    public void setWindKph(BigDecimal windKph) { this.windKph = windKph; }
+    public String getSetupNotes() { return setupNotes; }
+    public void setSetupNotes(String setupNotes) { this.setupNotes = setupNotes; }
 }

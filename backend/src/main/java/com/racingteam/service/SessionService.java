@@ -78,6 +78,11 @@ public class SessionService {
                 request.getName(), request.getCircuit(), request.getSessionDate(),
                 request.getSessionType(), request.getTrackCondition(), request.getDurationMinutes(),
                 request.getNotes(), request.getVehicleId(), request.getDriverId());
+        session.setTrackTempC(request.getTrackTempC());
+        session.setAmbientTempC(request.getAmbientTempC());
+        session.setHumidityPct(request.getHumidityPct());
+        session.setWindKph(request.getWindKph());
+        session.setSetupNotes(request.getSetupNotes());
         laps.forEach(session::addLap);
         return SessionDto.detail(sessionRepository.save(session));
     }
@@ -99,6 +104,11 @@ public class SessionService {
                 request.getName(), request.getCircuit(), request.getSessionDate(),
                 request.getSessionType(), request.getTrackCondition(), request.getDurationMinutes(),
                 request.getNotes(), request.getVehicleId(), request.getDriverId());
+        session.setTrackTempC(request.getTrackTempC());
+        session.setAmbientTempC(request.getAmbientTempC());
+        session.setHumidityPct(request.getHumidityPct());
+        session.setWindKph(request.getWindKph());
+        session.setSetupNotes(request.getSetupNotes());
         laps.forEach(session::addLap);
         Session saved = sessionRepository.save(session);
         return SessionDto.detail(saved);

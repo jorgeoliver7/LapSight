@@ -20,6 +20,11 @@ export interface SessionMetadata {
   trackCondition?: TrackCondition;
   durationMinutes?: number;
   notes?: string;
+  trackTempC?: number;
+  ambientTempC?: number;
+  humidityPct?: number;
+  windKph?: number;
+  setupNotes?: string;
   vehicleId?: number;
   driverId?: number;
 }

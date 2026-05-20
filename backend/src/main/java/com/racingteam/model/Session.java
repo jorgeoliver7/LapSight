@@ -1,6 +1,8 @@
 package com.racingteam.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +51,23 @@ public class Session {
 
     @Column(name = "notes", length = 1000)
     private String notes;
+
+    @Column(name = "track_temp_c", precision = 4, scale = 1)
+    private BigDecimal trackTempC;
+
+    @Column(name = "ambient_temp_c", precision = 4, scale = 1)
+    private BigDecimal ambientTempC;
+
+    @Min(0)
+    @Max(100)
+    @Column(name = "humidity_pct")
+    private Integer humidityPct;
+
+    @Column(name = "wind_kph", precision = 5, scale = 1)
+    private BigDecimal windKph;
+
+    @Column(name = "setup_notes", columnDefinition = "TEXT")
+    private String setupNotes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
@@ -108,4 +128,14 @@ public class Session {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public BigDecimal getTrackTempC() { return trackTempC; }
+    public void setTrackTempC(BigDecimal trackTempC) { this.trackTempC = trackTempC; }
+    public BigDecimal getAmbientTempC() { return ambientTempC; }
+    public void setAmbientTempC(BigDecimal ambientTempC) { this.ambientTempC = ambientTempC; }
+    public Integer getHumidityPct() { return humidityPct; }
+    public void setHumidityPct(Integer humidityPct) { this.humidityPct = humidityPct; }
+    public BigDecimal getWindKph() { return windKph; }
+    public void setWindKph(BigDecimal windKph) { this.windKph = windKph; }
+    public String getSetupNotes() { return setupNotes; }
+    public void setSetupNotes(String setupNotes) { this.setupNotes = setupNotes; }
 }

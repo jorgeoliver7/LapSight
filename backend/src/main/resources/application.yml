@@ -1,6 +1,6 @@
 spring:
   application:
-    name: racing-team-management
+    name: lapsight
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/racing_team_db}

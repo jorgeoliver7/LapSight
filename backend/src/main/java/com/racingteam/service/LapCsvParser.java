@@ -49,42 +49,55 @@ public class LapCsvParser {
 
     private static final Logger log = LoggerFactory.getLogger(LapCsvParser.class);
 
-    private enum CsvFormat { GENERIC, IRACING, MYLAPS, AIM, MOTEC, RACECHRONO, APEX_PRO, HARRYS }
+    private enum CsvFormat { GENERIC, IRACING, MYLAPS, AIM, MOTEC, RACECHRONO, APEX_PRO, HARRYS, VBOX, RACE_TECHNOLOGY }
 
     private static final Map<String, String> ALIASES = new HashMap<>();
     static {
         // Lap number
         for (String s : new String[]{
                 "lap", "lap_number", "lapnumber", "vuelta", "n", "lap #", "lap#",
-                "lap nr", "lap no", "lap no.", "#", "position"
+                "lap nr", "lap no", "lap no.", "#", "position",
+                "lap count", "lap index", "circuito vuelta"
         }) ALIASES.put(s, "lap");
 
         // Lap time
         for (String s : new String[]{
                 "time", "lap_time", "lap time", "laptime", "tiempo", "best time", "lap time(s)",
                 "lap time [s]", "lap time (s)", "laptime [s]", "best lap time",
-                "total time", "current time"
+                "total time", "current time",
+                // VBox / Circuit Tools
+                "lap_time_s", "elapsed time", "elapsed_time",
+                // Race Technology
+                "laptime_total", "race time"
         }) ALIASES.put(s, "time");
 
         // Sector 1
         for (String s : new String[]{
                 "s1", "sector1", "sector_1", "sector 1", "best split 1", "split 1",
                 "sect.1", "sect. 1", "sect 1", "sector1 time", "sector 1 [s]", "s1 [s]",
-                "best sector 1", "best s1"
+                "best sector 1", "best s1",
+                // VBox / Circuit Tools
+                "split1", "split_1", "split1_time", "split 1 time",
+                // Race Technology
+                "split1_total", "split a"
         }) ALIASES.put(s, "s1");
 
         // Sector 2
         for (String s : new String[]{
                 "s2", "sector2", "sector_2", "sector 2", "best split 2", "split 2",
                 "sect.2", "sect. 2", "sect 2", "sector2 time", "sector 2 [s]", "s2 [s]",
-                "best sector 2", "best s2"
+                "best sector 2", "best s2",
+                "split2", "split_2", "split2_time", "split 2 time",
+                "split2_total", "split b"
         }) ALIASES.put(s, "s2");
 
         // Sector 3
         for (String s : new String[]{
                 "s3", "sector3", "sector_3", "sector 3", "best split 3", "split 3",
                 "sect.3", "sect. 3", "sect 3", "sector3 time", "sector 3 [s]", "s3 [s]",
-                "best sector 3", "best s3"
+                "best sector 3", "best s3",
+                "split3", "split_3", "split3_time", "split 3 time",
+                "split3_total", "split c"
         }) ALIASES.put(s, "s3");
 
         for (String s : new String[]{"valid", "validez", "ok", "valid lap"}) ALIASES.put(s, "valid");
@@ -106,6 +119,9 @@ public class LapCsvParser {
         if (lower.contains("avg speed") || lower.contains("racechrono")) return CsvFormat.RACECHRONO;
         if (lower.contains("best sector 1") && lower.contains("apex")) return CsvFormat.APEX_PRO;
         if (lower.contains("harry") || lower.contains("hlt")) return CsvFormat.HARRYS;
+        if (lower.contains("vbox") || lower.contains("racelogic") || lower.contains("circuit tools")) return CsvFormat.VBOX;
+        if (lower.contains("race technology") || (lower.contains("dl1") && lower.contains("lap"))
+                || lower.contains("dl2") || lower.contains("dl3")) return CsvFormat.RACE_TECHNOLOGY;
         return CsvFormat.GENERIC;
     }
 

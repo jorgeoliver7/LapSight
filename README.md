@@ -1,21 +1,34 @@
-# Racing Team Management System 🏁
+# LapSight 🏁
 
-Sistema integral de gestión para equipos de racing (automóviles y motocicletas) que permite administrar vehículos, miembros del equipo, eventos, mantenimiento y más.
+> **See every lap.**
 
-## ✨ Características Principales
+Plataforma de **análisis de telemetría y estadística** para equipos de motorsport.
+Importa datos de las herramientas que ya usas (AiM, MoTeC, RaceChrono, iRacing,
+MyLaps, VBox, RaceLogic, Race Technology) y los analiza de forma cruzada entre
+sesiones, pilotos y circuitos con tests estadísticos formales.
 
-- **Gestión de Equipos**: Administración completa de equipos de racing
-- **Gestión de Vehículos**: Control de inventario y estado de vehículos
-- **Gestión de Usuarios**: Manejo de miembros del equipo con roles específicos
-- **Calendario de Eventos**: Planificación y seguimiento de carreras y eventos
-- **Mantenimiento**: Registro y seguimiento de mantenimiento preventivo y correctivo
-- **Dashboard**: Visualización de métricas y estadísticas importantes
-- **Autenticación**: Sistema seguro de login con roles de usuario
-- **Responsive Design**: Interfaz adaptable a dispositivos móviles
-- **Inventario de piezas**: Control con QR, vida útil, ubicaciones
-- **Viajes y logística**: Itinerarios, alojamientos, gastos
-- **Sponsors**: Contratos, entregables, evidencias
-- **Finanzas básicas**: Presupuestos, gastos, exportación
+## ✨ Lo que hace bien
+
+### Análisis de telemetría (core)
+- **Importadores multi-fuente**: AiM, MoTeC, RaceChrono, iRacing, MyLaps, VBox /
+  Circuit Tools, Race Technology DL2/DL3, Apex Pro, Harry's LapTimer y CSV genérico
+- **Métricas por sesión**: mejor vuelta, vuelta teórica, gap por sector,
+  degradación lineal (R²), outliers automáticos
+- **Consistencia formal**: coeficiente de variación, IQR, hot-lap window,
+  pace-windows (1/2/5% del best), sector más variable, consistency score 0-100
+- **Detección de stints**: clustering automático por compound o por pace (KMeans 1D)
+- **Comparativa multi-piloto / multi-sesión**: hasta 4 sesiones lado a lado
+- **Anomalías**: Isolation Forest sobre tiempos por vuelta
+- **Track maps reales**: 38 circuitos con coordenadas GPS reales (F1 + MotoGP +
+  variantes) y sectores coloreados por rendimiento
+- **Insights automáticos**: explicaciones en lenguaje natural sobre cada sesión
+- **Reports PDF**: descarga de informe completo por sesión
+
+### Contexto operativo (necesario para el análisis)
+- Equipos, pilotos, vehículos y eventos (CRUDs ligeros)
+- Calendario de eventos
+- Galería de circuitos con récords personales, notas técnicas y comparador
+- Autenticación JWT con roles
 
 ## Categorías de vehículos soportadas
 
@@ -309,13 +322,42 @@ docker-compose up -d
 # API en http://localhost:8080
 ```
 
-## Roadmap MVP (4-6 semanas)
+## Roadmap
 
-1. **Semana 1**: Auth, equipos, calendario básico
-2. **Semana 2**: Personas, inventario, QR
-3. **Semana 3**: Vehículos, mantenimientos
-4. **Semana 4**: Viajes, gastos, exportación
-5. **Semana 5-6**: Sponsors, integración calendarios
+El foco de la app es el **análisis de telemetría**. Los siguientes puntos están
+priorizados sobre el resto:
+
+### Hecho
+- Importadores AiM, MoTeC, RaceChrono, iRacing, MyLaps, VBox, Race Technology,
+  Apex Pro, Harry's LapTimer
+- Stint detection por compound y por pace (KMeans 1D)
+- Degradación lineal + polinómica con R²
+- Anomalías por Isolation Forest
+- Insights automáticos por sesión
+- Consistencia (CV, IQR, hot-lap window, pace-windows, sector más variable)
+- Comparativa multi-sesión hasta 4 vías
+- Track maps GPS reales (38 circuitos + variantes)
+- Galería de circuitos con récords personales y notas técnicas
+- Reports PDF por sesión
+
+### Próximos pasos prioritarios
+- **Predicción de tiempos** condicionada por circuito + condiciones + compound
+- **Degradación por stint individual** (no sólo lineal global)
+- **Comparativa de compounds** (delta esperado Soft vs Medium en condiciones similares)
+- **Heatmap de telemetría posicional** (cuando los importadores tengan GPS denso)
+- **Más importadores nativos**: AiM SmartyCam .xrk, MoTeC .ld
+
+### Fuera de scope (postergado indefinidamente)
+Estas funcionalidades aparecieron en versiones tempranas del roadmap pero no
+encajan con el foco actual. Cualquier equipo las cubre mejor con herramientas
+generalistas (Excel, Notion, Airtable):
+
+- ~~Inventario de piezas con QR~~
+- ~~Viajes y logística~~
+- ~~Sponsors y contratos~~
+- ~~Finanzas / presupuestos detallados~~ (sólo budget agregado por evento)
+
+Si necesitas alguna de estas, hay productos especializados que las hacen mejor.
 
 ## Licencia
 

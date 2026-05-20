@@ -19,9 +19,12 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Racing Team Management API")
+                        .title("LapSight API")
                         .description("""
-                                API REST de gestión de equipos de motorsport y analytics de tiempos por vuelta.
+                                **LapSight — See every lap.**
+
+                                API REST de análisis de telemetría y estadística de tiempos por vuelta
+                                para equipos de motorsport.
 
                                 **Arquitectura**: Spring Boot 3.2 (este servicio) + microservicio Python FastAPI
                                 con pandas/scipy/sklearn para análisis avanzado (stints KMeans, anomalías

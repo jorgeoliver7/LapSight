@@ -1,7 +1,7 @@
 {
-  "name": "racing-team-management-frontend",
+  "name": "lapsight-frontend",
   "version": "1.0.0",
-  "description": "Frontend para gestión de equipos de motorsport",
+  "description": "LapSight — See every lap. Frontend.",
   "private": true,
   "type": "module",
   "scripts": {

@@ -297,6 +297,11 @@ export interface Session {
   trackCondition?: TrackCondition;
   durationMinutes?: number;
   notes?: string;
+  trackTempC?: number;
+  ambientTempC?: number;
+  humidityPct?: number;
+  windKph?: number;
+  setupNotes?: string;
   teamId: number;
   vehicleId?: number;
   vehicleName?: string;
