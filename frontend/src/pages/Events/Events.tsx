@@ -42,6 +42,8 @@ import {
   Vehicle,
 } from '../../types';
 import { useAuthStore } from '../../store/authStore';
+import CircuitSelector from '../../components/CircuitSelector/CircuitSelector';
+import { PageHeader } from '../../components/apex';
 
 interface FormState extends EventRequest {}
 
@@ -168,22 +170,19 @@ const Events: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
-          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-            Eventos
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Carreras, tests, libres y reuniones del equipo
-          </Typography>
-        </Box>
-        {canEdit && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Nuevo evento
-          </Button>
-        )}
-      </Box>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <PageHeader
+        eyebrow="OPERATIVO · EVENTOS"
+        title="Eventos"
+        subtitle="Carreras, tests, libres y reuniones del equipo"
+        actions={
+          canEdit && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+              Nuevo evento
+            </Button>
+          )
+        }
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -335,10 +334,9 @@ const Events: React.FC = () => {
                 onChange={(e) => setForm({ ...form, endDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
               />
-              <TextField
-                label="Circuito"
-                value={form.circuitName}
-                onChange={(e) => setForm({ ...form, circuitName: e.target.value })}
+              <CircuitSelector
+                value={form.circuitName || ''}
+                onChange={(v) => setForm({ ...form, circuitName: v })}
               />
               <TextField
                 label="Ubicación"

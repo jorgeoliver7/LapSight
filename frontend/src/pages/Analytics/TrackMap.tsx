@@ -1,25 +1,25 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Card, CardContent, Typography, MenuItem, TextField, Chip } from '@mui/material';
+import { MenuItem, TextField } from '@mui/material';
 import Plot from 'react-plotly.js';
 import { SessionAnalytics, LapAnalytics } from '../../types';
 import { formatLapTime } from '../../api/sessions';
 import { Circuit, findCircuit } from '../../data/circuits';
+import { colors, fonts } from '../../theme/tokens';
+import { apexPlotlyConfig } from '../../theme/apexPlotly';
+import { Panel, Mono, Label } from '../../components/apex';
 
 interface Props {
   analytics: SessionAnalytics;
   circuitName?: string | null;
 }
 
-const SECTOR_COLORS = {
-  good: '#1b5e20',
-  ok: '#f9a825',
-  bad: '#c62828',
-  noData: '#9e9e9e',
-};
+const SECTOR_COLOR = {
+  good: colors.green,
+  ok: colors.yellow,
+  bad: colors.red,
+  noData: colors.textMute,
+} as const;
 
-/**
- * Trazado sintético de fallback cuando el circuito no coincide con ninguno conocido.
- */
 function buildSyntheticPath(): [number, number][] {
   const path: [number, number][] = [];
   const N = 100;
@@ -42,7 +42,7 @@ const SYNTHETIC: Circuit = {
 const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
   const validLaps = analytics.perLap.filter((l) => l.valid);
   const [selectedLapNumber, setSelectedLapNumber] = useState<number>(
-    analytics.bestLapNumber ?? validLaps[0]?.lapNumber ?? 1
+    analytics.bestLapNumber ?? validLaps[0]?.lapNumber ?? 1,
   );
 
   const selectedLap = validLaps.find((l) => l.lapNumber === selectedLapNumber);
@@ -50,7 +50,6 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
   const circuit = useMemo(() => findCircuit(circuitName) ?? SYNTHETIC, [circuitName]);
   const isReal = circuit !== SYNTHETIC;
 
-  // Percentiles de cada sector entre todas las vueltas válidas
   const sectorPercentiles = useMemo(() => {
     const sec = (lap: LapAnalytics, n: 1 | 2 | 3) =>
       n === 1 ? lap.sector1Ms : n === 2 ? lap.sector2Ms : lap.sector3Ms;
@@ -69,9 +68,14 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     return result;
   }, [validLaps]);
 
-  const classifyForSelected = (sectorNum: 1 | 2 | 3): keyof typeof SECTOR_COLORS => {
+  const classifyForSelected = (sectorNum: 1 | 2 | 3): keyof typeof SECTOR_COLOR => {
     if (!selectedLap) return 'noData';
-    const value = sectorNum === 1 ? selectedLap.sector1Ms : sectorNum === 2 ? selectedLap.sector2Ms : selectedLap.sector3Ms;
+    const value =
+      sectorNum === 1
+        ? selectedLap.sector1Ms
+        : sectorNum === 2
+          ? selectedLap.sector2Ms
+          : selectedLap.sector3Ms;
     const stats = sectorPercentiles[sectorNum];
     if (value == null || !stats) return 'noData';
     if (value < stats.median) return 'good';
@@ -91,7 +95,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
       type: 'scatter' as const,
       mode: 'lines' as const,
       name: 'S1',
-      line: { color: SECTOR_COLORS[classifyForSelected(1)], width: 7 },
+      line: { color: SECTOR_COLOR[classifyForSelected(1)], width: 6 },
       hoverinfo: 'name' as const,
     },
     {
@@ -100,7 +104,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
       type: 'scatter' as const,
       mode: 'lines' as const,
       name: 'S2',
-      line: { color: SECTOR_COLORS[classifyForSelected(2)], width: 7 },
+      line: { color: SECTOR_COLOR[classifyForSelected(2)], width: 6 },
       hoverinfo: 'name' as const,
     },
     {
@@ -109,7 +113,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
       type: 'scatter' as const,
       mode: 'lines' as const,
       name: 'S3',
-      line: { color: SECTOR_COLORS[classifyForSelected(3)], width: 7 },
+      line: { color: SECTOR_COLOR[classifyForSelected(3)], width: 6 },
       hoverinfo: 'name' as const,
     },
   ];
@@ -118,12 +122,10 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     x: [path[0][0]],
     y: [path[0][1]],
     type: 'scatter' as const,
-    mode: 'markers+text' as const,
+    mode: 'markers' as const,
     name: 'Meta',
-    text: ['🏁'],
-    textposition: 'top center' as const,
-    marker: { color: '#000', size: 18, symbol: 'diamond' },
-    hoverinfo: 'text' as const,
+    marker: { color: colors.text, size: 12, symbol: 'diamond', line: { color: colors.bg, width: 2 } },
+    hoverinfo: 'name' as const,
   };
 
   const sectorMarkers = {
@@ -132,103 +134,150 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     type: 'scatter' as const,
     mode: 'markers' as const,
     name: 'Cambio sector',
-    marker: { color: '#1976d2', size: 10, symbol: 'line-ns', line: { width: 3 } },
+    marker: { color: colors.accent, size: 10, symbol: 'line-ns', line: { width: 3, color: colors.accent } },
     hoverinfo: 'name' as const,
   };
 
-  const sectorLegendLabels: Record<1 | 2 | 3, string> = { 1: 'S1', 2: 'S2', 3: 'S3' };
-
   return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
-          <Box>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Track map · {isReal ? circuit.name : 'Trazado genérico'}
-              {circuit.length_km && (
-                <Typography component="span" variant="caption" color="textSecondary" ml={1}>
-                  ({circuit.length_km} km)
-                </Typography>
-              )}
-              {circuit.realData && (
-                <Typography
-                  component="span"
-                  variant="caption"
-                  ml={1}
-                  sx={{
-                    bgcolor: 'success.light',
-                    color: 'success.dark',
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: 1,
-                    fontWeight: 600,
-                  }}
-                >
-                  GPS real
-                </Typography>
-              )}
-            </Typography>
-            <Typography variant="caption" color="textSecondary">
-              {isReal
-                ? `Trazado aproximado de ${circuit.name}. Sectores coloreados según rendimiento de la vuelta seleccionada (verde mejor que P50, amarillo cerca, rojo peor que P75).`
-                : 'Circuito no reconocido — usando trazado genérico. Sectores se colorean igual.'}
-            </Typography>
-          </Box>
-          <TextField
-            select
-            size="small"
-            label="Vuelta"
-            value={selectedLapNumber}
-            onChange={(e) => setSelectedLapNumber(Number(e.target.value))}
-            sx={{ minWidth: 220 }}
-          >
-            {validLaps.map((l) => (
-              <MenuItem key={l.lapNumber} value={l.lapNumber}>
-                Vuelta {l.lapNumber} — {formatLapTime(l.lapTimeMs)}
-                {l.lapNumber === analytics.bestLapNumber ? ' ⭐' : ''}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Box>
-
-        <Box display="flex" gap={1} mb={1} flexWrap="wrap">
+    <Panel
+      title={
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          Track map · {isReal ? circuit.name : 'genérico'}
+          {circuit.length_km && (
+            <Mono style={{ color: colors.textMute, fontSize: 10, letterSpacing: '0.4px' }}>
+              · {circuit.length_km} km
+            </Mono>
+          )}
+          {circuit.realData && (
+            <Mono
+              style={{
+                fontSize: 9,
+                color: colors.green,
+                border: `1px solid ${colors.green}`,
+                padding: '1px 5px',
+                letterSpacing: '0.8px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                marginLeft: 4,
+              }}
+            >
+              GPS real
+            </Mono>
+          )}
+        </span>
+      }
+      right={
+        <TextField
+          select
+          size="small"
+          label="Vuelta"
+          value={selectedLapNumber}
+          onChange={(e) => setSelectedLapNumber(Number(e.target.value))}
+          sx={{ minWidth: 200 }}
+        >
+          {validLaps.map((l) => (
+            <MenuItem key={l.lapNumber} value={l.lapNumber}>
+              V{l.lapNumber} — {formatLapTime(l.lapTimeMs)}
+              {l.lapNumber === analytics.bestLapNumber ? ' ★' : ''}
+            </MenuItem>
+          ))}
+        </TextField>
+      }
+      padding={0}
+    >
+      <div
+        style={{
+          padding: '10px 16px',
+          borderBottom: `1px solid ${colors.border}`,
+          background: colors.surface,
+        }}
+      >
+        <Mono
+          style={{
+            fontSize: 10,
+            color: colors.textMute,
+            letterSpacing: '0.3px',
+            lineHeight: 1.5,
+            display: 'block',
+            marginBottom: 8,
+          }}
+        >
+          {isReal
+            ? 'Trazado aproximado. Sectores coloreados según la vuelta seleccionada: verde mejor que P50, amarillo entre P50–P75, rojo peor que P75.'
+            : 'Circuito no reconocido — trazado genérico. Sectores se colorean igual.'}
+        </Mono>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {([1, 2, 3] as const).map((s) => {
             const cls = classifyForSelected(s);
             const value =
-              s === 1 ? selectedLap?.sector1Ms : s === 2 ? selectedLap?.sector2Ms : selectedLap?.sector3Ms;
+              s === 1
+                ? selectedLap?.sector1Ms
+                : s === 2
+                  ? selectedLap?.sector2Ms
+                  : selectedLap?.sector3Ms;
+            const c = SECTOR_COLOR[cls];
             return (
-              <Chip
+              <div
                 key={s}
-                size="small"
-                label={`${sectorLegendLabels[s]} ${formatLapTime(value)}`}
-                sx={{
-                  bgcolor: SECTOR_COLORS[cls],
-                  color: 'white',
-                  fontFamily: 'monospace',
-                  fontWeight: 600,
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '4px 10px',
+                  border: `1px solid ${c}`,
+                  borderLeft: `3px solid ${c}`,
+                  background: colors.surface2,
                 }}
-              />
+              >
+                <Label tone="mute" size="micro">
+                  S{s}
+                </Label>
+                <Mono
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: c,
+                    letterSpacing: '0.2px',
+                  }}
+                >
+                  {formatLapTime(value)}
+                </Mono>
+              </div>
             );
           })}
-        </Box>
+        </div>
+      </div>
 
+      <div style={{ padding: 12 }}>
         <Plot
-          data={[...sectorTraces, sectorMarkers, startMarker] as any}
-          layout={{
-            xaxis: { visible: false, scaleanchor: 'y', scaleratio: 1 },
-            yaxis: { visible: false },
-            margin: { l: 10, r: 10, t: 10, b: 10 },
-            showlegend: false,
-            autosize: true,
-            plot_bgcolor: '#fafafa',
-            paper_bgcolor: '#fafafa',
-          }}
+          data={[...sectorTraces, sectorMarkers, startMarker] as never}
+          layout={
+            {
+              xaxis: { visible: false, scaleanchor: 'y', scaleratio: 1 },
+              yaxis: { visible: false },
+              margin: { l: 10, r: 10, t: 10, b: 10 },
+              showlegend: false,
+              autosize: true,
+              plot_bgcolor: colors.surface,
+              paper_bgcolor: colors.surface,
+              font: {
+                family: fonts.mono,
+                size: 10,
+                color: colors.textDim,
+              },
+              hoverlabel: {
+                bgcolor: colors.surface3,
+                bordercolor: colors.borderHi,
+                font: { family: fonts.mono, size: 11, color: colors.text },
+              },
+            } as never
+          }
           useResizeHandler
           style={{ width: '100%', height: 360 }}
-          config={{ displayModeBar: false }}
+          config={apexPlotlyConfig as never}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 };
 

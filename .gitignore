@@ -244,3 +244,9 @@ application*.log
 # Generated files
 /backend/src/main/resources/static/
 /backend/src/main/resources/public/
+
+# Runtime logs
+/backend/logs/
+
+# Claude Code per-machine settings (local tool permissions, paths, etc.)
+.claude/

@@ -1,64 +1,82 @@
-/* Reset básico */
+/* Apex / Pit Wall × Cyan base styles */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-family: 'IBM Plex Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e8eaed;
+  background-color: #0a0b0d;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+code,
+.mono {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
-/* Estilos para scrollbar */
+/* All numeric cells should use tabular-nums to avoid jitter */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Scrollbar — thin, near-black */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #0a0b0d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: #232830;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #2f3540;
 }
 
-/* Utilidades */
-.text-center {
-  text-align: center;
+/* Selection */
+::selection {
+  background: rgba(62, 197, 209, 0.25);
+  color: #e8eaed;
 }
 
-.text-left {
-  text-align: left;
+/* Live pulse used by ● LIVE indicator */
+@keyframes apex-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
-.text-right {
-  text-align: right;
+.apex-live {
+  animation: apex-live-pulse 1s ease-in-out infinite;
 }
 
-.full-height {
-  height: 100vh;
-}
-
-.full-width {
-  width: 100%;
-}
-
-/* Animaciones */
-@keyframes fadeIn {
+/* Fade-in for value cross-fades (150ms) */
+@keyframes apex-fade-in {
   from {
     opacity: 0;
   }
@@ -67,11 +85,41 @@ code {
   }
 }
 
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
+.apex-fade {
+  animation: apex-fade-in 0.15s ease-out;
 }
 
-/* Responsive helpers */
+/* Sector cell flash on new PB (300ms) */
+@keyframes apex-flash {
+  0% {
+    background-color: rgba(187, 108, 255, 0.35);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.apex-flash-purple {
+  animation: apex-flash 0.3s ease-out;
+}
+
+/* Utilities */
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.full-height {
+  height: 100vh;
+}
+.full-width {
+  width: 100%;
+}
+
 @media (max-width: 600px) {
   .hide-mobile {
     display: none !important;

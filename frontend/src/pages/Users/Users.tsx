@@ -27,6 +27,7 @@ import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/ico
 import { usersApi, UserCreateRequest, UserUpdateRequest } from '../../api/users';
 import { User, UserRole } from '../../types';
 import { useAuthStore } from '../../store/authStore';
+import { PageHeader } from '../../components/apex';
 
 const ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.MANAGER]: 'Manager',
@@ -159,22 +160,19 @@ const Users: React.FC = () => {
     form.firstName && form.lastName && (editingId || (form.email && form.password.length >= 6));
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
-          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-            Usuarios
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Miembros del equipo
-          </Typography>
-        </Box>
-        {isManager && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Nuevo usuario
-          </Button>
-        )}
-      </Box>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <PageHeader
+        eyebrow="OPERATIVO · USUARIOS"
+        title="Usuarios"
+        subtitle="Miembros del equipo"
+        actions={
+          isManager && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+              Nuevo usuario
+            </Button>
+          )
+        }
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

@@ -1,22 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Tabs,
-  Tab,
-  CircularProgress,
-  Alert,
-  Chip,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import Plot from 'react-plotly.js';
 import { sessionsApi, formatLapTime } from '../../api/sessions';
 import {
@@ -26,6 +9,13 @@ import {
   SessionAnalytics,
   StintsAnalysis,
 } from '../../types';
+import { colors, fonts } from '../../theme/tokens';
+import {
+  apexPlotlyLayout,
+  apexPlotlyConfig,
+  apexPaletteSeries,
+} from '../../theme/apexPlotly';
+import { Panel, Mono, Pill } from '../../components/apex';
 
 interface Props {
   sessionId: number;
@@ -34,7 +24,13 @@ interface Props {
 
 type TabKey = 'distribution' | 'heatmap' | 'stints' | 'anomalies' | 'degradation';
 
-const STINT_COLORS = ['#d32f2f', '#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#0288d1'];
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'distribution', label: 'Distribución' },
+  { key: 'heatmap', label: 'Heatmap sectores' },
+  { key: 'stints', label: 'Stints' },
+  { key: 'anomalies', label: 'Anomalías' },
+  { key: 'degradation', label: 'Degradación' },
+];
 
 const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
   const [tab, setTab] = useState<TabKey>('distribution');
@@ -62,7 +58,7 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
   const fetchWith = async <T,>(
     key: TabKey,
     fn: () => Promise<T>,
-    setter: (v: T) => void
+    setter: (v: T) => void,
   ) => {
     setLoading((s) => ({ ...s, [key]: true }));
     setError((s) => ({ ...s, [key]: null }));
@@ -99,74 +95,121 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
   }, [tab, sessionId]);
 
   return (
-    <Card>
-      <CardContent>
-        <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-          Análisis avanzado
-        </Typography>
-        <Typography variant="caption" color="textSecondary" display="block" mb={1}>
-          Cálculos con pandas + scikit-learn + scipy ejecutados en microservicio Python.
-        </Typography>
+    <Panel
+      title="Análisis avanzado"
+      right={
+        <Mono style={{ color: colors.textMute }}>pandas · sklearn · scipy</Mono>
+      }
+      padding={0}
+    >
+      <div
+        style={{
+          padding: '12px 16px',
+          borderBottom: `1px solid ${colors.border}`,
+          background: colors.surface,
+          display: 'flex',
+          gap: 6,
+          flexWrap: 'wrap',
+        }}
+      >
+        {TABS.map((t) => (
+          <Pill key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>
+            {t.label}
+          </Pill>
+        ))}
+      </div>
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable">
-            <Tab value="distribution" label="Distribución" />
-            <Tab value="heatmap" label="Heatmap sectores" />
-            <Tab value="stints" label="Stints (KMeans)" />
-            <Tab value="anomalies" label="Anomalías (IsolationForest)" />
-            <Tab value="degradation" label="Degradación (polinómica)" />
-          </Tabs>
-        </Box>
-
+      <div style={{ padding: 16 }}>
         {tab === 'distribution' && <DistributionPanel analytics={base} />}
-
         {tab === 'heatmap' && (
-          <PanelLoader loading={loading.heatmap} error={error.heatmap}>
+          <Loader loading={loading.heatmap} error={error.heatmap}>
             {heatmap && <HeatmapPanel data={heatmap} />}
-          </PanelLoader>
+          </Loader>
         )}
-
         {tab === 'stints' && (
-          <PanelLoader loading={loading.stints} error={error.stints}>
+          <Loader loading={loading.stints} error={error.stints}>
             {stints && <StintsPanel data={stints} base={base} />}
-          </PanelLoader>
+          </Loader>
         )}
-
         {tab === 'anomalies' && (
-          <PanelLoader loading={loading.anomalies} error={error.anomalies}>
+          <Loader loading={loading.anomalies} error={error.anomalies}>
             {anomalies && <AnomaliesPanel data={anomalies} base={base} />}
-          </PanelLoader>
+          </Loader>
         )}
-
         {tab === 'degradation' && (
-          <PanelLoader loading={loading.degradation} error={error.degradation}>
+          <Loader loading={loading.degradation} error={error.degradation}>
             {degradation && <DegradationPanel data={degradation} base={base} />}
-          </PanelLoader>
+          </Loader>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 };
 
-const PanelLoader: React.FC<{
+/* ─── Loader ──────────────────────────────────────────────────────────── */
+
+const Loader: React.FC<{
   loading: boolean;
   error: string | null;
   children?: React.ReactNode;
 }> = ({ loading, error, children }) => {
   if (loading) {
     return (
-      <Box textAlign="center" py={4}>
-        <CircularProgress />
-      </Box>
+      <div style={{ padding: '40px 0', textAlign: 'center' }}>
+        <CircularProgress size={20} />
+      </div>
     );
   }
   if (error) {
-    return <Alert severity="warning">{error}</Alert>;
+    return (
+      <div
+        style={{
+          padding: '10px 14px',
+          border: `1px solid ${colors.yellow}`,
+          color: colors.yellow,
+          fontFamily: fonts.mono,
+          fontSize: 11,
+          letterSpacing: '0.6px',
+        }}
+      >
+        {error}
+      </div>
+    );
   }
   return <>{children}</>;
 };
 
-// ─── Distribution: Box plot + Histogram con Plotly ──────────────────────
+const InfoNote: React.FC<{
+  tone?: 'info' | 'warn' | 'good';
+  children: React.ReactNode;
+}> = ({ tone = 'info', children }) => {
+  const accent =
+    tone === 'warn' ? colors.yellow : tone === 'good' ? colors.green : colors.accent;
+  const bg =
+    tone === 'warn'
+      ? 'rgba(255, 194, 51, 0.06)'
+      : tone === 'good'
+        ? 'rgba(38, 208, 124, 0.06)'
+        : 'rgba(62, 197, 209, 0.04)';
+  return (
+    <div
+      style={{
+        border: `1px solid ${colors.border}`,
+        borderLeft: `3px solid ${accent}`,
+        background: bg,
+        padding: '10px 14px',
+        fontSize: 12,
+        color: colors.text,
+        lineHeight: 1.5,
+        marginBottom: 12,
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* ─── Distribution ────────────────────────────────────────────────────── */
 
 const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytics }) => {
   const validTimes = analytics.perLap
@@ -174,122 +217,192 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
     .map((l) => l.lapTimeMs / 1000);
 
   if (validTimes.length === 0) {
-    return <Alert severity="info">Sin vueltas válidas para mostrar distribución.</Alert>;
+    return <InfoNote>Sin vueltas válidas para mostrar distribución.</InfoNote>;
   }
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12} md={6}>
-        <Plot
-          data={[
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 12,
+      }}
+    >
+      <Plot
+        data={
+          [
             {
               y: validTimes,
-              type: 'box',
+              type: 'box' as const,
               name: 'Tiempo',
-              boxpoints: 'all',
+              boxpoints: 'all' as const,
               jitter: 0.4,
               pointpos: 0,
-              marker: { color: '#d32f2f', size: 6 },
-              boxmean: 'sd',
+              marker: { color: colors.accent, size: 5 },
+              line: { color: colors.accent },
+              fillcolor: 'rgba(62, 197, 209, 0.10)',
+              boxmean: 'sd' as const,
             },
-          ]}
-          layout={{
-            title: { text: 'Distribución de tiempos (Box plot)' },
-            yaxis: { title: { text: 'Segundos' } },
-            margin: { l: 50, r: 20, t: 40, b: 30 },
-            showlegend: false,
-            autosize: true,
-          }}
-          useResizeHandler
-          style={{ width: '100%', height: 320 }}
-          config={{ displayModeBar: false }}
-        />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Plot
-          data={[
+          ] as never
+        }
+        layout={
+          apexPlotlyLayout({
+            height: 320,
+            margin: { l: 50, r: 14, t: 30, b: 30 },
+            title: {
+              text: 'Box plot',
+              font: { family: fonts.mono, size: 11, color: colors.textDim },
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              title: {
+                text: 'Segundos',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+          }) as never
+        }
+        useResizeHandler
+        style={{ width: '100%', height: 320 }}
+        config={apexPlotlyConfig as never}
+      />
+      <Plot
+        data={
+          [
             {
               x: validTimes,
-              type: 'histogram',
+              type: 'histogram' as const,
               name: 'Vueltas',
-              marker: { color: '#d32f2f', line: { color: '#9a0007', width: 1 } },
+              marker: {
+                color: colors.accent,
+                opacity: 0.7,
+                line: { color: colors.bg, width: 1 },
+              },
               autobinx: true,
-            } as any,
-          ]}
-          layout={{
-            title: { text: 'Histograma de tiempos' },
-            xaxis: { title: { text: 'Segundos' } },
-            yaxis: { title: { text: 'Frecuencia' } },
-            margin: { l: 50, r: 20, t: 40, b: 50 },
-            showlegend: false,
-            autosize: true,
-          }}
-          useResizeHandler
-          style={{ width: '100%', height: 320 }}
-          config={{ displayModeBar: false }}
-        />
-      </Grid>
-    </Grid>
+            },
+          ] as never
+        }
+        layout={
+          apexPlotlyLayout({
+            height: 320,
+            margin: { l: 50, r: 14, t: 30, b: 40 },
+            title: {
+              text: 'Histograma',
+              font: { family: fonts.mono, size: 11, color: colors.textDim },
+            },
+            xaxis: {
+              ...(apexPlotlyLayout().xaxis as object),
+              title: {
+                text: 'Segundos',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              title: {
+                text: 'Frecuencia',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+          }) as never
+        }
+        useResizeHandler
+        style={{ width: '100%', height: 320 }}
+        config={apexPlotlyConfig as never}
+      />
+    </div>
   );
 };
 
-// ─── Heatmap sector × vuelta ──────────────────────
+/* ─── Heatmap ─────────────────────────────────────────────────────────── */
 
 const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
-  // Eje X = vueltas, Eje Y = sectores, valor = gap en segundos al mejor sector
   const z = data.gapMs.map((row) => row.map((v) => (v == null ? null : v / 1000)));
-
   return (
-    <Box>
+    <div>
       <Plot
-        data={[
-          {
-            z,
-            x: data.lapNumbers,
-            y: data.sectors,
-            type: 'heatmap',
-            colorscale: [
-              [0, '#1b5e20'],
-              [0.3, '#388e3c'],
-              [0.6, '#fbc02d'],
-              [1, '#b71c1c'],
-            ],
-            zmin: 0,
-            colorbar: { title: { text: 'Gap (s)' } },
-            hovertemplate: 'Vuelta %{x}<br>%{y}<br>Gap: %{z:.3f}s<extra></extra>',
-          },
-        ]}
-        layout={{
-          title: { text: 'Gap al mejor sector — verde = óptimo, rojo = lejos' },
-          xaxis: { title: { text: 'Vuelta' }, dtick: 1 },
-          yaxis: { autorange: 'reversed' },
-          margin: { l: 50, r: 20, t: 40, b: 50 },
-          autosize: true,
-        }}
+        data={
+          [
+            {
+              z,
+              x: data.lapNumbers,
+              y: data.sectors,
+              type: 'heatmap' as const,
+              colorscale: [
+                [0, colors.green],
+                [0.3, colors.green],
+                [0.55, colors.yellow],
+                [0.8, colors.orange],
+                [1, colors.red],
+              ],
+              zmin: 0,
+              colorbar: {
+                title: {
+                  text: 'Gap (s)',
+                  font: { family: fonts.mono, size: 10, color: colors.textMute },
+                },
+                tickfont: { family: fonts.mono, size: 10, color: colors.textMute },
+                outlinecolor: colors.border,
+                bordercolor: colors.border,
+              },
+              hovertemplate:
+                'Vuelta %{x}<br>%{y}<br>Gap: %{z:.3f}s<extra></extra>',
+            },
+          ] as never
+        }
+        layout={
+          apexPlotlyLayout({
+            height: 280,
+            margin: { l: 50, r: 14, t: 10, b: 40 },
+            xaxis: {
+              ...(apexPlotlyLayout().xaxis as object),
+              title: {
+                text: 'Vuelta',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+              dtick: 1,
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              autorange: 'reversed' as const,
+            },
+          }) as never
+        }
         useResizeHandler
         style={{ width: '100%', height: 280 }}
-        config={{ displayModeBar: false }}
+        config={apexPlotlyConfig as never}
       />
-      <Typography variant="caption" color="textSecondary">
-        Lectura: cada celda muestra cuánto pierdes en ese sector respecto al mejor sector
-        que has hecho en toda la sesión. Verde = vuelta perfecta para ese sector.
-      </Typography>
-    </Box>
+      <Mono
+        style={{
+          fontSize: 10,
+          color: colors.textMute,
+          letterSpacing: '0.3px',
+          lineHeight: 1.5,
+          marginTop: 10,
+          display: 'block',
+        }}
+      >
+        Cada celda muestra cuánto pierdes en ese sector respecto al mejor sector que has
+        hecho en toda la sesión. Verde = vuelta perfecta para ese sector.
+      </Mono>
+    </div>
   );
 };
 
-// ─── Stints: KMeans clustering coloreado en el chart ──────────────────────
+/* ─── Stints ──────────────────────────────────────────────────────────── */
 
-const StintsPanel: React.FC<{ data: StintsAnalysis; base: SessionAnalytics }> = ({
-  data,
-  base,
-}) => {
+const StintsPanel: React.FC<{
+  data: StintsAnalysis;
+  base: SessionAnalytics;
+}> = ({ data, base }) => {
   if (data.nStints === 0) {
-    return <Alert severity="info">Sesión demasiado corta para detectar stints.</Alert>;
+    return <InfoNote>Sesión demasiado corta para detectar stints.</InfoNote>;
   }
 
+  const stintColors = (idx: number) => apexPaletteSeries[idx % apexPaletteSeries.length];
+
   const traces = data.stints.map((stint, idx) => {
-    const color = STINT_COLORS[idx % STINT_COLORS.length];
+    const color = stintColors(idx);
     const stintLaps = base.perLap.filter((l) => stint.lapNumbers.includes(l.lapNumber));
     return {
       x: stintLaps.map((l) => l.lapNumber),
@@ -298,157 +411,255 @@ const StintsPanel: React.FC<{ data: StintsAnalysis; base: SessionAnalytics }> = 
       mode: 'lines+markers' as const,
       name: `Stint ${idx + 1}${stint.dominantCompound ? ` (${stint.dominantCompound})` : ''}`,
       line: { color, width: 2 },
-      marker: { color, size: 7 },
+      marker: {
+        color,
+        size: 6,
+        line: { color: colors.bg, width: 1 },
+      },
     };
   });
 
   return (
-    <Box>
+    <div>
+      <InfoNote>
+        {data.nStints} stints detectados — método:{' '}
+        <strong style={{ color: colors.accent }}>
+          {data.method === 'compound-based' ? 'por compound' : 'KMeans 1D sobre lap_time'}
+        </strong>
+        .
+      </InfoNote>
       <Plot
-        data={traces}
-        layout={{
-          title: {
-            text: `${data.nStints} stints detectados (${data.method === 'compound-based' ? 'por compound' : 'KMeans 1D sobre lap_time'})`,
-          },
-          xaxis: { title: { text: 'Vuelta' }, dtick: 1 },
-          yaxis: { title: { text: 'Segundos' } },
-          margin: { l: 50, r: 20, t: 40, b: 50 },
-          autosize: true,
-        }}
+        data={traces as never}
+        layout={
+          apexPlotlyLayout({
+            height: 360,
+            margin: { l: 50, r: 14, t: 10, b: 40 },
+            xaxis: {
+              ...(apexPlotlyLayout().xaxis as object),
+              title: {
+                text: 'Vuelta',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+              dtick: 1,
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              title: {
+                text: 'Segundos',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+            showlegend: true,
+            legend: {
+              orientation: 'h' as const,
+              y: -0.18,
+              font: { family: fonts.mono, size: 10, color: colors.textDim },
+            },
+          }) as never
+        }
         useResizeHandler
         style={{ width: '100%', height: 360 }}
-        config={{ displayModeBar: false }}
+        config={apexPlotlyConfig as never}
       />
-      <TableContainer sx={{ mt: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Stint</TableCell>
-              <TableCell>Compound</TableCell>
-              <TableCell align="right">Vueltas</TableCell>
-              <TableCell align="right">Mejor</TableCell>
-              <TableCell align="right">Media</TableCell>
-              <TableCell align="right">Degradación</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.stints.map((s, idx) => (
-              <TableRow key={s.stintIndex}>
-                <TableCell>
-                  <Chip
-                    label={`Stint ${idx + 1}`}
-                    size="small"
-                    sx={{
-                      bgcolor: STINT_COLORS[idx % STINT_COLORS.length],
-                      color: 'white',
-                    }}
-                  />
-                </TableCell>
-                <TableCell>{s.dominantCompound || '—'}</TableCell>
-                <TableCell align="right">{s.lapsCount}</TableCell>
-                <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                  {formatLapTime(s.bestMs)}
-                </TableCell>
-                <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                  {formatLapTime(Math.round(s.meanMs))}
-                </TableCell>
-                <TableCell
-                  align="right"
-                  sx={{
-                    fontFamily: 'monospace',
-                    color:
-                      s.degradationMsPerLap == null
-                        ? 'text.secondary'
-                        : s.degradationMsPerLap > 0
-                        ? 'warning.main'
-                        : 'success.main',
+
+      <div
+        style={{
+          marginTop: 14,
+          border: `1px solid ${colors.border}`,
+          overflowX: 'auto',
+        }}
+      >
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              {['Stint', 'Compound', 'Vueltas', 'Mejor', 'Media', 'Degradación'].map((h, i) => (
+                <th
+                  key={h}
+                  style={{
+                    textAlign: i >= 2 ? 'right' : 'left',
+                    fontFamily: fonts.mono,
+                    fontSize: 10,
+                    letterSpacing: '1.2px',
+                    textTransform: 'uppercase',
+                    color: colors.textMute,
+                    fontWeight: 600,
+                    padding: '8px 12px',
+                    background: colors.surface2,
+                    borderBottom: `1px solid ${colors.borderHi}`,
                   }}
                 >
-                  {s.degradationMsPerLap != null
-                    ? `${s.degradationMsPerLap > 0 ? '+' : ''}${(
-                        s.degradationMsPerLap / 1000
-                      ).toFixed(3)} s/v`
-                    : '—'}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.stints.map((s, idx) => {
+              const c = stintColors(idx);
+              const degColor =
+                s.degradationMsPerLap == null
+                  ? colors.textMute
+                  : s.degradationMsPerLap > 0
+                    ? colors.yellow
+                    : colors.green;
+              return (
+                <tr key={s.stintIndex}>
+                  <TD>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 10,
+                          height: 10,
+                          background: c,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Mono style={{ color: colors.text, fontWeight: 600 }}>
+                        Stint {idx + 1}
+                      </Mono>
+                    </span>
+                  </TD>
+                  <TD>
+                    <Mono style={{ color: colors.textDim }}>
+                      {s.dominantCompound || '—'}
+                    </Mono>
+                  </TD>
+                  <TD align="right">{s.lapsCount}</TD>
+                  <TD align="right" mono bold>
+                    {formatLapTime(s.bestMs)}
+                  </TD>
+                  <TD align="right" mono>
+                    {formatLapTime(Math.round(s.meanMs))}
+                  </TD>
+                  <TD align="right" mono color={degColor}>
+                    {s.degradationMsPerLap != null
+                      ? `${s.degradationMsPerLap > 0 ? '+' : ''}${(
+                          s.degradationMsPerLap / 1000
+                        ).toFixed(3)} s/v`
+                      : '—'}
+                  </TD>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
-// ─── Anomalies: IsolationForest ──────────────────────
+/* ─── Anomalies ───────────────────────────────────────────────────────── */
 
-const AnomaliesPanel: React.FC<{ data: AnomaliesAnalysis; base: SessionAnalytics }> = ({
-  data,
-  base,
-}) => {
+const AnomaliesPanel: React.FC<{
+  data: AnomaliesAnalysis;
+  base: SessionAnalytics;
+}> = ({ data, base }) => {
   const scoresByLap = new Map(data.anomalies.map((a) => [a.lapNumber, a.anomalyScore]));
   const anomalyLaps = data.anomalies.filter((a) => a.isAnomaly).map((a) => a.lapNumber);
 
-  const normalLaps = base.perLap.filter((l) => l.valid && !anomalyLaps.includes(l.lapNumber));
-  const anomalousLaps = base.perLap.filter((l) => l.valid && anomalyLaps.includes(l.lapNumber));
+  const normalLaps = base.perLap.filter(
+    (l) => l.valid && !anomalyLaps.includes(l.lapNumber),
+  );
+  const anomalousLaps = base.perLap.filter(
+    (l) => l.valid && anomalyLaps.includes(l.lapNumber),
+  );
 
   return (
-    <Box>
-      <Alert
-        severity={data.nAnomalies > 0 ? 'warning' : 'success'}
-        sx={{ mb: 2 }}
-      >
-        IsolationForest detectó <strong>{data.nAnomalies}</strong> vueltas anómalas de
-        {' '}{base.validLaps} válidas. Una vuelta es anómala si su tiempo (y opcionalmente
-        sectores) destaca del patrón general de la sesión.
-      </Alert>
-
+    <div>
+      <InfoNote tone={data.nAnomalies > 0 ? 'warn' : 'good'}>
+        IsolationForest detectó{' '}
+        <Mono style={{ fontWeight: 700, color: data.nAnomalies > 0 ? colors.orange : colors.green }}>
+          {data.nAnomalies}
+        </Mono>{' '}
+        vueltas anómalas de {base.validLaps} válidas.
+      </InfoNote>
       <Plot
-        data={[
-          {
-            x: normalLaps.map((l) => l.lapNumber),
-            y: normalLaps.map((l) => l.lapTimeMs / 1000),
-            type: 'scatter',
-            mode: 'markers',
-            name: 'Normal',
-            marker: { color: '#1976d2', size: 9 },
-            text: normalLaps.map((l) => `score: ${(scoresByLap.get(l.lapNumber) ?? 0).toFixed(3)}`),
-          },
-          {
-            x: anomalousLaps.map((l) => l.lapNumber),
-            y: anomalousLaps.map((l) => l.lapTimeMs / 1000),
-            type: 'scatter',
-            mode: 'markers',
-            name: 'Anomalía',
-            marker: { color: '#d32f2f', size: 14, symbol: 'x', line: { width: 2 } },
-            text: anomalousLaps.map((l) => `score: ${(scoresByLap.get(l.lapNumber) ?? 0).toFixed(3)}`),
-          },
-        ]}
-        layout={{
-          title: { text: 'Detección de anomalías (IsolationForest)' },
-          xaxis: { title: { text: 'Vuelta' }, dtick: 1 },
-          yaxis: { title: { text: 'Segundos' } },
-          margin: { l: 50, r: 20, t: 40, b: 50 },
-          autosize: true,
-        }}
+        data={
+          [
+            {
+              x: normalLaps.map((l) => l.lapNumber),
+              y: normalLaps.map((l) => l.lapTimeMs / 1000),
+              type: 'scatter' as const,
+              mode: 'markers' as const,
+              name: 'Normal',
+              marker: {
+                color: colors.accent,
+                size: 8,
+                line: { color: colors.bg, width: 1 },
+              },
+              text: normalLaps.map(
+                (l) => `score: ${(scoresByLap.get(l.lapNumber) ?? 0).toFixed(3)}`,
+              ),
+            },
+            {
+              x: anomalousLaps.map((l) => l.lapNumber),
+              y: anomalousLaps.map((l) => l.lapTimeMs / 1000),
+              type: 'scatter' as const,
+              mode: 'markers' as const,
+              name: 'Anomalía',
+              marker: {
+                color: colors.orange,
+                size: 14,
+                symbol: 'x' as const,
+                line: { color: colors.bg, width: 2 },
+              },
+              text: anomalousLaps.map(
+                (l) => `score: ${(scoresByLap.get(l.lapNumber) ?? 0).toFixed(3)}`,
+              ),
+            },
+          ] as never
+        }
+        layout={
+          apexPlotlyLayout({
+            height: 320,
+            margin: { l: 50, r: 14, t: 10, b: 40 },
+            xaxis: {
+              ...(apexPlotlyLayout().xaxis as object),
+              title: {
+                text: 'Vuelta',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+              dtick: 1,
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              title: {
+                text: 'Segundos',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+            showlegend: true,
+            legend: {
+              orientation: 'h' as const,
+              y: -0.18,
+              font: { family: fonts.mono, size: 10, color: colors.textDim },
+            },
+          }) as never
+        }
         useResizeHandler
         style={{ width: '100%', height: 320 }}
-        config={{ displayModeBar: false }}
+        config={apexPlotlyConfig as never}
       />
-    </Box>
+    </div>
   );
 };
 
-// ─── Degradación polinómica ──────────────────────
+/* ─── Degradation ─────────────────────────────────────────────────────── */
 
-const DegradationPanel: React.FC<{ data: DegradationAnalysis; base: SessionAnalytics }> = ({
-  data,
-  base,
-}) => {
+const DegradationPanel: React.FC<{
+  data: DegradationAnalysis;
+  base: SessionAnalytics;
+}> = ({ data, base }) => {
   const validLaps = base.perLap.filter((l) => l.valid);
   const lapNumbers = validLaps.map((l) => l.lapNumber);
   const times = validLaps.map((l) => l.lapTimeMs / 1000);
 
-  // Línea polinómica suave: evaluar el polinomio en muchos puntos para curva suave
   const xMin = Math.min(...lapNumbers);
   const xMax = Math.max(...lapNumbers);
   const xs: number[] = [];
@@ -465,54 +676,127 @@ const DegradationPanel: React.FC<{ data: DegradationAnalysis; base: SessionAnaly
   const polyY = xs.map((x) => evalPoly(data.polynomial.coefficients, x));
 
   return (
-    <Box>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        Se ajustan dos modelos: lineal (R² = <strong>{data.linear.rSquared.toFixed(3)}</strong>) y
-        {' '}polinómico grado {data.polynomial.degree} (R² = <strong>{data.polynomial.rSquared.toFixed(3)}</strong>).
-        Modelo elegido: <strong>{data.chosen}</strong>.
-      </Alert>
-
+    <div>
+      <InfoNote>
+        Ajuste lineal R² ={' '}
+        <Mono style={{ color: colors.text, fontWeight: 600 }}>
+          {data.linear.rSquared.toFixed(3)}
+        </Mono>{' '}
+        · polinómico grado {data.polynomial.degree} R² ={' '}
+        <Mono style={{ color: colors.text, fontWeight: 600 }}>
+          {data.polynomial.rSquared.toFixed(3)}
+        </Mono>{' '}
+        · elegido:{' '}
+        <Mono
+          style={{
+            color: colors.accent,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.6px',
+          }}
+        >
+          {data.chosen}
+        </Mono>
+      </InfoNote>
       <Plot
-        data={[
-          {
-            x: lapNumbers,
-            y: times,
-            type: 'scatter',
-            mode: 'markers',
-            name: 'Vueltas válidas',
-            marker: { color: '#424242', size: 8 },
-          },
-          {
-            x: xs,
-            y: linearY,
-            type: 'scatter',
-            mode: 'lines',
-            name: `Lineal (R² ${data.linear.rSquared.toFixed(2)})`,
-            line: { color: '#1976d2', width: 2, dash: 'dot' },
-          },
-          {
-            x: xs,
-            y: polyY,
-            type: 'scatter',
-            mode: 'lines',
-            name: `Polinómico g${data.polynomial.degree} (R² ${data.polynomial.rSquared.toFixed(2)})`,
-            line: { color: '#d32f2f', width: 3 },
-          },
-        ]}
-        layout={{
-          title: { text: 'Modelos de degradación' },
-          xaxis: { title: { text: 'Vuelta' }, dtick: 1 },
-          yaxis: { title: { text: 'Segundos' } },
-          margin: { l: 50, r: 20, t: 40, b: 50 },
-          autosize: true,
-          legend: { orientation: 'h', y: -0.2 },
-        }}
+        data={
+          [
+            {
+              x: lapNumbers,
+              y: times,
+              type: 'scatter' as const,
+              mode: 'markers' as const,
+              name: 'Vueltas válidas',
+              marker: {
+                color: colors.text,
+                size: 7,
+                line: { color: colors.bg, width: 1 },
+              },
+            },
+            {
+              x: xs,
+              y: linearY,
+              type: 'scatter' as const,
+              mode: 'lines' as const,
+              name: `Lineal (R² ${data.linear.rSquared.toFixed(2)})`,
+              line: { color: colors.accent, width: 2, dash: 'dot' as const },
+            },
+            {
+              x: xs,
+              y: polyY,
+              type: 'scatter' as const,
+              mode: 'lines' as const,
+              name: `Polinómico g${data.polynomial.degree} (R² ${data.polynomial.rSquared.toFixed(2)})`,
+              line: { color: colors.purple, width: 2.5 },
+            },
+          ] as never
+        }
+        layout={
+          apexPlotlyLayout({
+            height: 360,
+            margin: { l: 50, r: 14, t: 10, b: 50 },
+            xaxis: {
+              ...(apexPlotlyLayout().xaxis as object),
+              title: {
+                text: 'Vuelta',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+              dtick: 1,
+            },
+            yaxis: {
+              ...(apexPlotlyLayout().yaxis as object),
+              title: {
+                text: 'Segundos',
+                font: { family: fonts.mono, size: 10, color: colors.textMute },
+              },
+            },
+            showlegend: true,
+            legend: {
+              orientation: 'h' as const,
+              y: -0.2,
+              font: { family: fonts.mono, size: 10, color: colors.textDim },
+            },
+          }) as never
+        }
         useResizeHandler
         style={{ width: '100%', height: 360 }}
-        config={{ displayModeBar: false }}
+        config={apexPlotlyConfig as never}
       />
-    </Box>
+    </div>
   );
 };
+
+/* ─── Table helper ────────────────────────────────────────────────────── */
+
+function TD({
+  children,
+  align = 'left',
+  mono,
+  bold,
+  color,
+}: {
+  children: React.ReactNode;
+  align?: 'left' | 'right' | 'center';
+  mono?: boolean;
+  bold?: boolean;
+  color?: string;
+}) {
+  return (
+    <td
+      style={{
+        textAlign: align,
+        padding: '8px 12px',
+        borderBottom: `1px solid ${colors.border}`,
+        fontFamily: mono ? fonts.mono : fonts.sans,
+        fontSize: 12,
+        color: color ?? colors.text,
+        fontWeight: bold ? 600 : 500,
+        fontVariantNumeric: mono ? 'tabular-nums' : undefined,
+      }}
+    >
+      {children}
+    </td>
+  );
+}
 
 export default AdvancedAnalytics;

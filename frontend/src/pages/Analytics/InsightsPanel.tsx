@@ -1,17 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, Typography, Alert, Skeleton, Chip } from '@mui/material';
+import { Skeleton } from '@mui/material';
 import { sessionsApi } from '../../api/sessions';
 import { Insight } from '../../types';
+import { colors, fonts } from '../../theme/tokens';
+import { Panel, Mono, Label } from '../../components/apex';
 
 interface Props {
   sessionId: number;
 }
 
-const SEVERITY_COLOR: Record<Insight['severity'], 'info' | 'success' | 'warning' | 'error'> = {
-  info: 'info',
-  success: 'success',
-  warning: 'warning',
-  error: 'error',
+const SEVERITY_TAG: Record<
+  Insight['severity'],
+  { label: string; color: string; bg: string }
+> = {
+  info: {
+    label: 'INFO',
+    color: colors.accent,
+    bg: 'rgba(62, 197, 209, 0.08)',
+  },
+  success: {
+    label: 'PB',
+    color: colors.green,
+    bg: 'rgba(38, 208, 124, 0.08)',
+  },
+  warning: {
+    label: 'WARN',
+    color: colors.yellow,
+    bg: 'rgba(255, 194, 51, 0.08)',
+  },
+  error: {
+    label: 'ALERT',
+    color: colors.red,
+    bg: 'rgba(255, 79, 79, 0.08)',
+  },
 };
 
 const InsightsPanel: React.FC<Props> = ({ sessionId }) => {
@@ -25,28 +46,38 @@ const InsightsPanel: React.FC<Props> = ({ sessionId }) => {
     sessionsApi
       .insights(sessionId)
       .then((r) => setInsights(r.insights))
-      .catch((e: any) => setError(e?.response?.data?.message || 'No se pudieron generar insights'))
+      .catch((e: any) =>
+        setError(e?.response?.data?.message || 'No se pudieron generar insights'),
+      )
       .finally(() => setLoading(false));
   }, [sessionId]);
 
   if (loading) {
     return (
-      <Card>
-        <CardContent>
-          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-            Hallazgos automáticos
-          </Typography>
-          <Skeleton height={40} sx={{ mb: 1 }} />
-          <Skeleton height={40} sx={{ mb: 1 }} />
-          <Skeleton height={40} />
-        </CardContent>
-      </Card>
+      <Panel title="Hallazgos automáticos" padding={16}>
+        <Skeleton variant="rectangular" height={40} sx={{ mb: 1, bgcolor: colors.surface2 }} />
+        <Skeleton variant="rectangular" height={40} sx={{ mb: 1, bgcolor: colors.surface2 }} />
+        <Skeleton variant="rectangular" height={40} sx={{ bgcolor: colors.surface2 }} />
+      </Panel>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="warning">{error}</Alert>
+      <Panel title="Hallazgos automáticos" padding={16}>
+        <div
+          style={{
+            padding: '10px 14px',
+            border: `1px solid ${colors.yellow}`,
+            color: colors.yellow,
+            fontFamily: fonts.mono,
+            fontSize: 11,
+            letterSpacing: '0.6px',
+          }}
+        >
+          {error}
+        </div>
+      </Panel>
     );
   }
 
@@ -55,43 +86,97 @@ const InsightsPanel: React.FC<Props> = ({ sessionId }) => {
   }
 
   return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-          <Typography variant="subtitle1" fontWeight="bold">
-            Hallazgos automáticos
-          </Typography>
-          <Chip
-            size="small"
-            label={`${insights.length} insight${insights.length !== 1 ? 's' : ''}`}
-            variant="outlined"
-          />
-        </Box>
-        <Typography variant="caption" color="textSecondary" display="block" mb={2}>
-          Generados por análisis estadístico de los datos de la sesión: theoretical best, degradación,
-          consistencia, outliers, comparativa entre stints y sectores débiles.
-        </Typography>
-        <Box display="flex" flexDirection="column" gap={1}>
-          {insights.map((ins, idx) => (
-            <Alert
+    <Panel
+      title="Hallazgos automáticos"
+      right={
+        <Mono style={{ color: colors.textMute }}>
+          {insights.length} insight{insights.length !== 1 ? 's' : ''}
+        </Mono>
+      }
+      padding={16}
+    >
+      <Mono
+        style={{
+          fontSize: 11,
+          color: colors.textMute,
+          letterSpacing: '0.3px',
+          marginBottom: 14,
+          lineHeight: 1.5,
+          display: 'block',
+        }}
+      >
+        Generados por análisis estadístico: theoretical best, degradación, consistencia,
+        outliers, comparativa entre stints y sectores débiles.
+      </Mono>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {insights.map((ins, idx) => {
+          const tag = SEVERITY_TAG[ins.severity];
+          return (
+            <div
               key={idx}
-              severity={SEVERITY_COLOR[ins.severity]}
-              icon={<span style={{ fontSize: '1.3rem' }}>{ins.icon}</span>}
-              sx={{ '& .MuiAlert-message': { width: '100%' } }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '4px 70px 1fr',
+                alignItems: 'stretch',
+                background: tag.bg,
+                border: `1px solid ${colors.border}`,
+                borderLeft: `2px solid ${tag.color}`,
+              }}
             >
-              <Box>
-                <Typography variant="body2" fontWeight="bold">
+              <div />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                  padding: '10px 0 10px 4px',
+                  gap: 4,
+                }}
+              >
+                {ins.icon && (
+                  <span
+                    style={{
+                      fontSize: 16,
+                      lineHeight: 1,
+                      color: tag.color,
+                    }}
+                  >
+                    {ins.icon}
+                  </span>
+                )}
+                <Label tone="mute" size="micro" style={{ color: tag.color }}>
+                  {tag.label}
+                </Label>
+              </div>
+              <div style={{ padding: '10px 12px 10px 4px' }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: colors.text,
+                    marginBottom: 3,
+                    fontFamily: fonts.sans,
+                  }}
+                >
                   {ins.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: colors.textDim,
+                    fontFamily: fonts.sans,
+                    lineHeight: 1.4,
+                  }}
+                >
                   {ins.detail}
-                </Typography>
-              </Box>
-            </Alert>
-          ))}
-        </Box>
-      </CardContent>
-    </Card>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
   );
 };
 

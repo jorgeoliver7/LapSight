@@ -15,6 +15,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { eventsApi } from '../../api/events';
 import { Event, EventType, EVENT_TYPE_LABELS, EVENT_STATUS_LABELS } from '../../types';
+import { PageHeader } from '../../components/apex';
 
 const locales = { es };
 
@@ -111,15 +112,12 @@ const CalendarPage: React.FC = () => {
   }
 
   return (
-    <Box>
-      <Box mb={3}>
-        <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-          Calendario
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          Vista temporal de carreras, tests, libres y eventos del equipo
-        </Typography>
-      </Box>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <PageHeader
+        eyebrow="OPERATIVO · CALENDARIO"
+        title="Calendario"
+        subtitle="Vista temporal de carreras, tests, libres y eventos del equipo"
+      />
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 

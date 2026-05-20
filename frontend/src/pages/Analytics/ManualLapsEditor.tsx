@@ -12,12 +12,13 @@ import {
   TableRow,
   TextField,
   Checkbox,
-  Typography,
   Paper,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { TireCompound } from '../../types';
 import { ManualLap } from '../../api/sessions';
+import { Mono, Label } from '../../components/apex';
+import { colors } from '../../theme/tokens';
 
 interface Props {
   laps: ManualLap[];
@@ -53,9 +54,19 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
 
   return (
     <Box>
-      <Typography variant="body2" color="textSecondary" mb={1}>
-        Tiempos en formato <code>1:23.456</code> o <code>83.456</code>. Sectores opcionales.
-      </Typography>
+      <Mono
+        style={{
+          fontSize: 11,
+          color: colors.textMute,
+          letterSpacing: '0.3px',
+          marginBottom: 8,
+          display: 'block',
+          lineHeight: 1.5,
+        }}
+      >
+        Tiempos en formato <code style={{ color: colors.accent }}>1:23.456</code> o{' '}
+        <code style={{ color: colors.accent }}>83.456</code>. Sectores opcionales.
+      </Mono>
 
       <TableContainer component={Paper} variant="outlined">
         <Table size="small">
@@ -75,9 +86,9 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
             {laps.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                  <Typography color="textSecondary" variant="body2">
+                  <Mono style={{ color: colors.textMute, fontSize: 11, letterSpacing: '0.4px' }}>
                     Pulsa "Añadir vuelta" para empezar
-                  </Typography>
+                  </Mono>
                 </TableCell>
               </TableRow>
             ) : (
@@ -166,9 +177,7 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
       </TableContainer>
 
       <Box mt={1} display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="caption" color="textSecondary">
-          {laps.length} {laps.length === 1 ? 'vuelta' : 'vueltas'}
-        </Typography>
+        <Label>{laps.length} {laps.length === 1 ? 'vuelta' : 'vueltas'}</Label>
         <Button startIcon={<AddIcon />} onClick={addLap} size="small">
           Añadir vuelta
         </Button>

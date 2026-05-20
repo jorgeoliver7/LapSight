@@ -38,6 +38,7 @@ import {
   UserRole,
 } from '../../types';
 import { useAuthStore } from '../../store/authStore';
+import { PageHeader } from '../../components/apex';
 
 const STATUS_LABELS: Record<VehicleStatus, string> = {
   [VehicleStatus.AVAILABLE]: 'Disponible',
@@ -162,22 +163,19 @@ const Vehicles: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
-          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-            Vehículos
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Inventario de vehículos del equipo
-          </Typography>
-        </Box>
-        {canEdit && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Nuevo vehículo
-          </Button>
-        )}
-      </Box>
+    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <PageHeader
+        eyebrow="OPERATIVO · VEHÍCULOS"
+        title="Vehículos"
+        subtitle="Inventario de vehículos del equipo"
+        actions={
+          canEdit && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+              Nuevo vehículo
+            </Button>
+          )
+        }
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

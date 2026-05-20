@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box,
-  Typography,
-  Paper,
   Button,
-  Card,
-  CardContent,
-  CardActionArea,
-  Grid,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -18,14 +10,6 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-  IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
   Tabs,
   Tab,
   Link,
@@ -33,16 +17,9 @@ import {
   InputLabel,
   OutlinedInput,
   Select,
+  Box,
+  Typography,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Speed as SpeedIcon,
-  Timer as TimerIcon,
-  ShowChart as ShowChartIcon,
-  Warning as WarningIcon,
-  Download as DownloadIcon,
-} from '@mui/icons-material';
 import {
   ResponsiveContainer,
   LineChart,
@@ -67,6 +44,10 @@ import MultiSessionComparison from './MultiSessionComparison';
 import AdvancedAnalytics from './AdvancedAnalytics';
 import TrackMap from './TrackMap';
 import InsightsPanel from './InsightsPanel';
+import ConsistencyPanel from './ConsistencyPanel';
+import StatisticalTestsPanel from './StatisticalTestsPanel';
+import DistributionsPanel from './DistributionsPanel';
+import ConditionsImpactPanel from './ConditionsImpactPanel';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import {
@@ -81,6 +62,16 @@ import {
   UserRole,
 } from '../../types';
 import { useAuthStore } from '../../store/authStore';
+import CircuitSelector from '../../components/CircuitSelector/CircuitSelector';
+import { colors, fonts } from '../../theme/tokens';
+import {
+  Panel,
+  Mono,
+  Label,
+  MiniStat,
+  ToolButton,
+  Flag,
+} from '../../components/apex';
 
 const Analytics: React.FC = () => {
   const { user } = useAuthStore();
@@ -208,10 +199,7 @@ const Analytics: React.FC = () => {
         }
         const invalidLap = manualLaps.find((l) => !l.lapTime.trim());
         if (invalidLap) {
-          setSnack({
-            msg: `La vuelta ${invalidLap.lapNumber} no tiene tiempo`,
-            severity: 'error',
-          });
+          setSnack({ msg: `La vuelta ${invalidLap.lapNumber} no tiene tiempo`, severity: 'error' });
           return;
         }
         created = await sessionsApi.createManual({
@@ -254,115 +242,236 @@ const Analytics: React.FC = () => {
     }
   };
 
+  const selectedSession = sessions.find((s) => s.id === selectedId) || null;
+
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
-          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Page title strip */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '4px 4px 0',
+        }}
+      >
+        <div>
+          <Label size="micro">TELEMETRY · SESSION ANALYSIS</Label>
+          <div
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: 28,
+              fontWeight: 600,
+              color: colors.text,
+              marginTop: 4,
+            }}
+          >
             Análisis de sesiones
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            Sube CSV de tiempos por vuelta y analiza el rendimiento
-          </Typography>
-        </Box>
+          </div>
+          <Mono
+            style={{
+              color: colors.textMute,
+              fontSize: 11,
+              marginTop: 4,
+              letterSpacing: '0.4px',
+            }}
+          >
+            Sube CSV de tiempos por vuelta · {sessions.length} sesiones registradas
+          </Mono>
+        </div>
         {canUpload && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setUploadOpen(true)}>
-            Subir sesión
-          </Button>
+          <ToolButton variant="accent" onClick={() => setUploadOpen(true)}>
+            + Subir sesión
+          </ToolButton>
         )}
-      </Box>
+      </div>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
           {error}
         </Alert>
       )}
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={3}>
-          <Typography variant="subtitle2" color="textSecondary" mb={1}>
-            Sesiones ({sessions.length})
-          </Typography>
+      {/* Two-column shell: sessions list + main detail */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '300px 1fr',
+          gap: 12,
+          alignItems: 'flex-start',
+        }}
+      >
+        {/* Sessions sidebar */}
+        <Panel
+          title="Sesiones"
+          right={<Mono style={{ color: colors.textMute }}>{sessions.length}</Mono>}
+          padding={0}
+          style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' }}
+        >
           {loading ? (
-            <Box p={2} textAlign="center">
-              <CircularProgress size={24} />
-            </Box>
+            <EmptyState text="Cargando…" />
           ) : sessions.length === 0 ? (
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <Typography color="textSecondary" variant="body2">
-                No hay sesiones aún. Sube un CSV para empezar.
-              </Typography>
-            </Paper>
+            <EmptyState text="Sube un CSV para empezar." />
           ) : (
-            <Box display="flex" flexDirection="column" gap={1}>
-              {sessions.map((s) => (
-                <Card
-                  key={s.id}
-                  variant={selectedId === s.id ? 'elevation' : 'outlined'}
-                  elevation={selectedId === s.id ? 4 : 0}
-                  sx={{
-                    borderColor: selectedId === s.id ? 'primary.main' : undefined,
-                    borderWidth: selectedId === s.id ? 2 : undefined,
+            <div
+              style={{
+                overflowY: 'auto',
+                maxHeight: 'calc(100vh - 232px)',
+              }}
+            >
+              {sessions.map((s) => {
+                const active = selectedId === s.id;
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => setSelectedId(s.id)}
+                    style={{
+                      position: 'relative',
+                      padding: '12px 14px',
+                      cursor: 'pointer',
+                      background: active ? colors.surface2 : 'transparent',
+                      borderBottom: `1px solid ${colors.border}`,
+                      borderLeft: active
+                        ? `2px solid ${colors.accent}`
+                        : '2px solid transparent',
+                      transition: 'background 80ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active)
+                        (e.currentTarget as HTMLDivElement).style.background = colors.surface2;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active)
+                        (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: active ? colors.text : colors.text,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 6,
+                        marginTop: 6,
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Tag tone="default">{SESSION_TYPE_LABELS[s.sessionType]}</Tag>
+                      {s.trackCondition && (
+                        <Tag tone="dim">{TRACK_CONDITION_LABELS[s.trackCondition]}</Tag>
+                      )}
+                      <Mono style={{ fontSize: 10, color: colors.textMute }}>
+                        {s.lapCount} laps
+                      </Mono>
+                    </div>
+                    <Mono
+                      style={{
+                        fontSize: 10,
+                        color: colors.textMute,
+                        marginTop: 6,
+                        display: 'block',
+                        letterSpacing: '0.4px',
+                      }}
+                    >
+                      {(s.circuit || '—')} · {new Date(s.sessionDate).toLocaleDateString('es-ES')}
+                    </Mono>
+                    {s.vehicleName && (
+                      <Mono
+                        style={{
+                          fontSize: 10,
+                          color: colors.textMute,
+                          marginTop: 2,
+                          display: 'block',
+                        }}
+                      >
+                        {s.vehicleName}
+                      </Mono>
+                    )}
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(s.id);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          background: 'transparent',
+                          border: `1px solid ${colors.border}`,
+                          color: colors.textMute,
+                          fontFamily: fonts.mono,
+                          fontSize: 10,
+                          padding: '2px 6px',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.color = colors.red;
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = colors.red;
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.color = colors.textMute;
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = colors.border;
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+
+        {/* Main detail area */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
+          {selectedId == null ? (
+            <Panel padding={48}>
+              <div
+                style={{
+                  textAlign: 'center',
+                  color: colors.textMute,
+                  fontFamily: fonts.mono,
+                  fontSize: 12,
+                  letterSpacing: '0.6px',
+                }}
+              >
+                <div style={{ fontSize: 36, marginBottom: 8 }}>—</div>
+                Selecciona una sesión para ver su análisis
+              </div>
+            </Panel>
+          ) : loadingAnalytics || !analytics ? (
+            <Panel padding={48}>
+              <div style={{ textAlign: 'center' }}>
+                <CircularProgress size={20} />
+              </div>
+            </Panel>
+          ) : (
+            <>
+              {/* Filter bar: compare with */}
+              <Panel padding={12}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    flexWrap: 'wrap',
                   }}
                 >
-                  <CardActionArea onClick={() => setSelectedId(s.id)}>
-                    <CardContent sx={{ pb: 1 }}>
-                      <Typography fontWeight={600} variant="body1" gutterBottom>
-                        {s.name}
-                      </Typography>
-                      <Box display="flex" gap={0.5} flexWrap="wrap" mb={1}>
-                        <Chip label={SESSION_TYPE_LABELS[s.sessionType]} size="small" />
-                        {s.trackCondition && (
-                          <Chip
-                            label={TRACK_CONDITION_LABELS[s.trackCondition]}
-                            size="small"
-                            variant="outlined"
-                          />
-                        )}
-                        <Chip label={`${s.lapCount} vueltas`} size="small" variant="outlined" />
-                      </Box>
-                      <Typography variant="caption" color="textSecondary" display="block">
-                        {s.circuit || '—'} · {new Date(s.sessionDate).toLocaleDateString('es-ES')}
-                      </Typography>
-                      {s.vehicleName && (
-                        <Typography variant="caption" color="textSecondary" display="block">
-                          🏎 {s.vehicleName}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </CardActionArea>
-                  {canDelete && (
-                    <Box display="flex" justifyContent="flex-end" px={1} pb={1}>
-                      <IconButton size="small" onClick={() => handleDelete(s.id)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  )}
-                </Card>
-              ))}
-            </Box>
-          )}
-        </Grid>
-
-        <Grid item xs={12} md={9}>
-          {selectedId == null ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <ShowChartIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 1 }} />
-              <Typography color="textSecondary">
-                Selecciona una sesión para ver su análisis
-              </Typography>
-            </Paper>
-          ) : loadingAnalytics || !analytics ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <CircularProgress />
-            </Paper>
-          ) : (
-            <Box display="flex" flexDirection="column" gap={2}>
-              <Paper sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                  <Typography variant="body2" fontWeight={500}>
-                    Comparar con:
-                  </Typography>
+                  <Label>COMPARAR CON</Label>
                   <FormControl size="small" sx={{ minWidth: 320 }}>
                     <InputLabel>Sesiones adicionales (máx 3)</InputLabel>
                     <Select
@@ -370,7 +479,6 @@ const Analytics: React.FC = () => {
                       value={compareWithIds}
                       onChange={(e) => {
                         const value = e.target.value as number[];
-                        // Limit to 3 extra sessions (4 total with the main)
                         setCompareWithIds(value.slice(0, 3));
                       }}
                       input={<OutlinedInput label="Sesiones adicionales (máx 3)" />}
@@ -391,25 +499,23 @@ const Analytics: React.FC = () => {
                     </Select>
                   </FormControl>
                   {compareWithIds.length > 0 && compareAnalytics.length === 0 && (
-                    <CircularProgress size={20} />
+                    <CircularProgress size={16} />
                   )}
                   {compareWithIds.length > 0 && (
-                    <Chip
-                      size="small"
-                      label={`${compareWithIds.length + 1} sesiones comparadas`}
-                      color="primary"
-                      onDelete={() => setCompareWithIds([])}
-                    />
+                    <Mono
+                      style={{
+                        color: colors.accent,
+                        cursor: 'pointer',
+                        letterSpacing: '0.6px',
+                      }}
+                      onClick={() => setCompareWithIds([])}
+                    >
+                      {compareWithIds.length + 1} comparadas · limpiar ×
+                    </Mono>
                   )}
-                </Box>
-              </Paper>
-              {compareWithIds.length > 0 && compareAnalytics.length === compareWithIds.length ? (
-                <MultiSessionComparison analytics={[analytics, ...compareAnalytics]} />
-              ) : (
-                <>
-                  <Box display="flex" justifyContent="flex-end">
-                    <Button
-                      variant="outlined"
+                  <div style={{ flex: 1 }} />
+                  {compareWithIds.length === 0 && (
+                    <ToolButton
                       onClick={async () => {
                         try {
                           await sessionsApi.downloadReport(selectedId, analytics.sessionName);
@@ -421,30 +527,39 @@ const Analytics: React.FC = () => {
                         }
                       }}
                     >
-                      📄 Descargar informe PDF
-                    </Button>
-                  </Box>
+                      ⤓ PDF
+                    </ToolButton>
+                  )}
+                </div>
+              </Panel>
+
+              {compareWithIds.length > 0 && compareAnalytics.length === compareWithIds.length ? (
+                <MultiSessionComparison analytics={[analytics, ...compareAnalytics]} />
+              ) : (
+                <>
                   <InsightsPanel sessionId={selectedId} />
-                  <AnalyticsDetail analytics={analytics} />
+                  <AnalyticsDetail analytics={analytics} session={selectedSession} />
+                  <ConsistencyPanel analytics={analytics} />
+                  <StatisticalTestsPanel analytics={analytics} sessions={sessions} />
+                  <DistributionsPanel analytics={analytics} sessions={sessions} />
+                  <ConditionsImpactPanel analytics={analytics} sessions={sessions} />
                   <TrackMap
                     analytics={analytics}
-                    circuitName={sessions.find((s) => s.id === selectedId)?.circuit}
+                    circuitName={selectedSession?.circuit}
                   />
                   <AdvancedAnalytics sessionId={selectedId} base={analytics} />
                 </>
               )}
-            </Box>
+            </>
           )}
-        </Grid>
-      </Grid>
+        </div>
+      </div>
 
-      <Dialog
-        open={uploadOpen}
-        onClose={() => !uploading && resetDialog()}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Nueva sesión</DialogTitle>
+      {/* Upload dialog (theme-inherited) */}
+      <Dialog open={uploadOpen} onClose={() => !uploading && resetDialog()} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontFamily: fonts.mono, fontSize: 14, letterSpacing: '1.2px', textTransform: 'uppercase', color: colors.textDim }}>
+          Nueva sesión
+        </DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} pt={1}>
             <TextField
@@ -455,12 +570,13 @@ const Analytics: React.FC = () => {
               fullWidth
             />
             <Box display="flex" gap={2}>
-              <TextField
-                label="Circuito"
-                value={meta.circuit}
-                onChange={(e) => setMeta({ ...meta, circuit: e.target.value })}
-                fullWidth
-              />
+              <Box flex={1}>
+                <CircuitSelector
+                  value={meta.circuit || ''}
+                  onChange={(v) => setMeta({ ...meta, circuit: v })}
+                  fullWidth
+                />
+              </Box>
               <TextField
                 label="Fecha y hora"
                 type="datetime-local"
@@ -543,18 +659,63 @@ const Analytics: React.FC = () => {
               rows={2}
               fullWidth
             />
-
+            <Box>
+              <Label>Condiciones ambientales</Label>
+              <Box display="grid" gridTemplateColumns="repeat(4, 1fr)" gap={1.5} mt={1}>
+                <TextField
+                  label="Temp pista (°C)"
+                  type="number"
+                  size="small"
+                  inputProps={{ step: 0.1 }}
+                  value={meta.trackTempC ?? ''}
+                  onChange={(e) => setMeta({ ...meta, trackTempC: e.target.value ? Number(e.target.value) : undefined })}
+                />
+                <TextField
+                  label="Temp aire (°C)"
+                  type="number"
+                  size="small"
+                  inputProps={{ step: 0.1 }}
+                  value={meta.ambientTempC ?? ''}
+                  onChange={(e) => setMeta({ ...meta, ambientTempC: e.target.value ? Number(e.target.value) : undefined })}
+                />
+                <TextField
+                  label="Humedad (%)"
+                  type="number"
+                  size="small"
+                  inputProps={{ min: 0, max: 100, step: 1 }}
+                  value={meta.humidityPct ?? ''}
+                  onChange={(e) => setMeta({ ...meta, humidityPct: e.target.value ? Number(e.target.value) : undefined })}
+                />
+                <TextField
+                  label="Viento (km/h)"
+                  type="number"
+                  size="small"
+                  inputProps={{ step: 0.1 }}
+                  value={meta.windKph ?? ''}
+                  onChange={(e) => setMeta({ ...meta, windKph: e.target.value ? Number(e.target.value) : undefined })}
+                />
+              </Box>
+            </Box>
+            <TextField
+              label="Notas de setup"
+              value={meta.setupNotes ?? ''}
+              onChange={(e) => setMeta({ ...meta, setupNotes: e.target.value })}
+              multiline
+              rows={3}
+              fullWidth
+              placeholder="Ej: Press F 1.8/R 1.7 | Gear 12/41 | Ala -3 | Bias +2"
+              helperText="Formato libre. Sirve para comparar setups entre sesiones."
+            />
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 1 }}>
               <Tabs value={uploadTab} onChange={(_, v) => setUploadTab(v)}>
                 <Tab value="csv" label="Subir CSV" />
                 <Tab value="manual" label="Añadir manualmente" />
               </Tabs>
             </Box>
-
             {uploadTab === 'csv' ? (
               <Box>
                 <Button variant="outlined" component="label" fullWidth>
-                  {file ? `📄 ${file.name}` : 'Seleccionar archivo CSV'}
+                  {file ? `${file.name}` : 'Seleccionar archivo CSV'}
                   <input
                     type="file"
                     accept=".csv,text/csv"
@@ -564,18 +725,16 @@ const Analytics: React.FC = () => {
                 </Button>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
                   <Typography variant="caption" color="textSecondary">
-                    Columnas: lap, time, s1, s2, s3, valid, compound, fuel, notes (cualquier orden).
-                    Separador <code>,</code> o <code>;</code>.
+                    Columnas: lap, time, s1, s2, s3, valid, compound, fuel, notes. Sep <code>,</code> o <code>;</code>.
                   </Typography>
                   <Link
                     component="button"
                     type="button"
                     variant="caption"
                     onClick={handleDownloadTemplate}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}
+                    sx={{ whiteSpace: 'nowrap' }}
                   >
-                    <DownloadIcon fontSize="inherit" />
-                    Descargar plantilla
+                    ⤓ plantilla
                   </Link>
                 </Box>
               </Box>
@@ -585,25 +744,13 @@ const Analytics: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={resetDialog} disabled={uploading}>
-            Cancelar
-          </Button>
+          <Button onClick={resetDialog} disabled={uploading}>Cancelar</Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={
-              uploading ||
-              !meta.name ||
-              (uploadTab === 'csv' ? !file : manualLaps.length === 0)
-            }
+            disabled={uploading || !meta.name || (uploadTab === 'csv' ? !file : manualLaps.length === 0)}
           >
-            {uploading ? (
-              <CircularProgress size={20} />
-            ) : uploadTab === 'csv' ? (
-              'Subir y analizar'
-            ) : (
-              'Crear sesión'
-            )}
+            {uploading ? <CircularProgress size={20} /> : uploadTab === 'csv' ? 'Subir y analizar' : 'Crear sesión'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -616,300 +763,531 @@ const Analytics: React.FC = () => {
       >
         {snack ? <Alert severity={snack.severity}>{snack.msg}</Alert> : undefined}
       </Snackbar>
-    </Box>
+    </div>
   );
 };
 
-interface KpiProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  hint?: string;
-  color?: 'primary' | 'success' | 'warning' | 'error' | 'info';
-}
+/* ─── AnalyticsDetail ─────────────────────────────────────────────────── */
 
-const Kpi: React.FC<KpiProps> = ({ icon, label, value, hint, color = 'primary' }) => (
-  <Card sx={{ height: '100%' }}>
-    <CardContent>
-      <Box display="flex" alignItems="center" gap={1} mb={1}>
-        <Box color={`${color}.main`} display="flex">{icon}</Box>
-        <Typography variant="caption" color="textSecondary">
-          {label}
-        </Typography>
-      </Box>
-      <Typography variant="h5" fontWeight="bold">
-        {value}
-      </Typography>
-      {hint && (
-        <Typography variant="caption" color="textSecondary">
-          {hint}
-        </Typography>
-      )}
-    </CardContent>
-  </Card>
-);
-
-const AnalyticsDetail: React.FC<{ analytics: SessionAnalytics }> = ({ analytics }) => {
-  const a = analytics;
-
+const AnalyticsDetail: React.FC<{
+  analytics: SessionAnalytics;
+  session: Session | null;
+}> = ({ analytics: a, session }) => {
   const chartData = a.perLap.map((lap) => ({
     lapNumber: lap.lapNumber,
     time: lap.lapTimeMs / 1000,
     outlier: lap.outlier || !lap.valid ? lap.lapTimeMs / 1000 : null,
-    gap: lap.gapToBestMs != null ? lap.gapToBestMs / 1000 : null,
   }));
 
-  const bestSec = a.theoreticalBestLapMs != null && a.bestLapMs != null
-    ? a.bestLapMs - a.theoreticalBestLapMs
-    : null;
+  const bestDelta =
+    a.theoreticalBestLapMs != null && a.bestLapMs != null
+      ? a.bestLapMs - a.theoreticalBestLapMs
+      : null;
 
   const degradationLabel =
     a.degradationMsPerLap != null
-      ? `${a.degradationMsPerLap > 0 ? '+' : ''}${(a.degradationMsPerLap / 1000).toFixed(3)} s/vuelta`
+      ? `${a.degradationMsPerLap > 0 ? '+' : ''}${(a.degradationMsPerLap / 1000).toFixed(3)} s/lap`
       : '—';
 
-  return (
-    <Box display="flex" flexDirection="column" gap={2}>
-      <Typography variant="h5" fontWeight="bold">
-        {a.sessionName}
-      </Typography>
+  const outliers = a.perLap.filter((l) => l.outlier).length;
 
-      <Grid container spacing={2}>
-        <Grid item xs={6} sm={3}>
-          <Kpi
-            icon={<SpeedIcon />}
-            label="Mejor vuelta"
-            value={formatLapTime(a.bestLapMs)}
-            hint={a.bestLapNumber ? `Vuelta ${a.bestLapNumber}` : undefined}
-            color="success"
-          />
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Kpi
-            icon={<TimerIcon />}
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Hero: session name + best lap big */}
+      <Panel padding={0}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '4px 1fr auto',
+            alignItems: 'stretch',
+          }}
+        >
+          <div style={{ background: colors.accent }} />
+          <div style={{ padding: '18px 20px' }}>
+            <Label size="micro">SESIÓN</Label>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 600,
+                marginTop: 4,
+                color: colors.text,
+              }}
+            >
+              {a.sessionName}
+            </div>
+            {session && (
+              <Mono
+                style={{
+                  fontSize: 11,
+                  color: colors.textDim,
+                  marginTop: 6,
+                  letterSpacing: '0.4px',
+                }}
+              >
+                {session.circuit || '—'} ·{' '}
+                {new Date(session.sessionDate).toLocaleDateString('es-ES')}
+                {session.driverName ? ` · ${session.driverName}` : ''}
+                {session.vehicleName ? ` · ${session.vehicleName}` : ''}
+              </Mono>
+            )}
+          </div>
+          <div
+            style={{
+              padding: '18px 22px',
+              borderLeft: `1px solid ${colors.border}`,
+              background: colors.surface2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              minWidth: 220,
+            }}
+          >
+            <Label size="micro">BEST LAP</Label>
+            <Mono
+              style={{
+                fontSize: 32,
+                fontWeight: 600,
+                color: colors.purple,
+                lineHeight: 1,
+                marginTop: 6,
+                letterSpacing: '1px',
+              }}
+            >
+              {formatLapTime(a.bestLapMs)}
+            </Mono>
+            {a.bestLapNumber && (
+              <Mono
+                style={{
+                  fontSize: 10,
+                  color: colors.textMute,
+                  marginTop: 6,
+                  letterSpacing: '0.6px',
+                }}
+              >
+                LAP {a.bestLapNumber}
+              </Mono>
+            )}
+          </div>
+        </div>
+      </Panel>
+
+      {/* KPI strip */}
+      <Panel padding={16}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: 0,
+          }}
+        >
+          <KpiCell
             label="Media"
             value={formatLapTime(a.averageMs)}
-            hint={`Mediana ${formatLapTime(a.medianMs)}`}
+            sub={`mediana ${formatLapTime(a.medianMs)}`}
           />
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Kpi
-            icon={<ShowChartIcon />}
-            label="Consistencia"
+          <KpiCell
+            label="Stdev"
             value={a.stdDevMs != null ? `±${(a.stdDevMs / 1000).toFixed(3)}s` : '—'}
-            hint="Desviación estándar"
-            color="info"
+            sub="consistencia"
           />
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Kpi
-            icon={<WarningIcon />}
+          <KpiCell
             label="Degradación"
             value={degradationLabel}
-            hint={
-              a.degradationR2 != null ? `R² ${(a.degradationR2).toFixed(2)}` : undefined
-            }
-            color={a.degradationMsPerLap && a.degradationMsPerLap > 0 ? 'warning' : 'success'}
+            sub={a.degradationR2 != null ? `R² ${a.degradationR2.toFixed(2)}` : undefined}
+            tone={a.degradationMsPerLap && a.degradationMsPerLap > 0 ? 'yellow' : 'green'}
           />
-        </Grid>
-      </Grid>
+          <KpiCell label="Vueltas" value={String(a.totalLaps)} sub={`${a.validLaps} válidas`} />
+          <KpiCell
+            label="Inválidas"
+            value={String(a.invalidLaps)}
+            tone={a.invalidLaps > 0 ? 'red' : 'text'}
+          />
+          <KpiCell label="Outliers" value={String(outliers)} tone={outliers > 0 ? 'orange' : 'text'} last />
+        </div>
+      </Panel>
 
-      <Card>
-        <CardContent>
-          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Tiempos por vuelta
-          </Typography>
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="lapNumber" label={{ value: 'Vuelta', position: 'insideBottom', offset: -5 }} />
-              <YAxis
-                tickFormatter={(v) => v.toFixed(2)}
-                label={{ value: 'Segundos', angle: -90, position: 'insideLeft' }}
-                domain={['auto', 'auto']}
+      {/* Lap times chart */}
+      <Panel
+        title="Tiempos por vuelta"
+        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} puntos</Mono>}
+        padding={12}
+      >
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
+            <CartesianGrid stroke={colors.border} strokeDasharray="3 3" />
+            <XAxis
+              dataKey="lapNumber"
+              stroke={colors.textMute}
+              tick={{ fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+              label={{ value: 'Vuelta', position: 'insideBottom', offset: -5, fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+            />
+            <YAxis
+              stroke={colors.textMute}
+              tick={{ fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+              tickFormatter={(v) => v.toFixed(2)}
+              label={{ value: 'Segundos', angle: -90, position: 'insideLeft', fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+              domain={['auto', 'auto']}
+            />
+            <RTooltip
+              contentStyle={{
+                background: colors.surface3,
+                border: `1px solid ${colors.borderHi}`,
+                borderRadius: 0,
+                fontFamily: fonts.mono,
+                fontSize: 11,
+                color: colors.text,
+              }}
+              formatter={(v: any) => (typeof v === 'number' ? `${v.toFixed(3)} s` : v)}
+              labelFormatter={(l) => `Vuelta ${l}`}
+            />
+            <Line
+              type="monotone"
+              dataKey="time"
+              stroke={colors.accent}
+              strokeWidth={2}
+              dot={{ r: 3, fill: colors.accent, stroke: colors.bg, strokeWidth: 1 }}
+              name="Tiempo"
+            />
+            <Scatter dataKey="outlier" fill={colors.orange} name="Outlier" />
+            {a.bestLapMs != null && (
+              <ReferenceLine
+                y={a.bestLapMs / 1000}
+                stroke={colors.purple}
+                strokeDasharray="4 4"
+                label={{ value: 'Best', position: 'right', fill: colors.purple, fontFamily: fonts.mono, fontSize: 10 }}
               />
-              <RTooltip
-                formatter={(v: any) => (typeof v === 'number' ? `${v.toFixed(3)} s` : v)}
-                labelFormatter={(l) => `Vuelta ${l}`}
+            )}
+            {a.medianMs != null && (
+              <ReferenceLine
+                y={a.medianMs / 1000}
+                stroke={colors.textMute}
+                strokeDasharray="4 4"
+                label={{ value: 'Median', position: 'right', fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
               />
-              <Line
-                type="monotone"
-                dataKey="time"
-                stroke="#d32f2f"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Tiempo"
-              />
-              <Scatter dataKey="outlier" fill="#ff9800" name="Outlier" />
-              {a.bestLapMs != null && (
-                <ReferenceLine
-                  y={a.bestLapMs / 1000}
-                  stroke="#4caf50"
-                  strokeDasharray="3 3"
-                  label={{ value: 'Best', position: 'right', fill: '#4caf50' }}
-                />
-              )}
-              {a.medianMs != null && (
-                <ReferenceLine
-                  y={a.medianMs / 1000}
-                  stroke="#9e9e9e"
-                  strokeDasharray="3 3"
-                  label={{ value: 'Mediana', position: 'right', fill: '#9e9e9e' }}
-                />
-              )}
-            </ComposedChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </Panel>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                Sectores óptimos
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1}>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography>Sector 1</Typography>
-                  <Typography fontFamily="monospace" fontWeight={600}>
-                    {formatLapTime(a.bestSector1Ms)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography>Sector 2</Typography>
-                  <Typography fontFamily="monospace" fontWeight={600}>
-                    {formatLapTime(a.bestSector2Ms)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography>Sector 3</Typography>
-                  <Typography fontFamily="monospace" fontWeight={600}>
-                    {formatLapTime(a.bestSector3Ms)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between" sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                  <Typography fontWeight={600}>Theoretical best</Typography>
-                  <Typography fontFamily="monospace" fontWeight={700} color="success.main">
-                    {formatLapTime(a.theoreticalBestLapMs)}
-                  </Typography>
-                </Box>
-                {bestSec != null && (
-                  <Typography variant="caption" color="textSecondary" textAlign="right">
-                    {bestSec > 0 ? `Dejas ${(bestSec / 1000).toFixed(3)}s sobre la mesa` : 'Vuelta perfecta!'}
-                  </Typography>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                Resumen
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1}>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="textSecondary">Vueltas totales</Typography>
-                  <Typography fontWeight={600}>{a.totalLaps}</Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="textSecondary">Vueltas válidas</Typography>
-                  <Typography fontWeight={600} color="success.main">
-                    {a.validLaps}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="textSecondary">Vueltas inválidas</Typography>
-                  <Typography fontWeight={600} color={a.invalidLaps > 0 ? 'error.main' : undefined}>
-                    {a.invalidLaps}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="textSecondary">Outliers detectados</Typography>
-                  <Typography fontWeight={600} color="warning.main">
-                    {a.perLap.filter((l) => l.outlier).length}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography color="textSecondary">Peor vuelta válida</Typography>
-                  <Typography fontFamily="monospace">{formatLapTime(a.worstLapMs)}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {/* Two-up: sectors + summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <Panel title="Sectores óptimos" padding={16}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SectorRow label="Sector 1" value={formatLapTime(a.bestSector1Ms)} />
+            <SectorRow label="Sector 2" value={formatLapTime(a.bestSector2Ms)} />
+            <SectorRow label="Sector 3" value={formatLapTime(a.bestSector3Ms)} />
+            <div
+              style={{
+                marginTop: 8,
+                paddingTop: 12,
+                borderTop: `1px solid ${colors.borderHi}`,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+              }}
+            >
+              <Label tone="text">Theoretical best</Label>
+              <Mono
+                style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: colors.green,
+                  letterSpacing: '0.4px',
+                }}
+              >
+                {formatLapTime(a.theoreticalBestLapMs)}
+              </Mono>
+            </div>
+            {bestDelta != null && (
+              <Mono
+                style={{
+                  fontSize: 10,
+                  color: bestDelta > 0 ? colors.yellow : colors.green,
+                  textAlign: 'right',
+                  letterSpacing: '0.4px',
+                }}
+              >
+                {bestDelta > 0
+                  ? `Dejas ${(bestDelta / 1000).toFixed(3)}s sobre la mesa`
+                  : '¡Vuelta perfecta!'}
+              </Mono>
+            )}
+          </div>
+        </Panel>
+        <Panel title="Resumen" padding={16}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SummaryRow label="Vueltas totales" value={String(a.totalLaps)} />
+            <SummaryRow label="Vueltas válidas" value={String(a.validLaps)} tone="green" />
+            <SummaryRow
+              label="Vueltas inválidas"
+              value={String(a.invalidLaps)}
+              tone={a.invalidLaps > 0 ? 'red' : 'text'}
+            />
+            <SummaryRow
+              label="Outliers detectados"
+              value={String(outliers)}
+              tone={outliers > 0 ? 'orange' : 'text'}
+            />
+            <SummaryRow label="Peor vuelta válida" value={formatLapTime(a.worstLapMs)} mono />
+          </div>
+        </Panel>
+      </div>
 
-      <Card>
-        <CardContent>
-          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Detalle por vuelta
-          </Typography>
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell align="right">Tiempo</TableCell>
-                  <TableCell align="right">Gap a best</TableCell>
-                  <TableCell align="right">S1</TableCell>
-                  <TableCell align="right">S2</TableCell>
-                  <TableCell align="right">S3</TableCell>
-                  <TableCell>Estado</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {a.perLap.map((lap) => (
-                  <TableRow
-                    key={lap.lapNumber}
-                    sx={{
-                      bgcolor: lap.outlier
-                        ? 'warning.light'
-                        : !lap.valid
-                        ? 'error.light'
-                        : undefined,
-                      opacity: !lap.valid ? 0.7 : 1,
+      {/* Per-lap table (dense, handoff-style) */}
+      <Panel
+        title="Detalle por vuelta"
+        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} vueltas</Mono>}
+        padding={0}
+      >
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {['#', 'Tiempo', 'Gap', 'S1', 'S2', 'S3', 'Estado'].map((h, i) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: i === 0 || i === 6 ? 'left' : 'right',
+                      fontFamily: fonts.mono,
+                      fontSize: 10,
+                      letterSpacing: '1.2px',
+                      textTransform: 'uppercase',
+                      color: colors.textMute,
+                      fontWeight: 600,
+                      padding: '8px 12px',
+                      background: colors.surface2,
+                      borderBottom: `1px solid ${colors.borderHi}`,
                     }}
                   >
-                    <TableCell>{lap.lapNumber}</TableCell>
-                    <TableCell align="right" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                      {formatLapTime(lap.lapTimeMs)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                      {formatGap(lap.gapToBestMs)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                      {formatLapTime(lap.sector1Ms)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                      {formatLapTime(lap.sector2Ms)}
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontFamily: 'monospace' }}>
-                      {formatLapTime(lap.sector3Ms)}
-                    </TableCell>
-                    <TableCell>
-                      {!lap.valid && (
-                        <Tooltip title="Vuelta marcada como inválida">
-                          <Chip label="Inválida" size="small" color="error" />
-                        </Tooltip>
-                      )}
-                      {lap.outlier && (
-                        <Tooltip title="Tiempo > mediana × 1.07 (probable pit/sale)">
-                          <Chip label="Outlier" size="small" color="warning" />
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                    {h}
+                  </th>
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+              </tr>
+            </thead>
+            <tbody>
+              {a.perLap.map((lap, idx) => {
+                const isBest = a.bestLapNumber === lap.lapNumber;
+                const rowBg = isBest
+                  ? 'rgba(187, 108, 255, 0.08)'
+                  : lap.outlier
+                    ? 'rgba(255, 138, 42, 0.06)'
+                    : !lap.valid
+                      ? 'rgba(255, 79, 79, 0.05)'
+                      : idx % 2 === 0
+                        ? 'transparent'
+                        : colors.surface2;
+                const timeColor = isBest
+                  ? colors.purple
+                  : lap.outlier
+                    ? colors.orange
+                    : !lap.valid
+                      ? colors.textMute
+                      : colors.text;
+                return (
+                  <tr
+                    key={lap.lapNumber}
+                    style={{
+                      background: rowBg,
+                      opacity: !lap.valid ? 0.75 : 1,
+                    }}
+                  >
+                    <td
+                      style={{
+                        ...tdBase,
+                        fontFamily: fonts.mono,
+                        color: colors.textDim,
+                      }}
+                    >
+                      {lap.lapNumber}
+                    </td>
+                    <td style={{ ...tdBase, ...tdMono, color: timeColor, textAlign: 'right' }}>
+                      {formatLapTime(lap.lapTimeMs)}
+                    </td>
+                    <td style={{ ...tdBase, ...tdMono, color: colors.textDim, textAlign: 'right' }}>
+                      {formatGap(lap.gapToBestMs)}
+                    </td>
+                    <td style={{ ...tdBase, ...tdMono, color: colors.textDim, textAlign: 'right' }}>
+                      {formatLapTime(lap.sector1Ms)}
+                    </td>
+                    <td style={{ ...tdBase, ...tdMono, color: colors.textDim, textAlign: 'right' }}>
+                      {formatLapTime(lap.sector2Ms)}
+                    </td>
+                    <td style={{ ...tdBase, ...tdMono, color: colors.textDim, textAlign: 'right' }}>
+                      {formatLapTime(lap.sector3Ms)}
+                    </td>
+                    <td style={{ ...tdBase }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {isBest && <Flag f="SB" />}
+                        {!lap.valid && (
+                          <Tag tone="red">INVÁLIDA</Tag>
+                        )}
+                        {lap.outlier && <Tag tone="orange">OUTLIER</Tag>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+    </div>
   );
 };
+
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
+
+const tdBase: React.CSSProperties = {
+  padding: '8px 12px',
+  borderBottom: `1px solid ${colors.border}`,
+  fontSize: 12,
+  whiteSpace: 'nowrap',
+};
+
+const tdMono: React.CSSProperties = {
+  fontFamily: fonts.mono,
+  fontWeight: 600,
+  fontVariantNumeric: 'tabular-nums',
+};
+
+const TONE_COLOR: Record<string, string> = {
+  text: colors.text,
+  dim: colors.textDim,
+  mute: colors.textMute,
+  accent: colors.accent,
+  green: colors.green,
+  red: colors.red,
+  yellow: colors.yellow,
+  orange: colors.orange,
+  purple: colors.purple,
+  default: colors.text,
+};
+
+interface KpiCellProps {
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  tone?: 'text' | 'accent' | 'green' | 'red' | 'yellow' | 'orange' | 'purple';
+  last?: boolean;
+}
+
+const KpiCell: React.FC<KpiCellProps> = ({ label, value, sub, tone = 'text', last }) => (
+  <div
+    style={{
+      padding: '4px 18px',
+      borderRight: last ? 'none' : `1px solid ${colors.border}`,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 6,
+    }}
+  >
+    <MiniStat
+      label={label}
+      value={value}
+      tone={tone === 'text' ? 'text' : tone}
+      size="md"
+    />
+    {sub && (
+      <Mono style={{ fontSize: 10, color: colors.textMute, letterSpacing: '0.4px' }}>
+        {sub}
+      </Mono>
+    )}
+  </div>
+);
+
+const SectorRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+    }}
+  >
+    <span style={{ fontSize: 13, color: colors.textDim, fontFamily: fonts.sans }}>
+      {label}
+    </span>
+    <Mono style={{ fontSize: 14, fontWeight: 600, color: colors.text }}>{value}</Mono>
+  </div>
+);
+
+const SummaryRow: React.FC<{
+  label: string;
+  value: string;
+  tone?: 'text' | 'green' | 'red' | 'orange';
+  mono?: boolean;
+}> = ({ label, value, tone = 'text', mono }) => (
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'baseline',
+    }}
+  >
+    <span style={{ fontSize: 13, color: colors.textDim, fontFamily: fonts.sans }}>
+      {label}
+    </span>
+    <span
+      style={{
+        fontSize: 14,
+        fontWeight: 600,
+        color: TONE_COLOR[tone] ?? colors.text,
+        fontFamily: mono || tone !== 'text' ? fonts.mono : fonts.sans,
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
+      {value}
+    </span>
+  </div>
+);
+
+const Tag: React.FC<{
+  children: React.ReactNode;
+  tone?: 'default' | 'dim' | 'red' | 'orange' | 'green' | 'yellow';
+}> = ({ children, tone = 'default' }) => {
+  const fg =
+    tone === 'red'
+      ? colors.red
+      : tone === 'orange'
+        ? colors.orange
+        : tone === 'green'
+          ? colors.green
+          : tone === 'yellow'
+            ? colors.yellow
+            : tone === 'dim'
+              ? colors.textMute
+              : colors.textDim;
+  return (
+    <span
+      style={{
+        fontFamily: fonts.mono,
+        fontSize: 9,
+        letterSpacing: '0.8px',
+        textTransform: 'uppercase',
+        color: fg,
+        border: `1px solid ${fg === colors.textMute || fg === colors.textDim ? colors.border : fg}`,
+        padding: '1px 5px',
+        fontWeight: 600,
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+
+const EmptyState: React.FC<{ text: string }> = ({ text }) => (
+  <div
+    style={{
+      padding: '32px 16px',
+      textAlign: 'center',
+      color: colors.textMute,
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      letterSpacing: '0.6px',
+    }}
+  >
+    {text}
+  </div>
+);
 
 export default Analytics;
