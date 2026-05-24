@@ -16,6 +16,7 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
+  demoLogin: () => Promise<void>;
   logout: () => void;
   hydrate: () => Promise<void>;
   clearError: () => void;
@@ -76,6 +77,24 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (err) {
           const message = extractError(err, 'Error en el registro');
+          set({ isLoading: false, error: message });
+          throw err;
+        }
+      },
+
+      demoLogin: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authApi.demo();
+          set({
+            user: response.user,
+            token: response.token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (err) {
+          const message = extractError(err, 'Demo unavailable');
           set({ isLoading: false, error: message });
           throw err;
         }

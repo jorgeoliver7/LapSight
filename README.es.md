@@ -18,12 +18,13 @@ fullstack (Spring Boot · FastAPI · React + TS), y deploy listo para producció
 
 | Cuenta | Acceso |
 |---|---|
-| **Probar como invitado** | Click en "→ Probar demo" en la landing — login automático |
+| **Probar como invitado** | Click en "→ Probar demo" en la landing — llama a `/api/auth/demo` |
 | **Crear tu propia cuenta** | "Crear cuenta" → cada registro genera un equipo aislado |
-| **Manual (admin demo)** | `admin@lapsight.app` / `admin123` |
+| **Login manual** | Las credenciales que configures vía `APP_SEED_ADMIN_*` en env |
 
-> Si despliegas público con `APP_SEED_DEMO_DATA=true`, el botón "Probar demo"
-> entra a un equipo F1 ficticio (Alonso, Sainz…) con sesiones realistas.
+> El botón demo solo funciona cuando `APP_SEED_DEMO_DATA=true` y el backend
+> tiene un admin seed provisionado. El password nunca viaja al frontend — el
+> backend firma directamente el JWT contra el usuario seed.
 
 <br/>
 
@@ -74,7 +75,12 @@ npm run dev
 - Backend → http://localhost:8082 (mapeado al 8080 del contenedor)
 - Adminer (opcional) → `docker compose --profile dev up adminer` → http://localhost:8081
 
-Credenciales seed: `admin@lapsight.app / admin123`.
+Credenciales seed para dev local (sobrescribibles via `.env`):
+- email: `admin@local.dev`
+- password: `please-change-me`
+
+Son defaults desechables para conveniencia local. En cualquier deploy real debes
+configurar `APP_SEED_ADMIN_EMAIL` y `APP_SEED_ADMIN_PASSWORD` con valores que tú controles.
 
 ### Alternativas
 
@@ -142,7 +148,8 @@ Cada servicio se despliega por separado usando su propio Dockerfile.
    JWT_SECRET=<openssl rand -base64 48>
    APP_CORS_ALLOWED_ORIGINS=https://<tu-frontend>.railway.app
    PYTHON_ANALYTICS_URL=http://python-analytics.railway.internal:8000
-   APP_SEED_DEMO_DATA=true   # si quieres que la cuenta demo tenga datos
+   APP_SEED_DEMO_DATA=true   # si quieres que el botón demo funcione
+   APP_SEED_ADMIN_EMAIL=<email-admin-demo>
    APP_SEED_ADMIN_PASSWORD=<algo-seguro>
    ```
 4. El backend expone `PORT` automático en Railway — ya configurado en `application-prod.yml`.

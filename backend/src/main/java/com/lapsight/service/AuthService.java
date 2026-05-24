@@ -12,11 +12,14 @@ import com.lapsight.repository.TeamRepository;
 import com.lapsight.repository.UserRepository;
 import com.lapsight.security.JwtService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 public class AuthService {
@@ -26,17 +29,42 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final boolean demoEnabled;
+    private final String demoEmail;
 
     public AuthService(UserRepository userRepository,
                        TeamRepository teamRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
-                       AuthenticationManager authenticationManager) {
+                       AuthenticationManager authenticationManager,
+                       @Value("${app.seed.demo-data:false}") boolean demoEnabled,
+                       @Value("${app.seed.admin-email:}") String demoEmail) {
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.demoEnabled = demoEnabled;
+        this.demoEmail = demoEmail;
+    }
+
+    /**
+     * Public demo login. Returns a JWT for the seeded demo admin without
+     * exposing its password anywhere outside the backend.
+     * Only works when APP_SEED_DEMO_DATA=true (i.e. demo mode is intentional).
+     */
+    public AuthResponse demoLogin() {
+        if (!demoEnabled || demoEmail == null || demoEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demo mode is disabled");
+        }
+        User user = userRepository.findByEmail(demoEmail)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Demo account not provisioned"));
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Demo account disabled");
+        }
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, jwtService.getExpirationMillis(), UserDto.fromEntity(user));
     }
 
     public AuthResponse login(LoginRequest request) {

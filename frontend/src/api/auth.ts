@@ -30,5 +30,7 @@ export const authApi = {
   register: (payload: RegisterPayload) =>
     apiClient.post<AuthResponse>('/auth/register', payload).then((r) => r.data),
 
+  demo: () => apiClient.post<AuthResponse>('/auth/demo').then((r) => r.data),
+
   me: () => apiClient.get<User>('/auth/me').then((r) => r.data),
 };

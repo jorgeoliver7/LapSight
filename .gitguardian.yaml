@@ -1,0 +1,14 @@
+# GitGuardian configuration
+# Docs: https://docs.gitguardian.com/ggshield-docs/reference/iac/ignore
+
+version: 2
+
+# These files contain placeholder/throwaway values only.
+# Real secrets are loaded from env at runtime; nothing here is a live credential.
+paths-ignore:
+  - "**/*.env.example"
+  - "docker-compose.yml"
+  - "docker-compose.prod.yml"
+  - "backend/src/main/resources/application*.yml"
+  - "README.md"
+  - "README.es.md"

@@ -64,13 +64,13 @@ const Pillar: React.FC<{
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { login, isLoading, error } = useAuthStore();
+  const { demoLogin, isLoading, error } = useAuthStore();
   const [demoBusy, setDemoBusy] = useState(false);
 
   const launchDemo = async () => {
     setDemoBusy(true);
     try {
-      await login('admin@lapsight.app', 'admin123');
+      await demoLogin();
       navigate('/dashboard');
     } catch {
       setDemoBusy(false);

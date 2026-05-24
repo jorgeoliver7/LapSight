@@ -19,12 +19,13 @@ self-register flow so anyone can try it with their own team.
 
 | Account | Access |
 |---|---|
-| **Try as guest** | Click "→ Try the demo" on the landing — automatic login |
+| **Try as guest** | Click "→ Try the demo" on the landing — calls `/api/auth/demo` |
 | **Create your own account** | "Create account" → each sign-up generates an isolated team |
-| **Manual (demo admin)** | `admin@lapsight.app` / `admin123` |
+| **Manual login** | Whatever you configured via `APP_SEED_ADMIN_*` env vars |
 
-> If deployed publicly with `APP_SEED_DEMO_DATA=true`, the "Try the demo"
-> button signs you in to a fictional F1 team with realistic sessions.
+> The demo button is gated by `APP_SEED_DEMO_DATA=true` and only works when the
+> backend has provisioned a seed admin. The frontend never sees the password —
+> the backend signs the JWT directly from the env-provided seed account.
 
 <br/>
 
@@ -78,7 +79,13 @@ npm run dev
 - Backend → http://localhost:8082 (mapped to the container's 8080)
 - Adminer (optional) → `docker compose --profile dev up adminer` → http://localhost:8081
 
-Seed credentials: `admin@lapsight.app / admin123`.
+Seed credentials for local dev (overridable via `.env`):
+- email: `admin@local.dev`
+- password: `please-change-me`
+
+These are throwaway defaults for local convenience only. In any real deploy
+you must set `APP_SEED_ADMIN_EMAIL` and `APP_SEED_ADMIN_PASSWORD` env vars
+to values you control.
 
 ### Alternatives
 
@@ -146,7 +153,8 @@ Each service deploys independently using its own Dockerfile.
    JWT_SECRET=<openssl rand -base64 48>
    APP_CORS_ALLOWED_ORIGINS=https://<your-frontend>.railway.app
    PYTHON_ANALYTICS_URL=http://python-analytics.railway.internal:8000
-   APP_SEED_DEMO_DATA=true   # if you want the demo account to have data
+   APP_SEED_DEMO_DATA=true   # if you want the demo button to work
+   APP_SEED_ADMIN_EMAIL=<demo-admin-email>
    APP_SEED_ADMIN_PASSWORD=<something-secure>
    ```
 4. The backend reads Railway's auto-injected `PORT` — already wired in `application-prod.yml`.

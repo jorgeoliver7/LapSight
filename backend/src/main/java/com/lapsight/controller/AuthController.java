@@ -35,6 +35,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    @PostMapping("/demo")
+    public ResponseEntity<AuthResponse> demo() {
+        return ResponseEntity.ok(authService.demoLogin());
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserDetails principal) {
         return ResponseEntity.ok(authService.getCurrentUser(principal.getUsername()));

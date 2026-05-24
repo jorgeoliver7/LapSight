@@ -25,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final DemoSeedService demoSeed;
+    private final boolean demoEnabled;
     private final String adminEmail;
     private final String adminPassword;
     private final String demoTeamName;
@@ -33,13 +34,15 @@ public class DataInitializer implements CommandLineRunner {
                            UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            DemoSeedService demoSeed,
-                           @Value("${app.seed.admin-email:admin@racing.com}") String adminEmail,
-                           @Value("${app.seed.admin-password:admin123}") String adminPassword,
+                           @Value("${app.seed.demo-data:false}") boolean demoEnabled,
+                           @Value("${app.seed.admin-email:}") String adminEmail,
+                           @Value("${app.seed.admin-password:}") String adminPassword,
                            @Value("${app.seed.team-name:Demo Racing Team}") String demoTeamName) {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.demoSeed = demoSeed;
+        this.demoEnabled = demoEnabled;
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
         this.demoTeamName = demoTeamName;
@@ -48,6 +51,15 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        if (!demoEnabled) {
+            log.info("Demo seed disabled (APP_SEED_DEMO_DATA=false). Skipping demo data init.");
+            return;
+        }
+        if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
+            log.warn("Demo seed is enabled but APP_SEED_ADMIN_EMAIL or APP_SEED_ADMIN_PASSWORD is empty. Skipping.");
+            return;
+        }
+
         Team team = teamRepository.findAll().stream()
                 .filter(t -> demoTeamName.equals(t.getName()))
                 .findFirst()
@@ -64,12 +76,11 @@ public class DataInitializer implements CommandLineRunner {
             admin.setTeam(team);
 
             userRepository.save(admin);
-            log.info("Usuario admin '{}' creado para el equipo '{}'", adminEmail, team.getName());
+            log.info("Seed admin '{}' created for team '{}'", adminEmail, team.getName());
         } else {
-            log.info("Usuario admin '{}' ya existe — no se vuelve a crear", adminEmail);
+            log.info("Seed admin '{}' already exists — skipping", adminEmail);
         }
 
-        // Datos demo: pilotos, vehículos, sesiones con vueltas realistas
         demoSeed.seedIfEmpty(team);
     }
 

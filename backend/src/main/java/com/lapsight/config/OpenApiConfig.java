@@ -30,9 +30,10 @@ public class OpenApiConfig {
                                 con pandas/scipy/sklearn para análisis avanzado (stints KMeans, anomalías
                                 IsolationForest, regresión polinómica de degradación).
 
-                                **Autenticación**: JWT Bearer. Usa `POST /auth/login` con
-                                `admin@racing.com / admin123` para obtener un token y pulsa el botón
-                                "Authorize" arriba a la derecha para añadirlo a todas las llamadas.
+                                **Autenticación**: JWT Bearer. Usa `POST /auth/login` con tus
+                                credenciales (o `POST /auth/demo` si la demo está habilitada via
+                                APP_SEED_DEMO_DATA=true) para obtener un token, y pulsa "Authorize"
+                                arriba a la derecha para añadirlo a todas las llamadas.
                                 """)
                         .version("1.0.0")
                         .contact(new Contact()
