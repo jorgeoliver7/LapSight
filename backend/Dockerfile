@@ -43,6 +43,6 @@ ENV JAVA_OPTS="-Xmx512m -Xms256m"
 # Comando de inicio
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 
-# Healthcheck
+# Healthcheck. PaaS providers (Render, Railway, Fly) inject $PORT.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/api/actuator/health || exit 1
+    CMD curl -f "http://localhost:${PORT:-8080}/api/actuator/health" || exit 1
