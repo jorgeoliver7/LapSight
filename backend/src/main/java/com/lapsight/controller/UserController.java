@@ -59,7 +59,7 @@ public class UserController {
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal User current) {
         if (id.equals(current.getId())) {
-            throw new IllegalArgumentException("No puedes desactivar tu propio usuario");
+            throw new IllegalArgumentException("You cannot deactivate your own account");
         }
         userService.deactivate(id, current.getTeam().getId());
         return ResponseEntity.noContent().build();

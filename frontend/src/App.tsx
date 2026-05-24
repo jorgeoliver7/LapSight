@@ -4,9 +4,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
-// Componentes
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Teams from './pages/Teams/Teams';
@@ -24,6 +24,8 @@ import { muiTheme } from './theme/muiTheme';
 
 function App() {
   const { isAuthenticated, isLoading, hydrate } = useAuthStore();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language?.startsWith('es') ? es : enUS;
 
   useEffect(() => {
     hydrate();
@@ -37,7 +39,7 @@ function App() {
         alignItems="center"
         minHeight="100vh"
       >
-        Cargando...
+        {t('common.loading')}
       </Box>
     );
   }
@@ -45,7 +47,7 @@ function App() {
   return (
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateLocale}>
         <Router>
           {!isAuthenticated ? (
             <Routes>

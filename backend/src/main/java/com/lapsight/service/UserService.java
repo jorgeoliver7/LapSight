@@ -44,10 +44,10 @@ public class UserService {
     @Transactional
     public UserDto create(Long teamId, UserCreateRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Ya existe un usuario con ese email");
+            throw new IllegalArgumentException("An account with this email already exists");
         }
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + teamId));
 
         User user = new User();
         user.setEmail(request.getEmail());
@@ -87,6 +87,6 @@ public class UserService {
     private User getUserOrThrow(Long id, Long teamId) {
         return userRepository.findByIdAndTeamId(id, teamId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Usuario " + id + " no encontrado en el equipo " + teamId));
+                        "User " + id + " not found in team " + teamId));
     }
 }

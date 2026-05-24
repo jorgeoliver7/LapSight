@@ -55,7 +55,7 @@ public class TeamService {
 
     private Team getTeamOrThrow(Long id) {
         return teamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + id));
     }
 
     private void applyRequest(Team team, TeamRequest request) {
