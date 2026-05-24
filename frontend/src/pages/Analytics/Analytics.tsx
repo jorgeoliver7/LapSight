@@ -127,7 +127,7 @@ const Analytics: React.FC = () => {
       }
       setError(null);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Error cargando sesiones');
+      setError(e?.response?.data?.message || 'Error loading sessions');
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ const Analytics: React.FC = () => {
       const a = await sessionsApi.analytics(id);
       setAnalytics(a);
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error cargando análisis', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || 'Error loading analytics', severity: 'error' });
       setAnalytics(null);
     } finally {
       setLoadingAnalytics(false);
@@ -167,7 +167,7 @@ const Analytics: React.FC = () => {
       .then(setCompareAnalytics)
       .catch((e) => {
         setSnack({
-          msg: e?.response?.data?.message || 'Error cargando sesiones a comparar',
+          msg: e?.response?.data?.message || 'Error loading sessions to compare',
           severity: 'error',
         });
         setCompareWithIds([]);
@@ -188,18 +188,18 @@ const Analytics: React.FC = () => {
       let created;
       if (uploadTab === 'csv') {
         if (!file) {
-          setSnack({ msg: 'Selecciona un archivo CSV', severity: 'error' });
+          setSnack({ msg: 'Select a CSV file', severity: 'error' });
           return;
         }
         created = await sessionsApi.upload({ ...meta, sessionDate: sessionDateIso }, file);
       } else {
         if (manualLaps.length === 0) {
-          setSnack({ msg: 'Añade al menos una vuelta', severity: 'error' });
+          setSnack({ msg: 'Add at least one lap', severity: 'error' });
           return;
         }
         const invalidLap = manualLaps.find((l) => !l.lapTime.trim());
         if (invalidLap) {
-          setSnack({ msg: `La vuelta ${invalidLap.lapNumber} no tiene tiempo`, severity: 'error' });
+          setSnack({ msg: `Lap ${invalidLap.lapNumber} has no time`, severity: 'error' });
           return;
         }
         created = await sessionsApi.createManual({
@@ -209,14 +209,14 @@ const Analytics: React.FC = () => {
         });
       }
       setSnack({
-        msg: `Sesión "${created.name}" creada (${created.lapCount} vueltas)`,
+        msg: `Session "${created.name}" created (${created.lapCount} laps)`,
         severity: 'success',
       });
       resetDialog();
       await loadSessions();
       setSelectedId(created.id);
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al guardar la sesión', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || 'Error saving the session', severity: 'error' });
     } finally {
       setUploading(false);
     }
@@ -226,19 +226,19 @@ const Analytics: React.FC = () => {
     try {
       await sessionsApi.downloadTemplate();
     } catch (e: any) {
-      setSnack({ msg: 'No se pudo descargar la plantilla', severity: 'error' });
+      setSnack({ msg: 'Could not download the template', severity: 'error' });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Eliminar esta sesión y todas sus vueltas?')) return;
+    if (!window.confirm('Delete this session and all its laps?')) return;
     try {
       await sessionsApi.remove(id);
-      setSnack({ msg: 'Sesión eliminada', severity: 'success' });
+      setSnack({ msg: 'Session deleted', severity: 'success' });
       if (selectedId === id) setSelectedId(null);
       loadSessions();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al eliminar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || 'Error deleting', severity: 'error' });
     }
   };
 
@@ -267,7 +267,7 @@ const Analytics: React.FC = () => {
               marginTop: 4,
             }}
           >
-            Análisis de sesiones
+            Session analytics
           </div>
           <Mono
             style={{
@@ -277,12 +277,12 @@ const Analytics: React.FC = () => {
               letterSpacing: '0.4px',
             }}
           >
-            Sube CSV de tiempos por vuelta · {sessions.length} sesiones registradas
+            Upload CSV with lap times · {sessions.length} sessions on record
           </Mono>
         </div>
         {canUpload && (
           <ToolButton variant="accent" onClick={() => setUploadOpen(true)}>
-            + Subir sesión
+            + Upload session
           </ToolButton>
         )}
       </div>
@@ -304,15 +304,15 @@ const Analytics: React.FC = () => {
       >
         {/* Sessions sidebar */}
         <Panel
-          title="Sesiones"
+          title="Sessions"
           right={<Mono style={{ color: colors.textMute }}>{sessions.length}</Mono>}
           padding={0}
           style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'hidden' }}
         >
           {loading ? (
-            <EmptyState text="Cargando…" />
+            <EmptyState text="Loading…" />
           ) : sessions.length === 0 ? (
-            <EmptyState text="Sube un CSV para empezar." />
+            <EmptyState text="Upload a CSV to get started." />
           ) : (
             <div
               style={{
@@ -384,7 +384,7 @@ const Analytics: React.FC = () => {
                         letterSpacing: '0.4px',
                       }}
                     >
-                      {(s.circuit || '—')} · {new Date(s.sessionDate).toLocaleDateString('es-ES')}
+                      {(s.circuit || '—')} · {new Date(s.sessionDate).toLocaleDateString()}
                     </Mono>
                     {s.vehicleName && (
                       <Mono
@@ -450,7 +450,7 @@ const Analytics: React.FC = () => {
                 }}
               >
                 <div style={{ fontSize: 36, marginBottom: 8 }}>—</div>
-                Selecciona una sesión para ver su análisis
+                Select a session to view its analytics
               </div>
             </Panel>
           ) : loadingAnalytics || !analytics ? (
@@ -471,9 +471,9 @@ const Analytics: React.FC = () => {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <Label>COMPARAR CON</Label>
+                  <Label>COMPARE WITH</Label>
                   <FormControl size="small" sx={{ minWidth: 320 }}>
-                    <InputLabel>Sesiones adicionales (máx 3)</InputLabel>
+                    <InputLabel>Additional sessions (max 3)</InputLabel>
                     <Select
                       multiple
                       value={compareWithIds}
@@ -481,19 +481,19 @@ const Analytics: React.FC = () => {
                         const value = e.target.value as number[];
                         setCompareWithIds(value.slice(0, 3));
                       }}
-                      input={<OutlinedInput label="Sesiones adicionales (máx 3)" />}
+                      input={<OutlinedInput label="Additional sessions (max 3)" />}
                       renderValue={(selected) =>
                         sessions
                           .filter((s) => (selected as number[]).includes(s.id))
                           .map((s) => s.name)
-                          .join(', ') || '— Vista individual —'
+                          .join(', ') || '— Single view —'
                       }
                     >
                       {sessions
                         .filter((s) => s.id !== selectedId)
                         .map((s) => (
                           <MenuItem key={s.id} value={s.id}>
-                            {s.name} ({new Date(s.sessionDate).toLocaleDateString('es-ES')})
+                            {s.name} ({new Date(s.sessionDate).toLocaleDateString()})
                           </MenuItem>
                         ))}
                     </Select>
@@ -510,7 +510,7 @@ const Analytics: React.FC = () => {
                       }}
                       onClick={() => setCompareWithIds([])}
                     >
-                      {compareWithIds.length + 1} comparadas · limpiar ×
+                      {compareWithIds.length + 1} compared · clear ×
                     </Mono>
                   )}
                   <div style={{ flex: 1 }} />
@@ -521,7 +521,7 @@ const Analytics: React.FC = () => {
                           await sessionsApi.downloadReport(selectedId, analytics.sessionName);
                         } catch (e: any) {
                           setSnack({
-                            msg: e?.response?.data?.message || 'No se pudo generar el PDF',
+                            msg: e?.response?.data?.message || 'Could not generate the PDF',
                             severity: 'error',
                           });
                         }
@@ -558,12 +558,12 @@ const Analytics: React.FC = () => {
       {/* Upload dialog (theme-inherited) */}
       <Dialog open={uploadOpen} onClose={() => !uploading && resetDialog()} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontFamily: fonts.mono, fontSize: 14, letterSpacing: '1.2px', textTransform: 'uppercase', color: colors.textDim }}>
-          Nueva sesión
+          New session
         </DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} pt={1}>
             <TextField
-              label="Nombre de la sesión"
+              label="Session name"
               value={meta.name}
               onChange={(e) => setMeta({ ...meta, name: e.target.value })}
               required
@@ -578,7 +578,7 @@ const Analytics: React.FC = () => {
                 />
               </Box>
               <TextField
-                label="Fecha y hora"
+                label="Date and time"
                 type="datetime-local"
                 value={meta.sessionDate}
                 onChange={(e) => setMeta({ ...meta, sessionDate: e.target.value })}
@@ -588,7 +588,7 @@ const Analytics: React.FC = () => {
             </Box>
             <Box display="flex" gap={2}>
               <TextField
-                label="Tipo"
+                label="Type"
                 select
                 value={meta.sessionType}
                 onChange={(e) => setMeta({ ...meta, sessionType: e.target.value as SessionType })}
@@ -601,7 +601,7 @@ const Analytics: React.FC = () => {
                 ))}
               </TextField>
               <TextField
-                label="Condición pista"
+                label="Track condition"
                 select
                 value={meta.trackCondition || ''}
                 onChange={(e) =>
@@ -619,7 +619,7 @@ const Analytics: React.FC = () => {
             </Box>
             <Box display="flex" gap={2}>
               <TextField
-                label="Vehículo"
+                label="Vehicle"
                 select
                 value={meta.vehicleId ?? ''}
                 onChange={(e) =>
@@ -635,7 +635,7 @@ const Analytics: React.FC = () => {
                 ))}
               </TextField>
               <TextField
-                label="Piloto"
+                label="Driver"
                 select
                 value={meta.driverId ?? ''}
                 onChange={(e) =>
@@ -652,7 +652,7 @@ const Analytics: React.FC = () => {
               </TextField>
             </Box>
             <TextField
-              label="Notas"
+              label="Notes"
               value={meta.notes}
               onChange={(e) => setMeta({ ...meta, notes: e.target.value })}
               multiline
@@ -660,10 +660,10 @@ const Analytics: React.FC = () => {
               fullWidth
             />
             <Box>
-              <Label>Condiciones ambientales</Label>
+              <Label>Ambient conditions</Label>
               <Box display="grid" gridTemplateColumns="repeat(4, 1fr)" gap={1.5} mt={1}>
                 <TextField
-                  label="Temp pista (°C)"
+                  label="Track temp (°C)"
                   type="number"
                   size="small"
                   inputProps={{ step: 0.1 }}
@@ -671,7 +671,7 @@ const Analytics: React.FC = () => {
                   onChange={(e) => setMeta({ ...meta, trackTempC: e.target.value ? Number(e.target.value) : undefined })}
                 />
                 <TextField
-                  label="Temp aire (°C)"
+                  label="Air temp (°C)"
                   type="number"
                   size="small"
                   inputProps={{ step: 0.1 }}
@@ -679,7 +679,7 @@ const Analytics: React.FC = () => {
                   onChange={(e) => setMeta({ ...meta, ambientTempC: e.target.value ? Number(e.target.value) : undefined })}
                 />
                 <TextField
-                  label="Humedad (%)"
+                  label="Humidity (%)"
                   type="number"
                   size="small"
                   inputProps={{ min: 0, max: 100, step: 1 }}
@@ -687,7 +687,7 @@ const Analytics: React.FC = () => {
                   onChange={(e) => setMeta({ ...meta, humidityPct: e.target.value ? Number(e.target.value) : undefined })}
                 />
                 <TextField
-                  label="Viento (km/h)"
+                  label="Wind (km/h)"
                   type="number"
                   size="small"
                   inputProps={{ step: 0.1 }}
@@ -697,25 +697,25 @@ const Analytics: React.FC = () => {
               </Box>
             </Box>
             <TextField
-              label="Notas de setup"
+              label="Setup notes"
               value={meta.setupNotes ?? ''}
               onChange={(e) => setMeta({ ...meta, setupNotes: e.target.value })}
               multiline
               rows={3}
               fullWidth
-              placeholder="Ej: Press F 1.8/R 1.7 | Gear 12/41 | Ala -3 | Bias +2"
-              helperText="Formato libre. Sirve para comparar setups entre sesiones."
+              placeholder="e.g. Press F 1.8/R 1.7 | Gear 12/41 | Wing -3 | Bias +2"
+              helperText="Free form. Useful to compare setups across sessions."
             />
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 1 }}>
               <Tabs value={uploadTab} onChange={(_, v) => setUploadTab(v)}>
-                <Tab value="csv" label="Subir CSV" />
-                <Tab value="manual" label="Añadir manualmente" />
+                <Tab value="csv" label="Upload CSV" />
+                <Tab value="manual" label="Add manually" />
               </Tabs>
             </Box>
             {uploadTab === 'csv' ? (
               <Box>
                 <Button variant="outlined" component="label" fullWidth>
-                  {file ? `${file.name}` : 'Seleccionar archivo CSV'}
+                  {file ? `${file.name}` : 'Select CSV file'}
                   <input
                     type="file"
                     accept=".csv,text/csv"
@@ -725,7 +725,7 @@ const Analytics: React.FC = () => {
                 </Button>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
                   <Typography variant="caption" color="textSecondary">
-                    Columnas: lap, time, s1, s2, s3, valid, compound, fuel, notes. Sep <code>,</code> o <code>;</code>.
+                    Columns: lap, time, s1, s2, s3, valid, compound, fuel, notes. Sep <code>,</code> or <code>;</code>.
                   </Typography>
                   <Link
                     component="button"
@@ -734,7 +734,7 @@ const Analytics: React.FC = () => {
                     onClick={handleDownloadTemplate}
                     sx={{ whiteSpace: 'nowrap' }}
                   >
-                    ⤓ plantilla
+                    ⤓ template
                   </Link>
                 </Box>
               </Box>
@@ -744,13 +744,13 @@ const Analytics: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={resetDialog} disabled={uploading}>Cancelar</Button>
+          <Button onClick={resetDialog} disabled={uploading}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
             disabled={uploading || !meta.name || (uploadTab === 'csv' ? !file : manualLaps.length === 0)}
           >
-            {uploading ? <CircularProgress size={20} /> : uploadTab === 'csv' ? 'Subir y analizar' : 'Crear sesión'}
+            {uploading ? <CircularProgress size={20} /> : uploadTab === 'csv' ? 'Upload and analyze' : 'Create session'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -804,7 +804,7 @@ const AnalyticsDetail: React.FC<{
         >
           <div style={{ background: colors.accent }} />
           <div style={{ padding: '18px 20px' }}>
-            <Label size="micro">SESIÓN</Label>
+            <Label size="micro">SESSION</Label>
             <div
               style={{
                 fontSize: 22,
@@ -825,7 +825,7 @@ const AnalyticsDetail: React.FC<{
                 }}
               >
                 {session.circuit || '—'} ·{' '}
-                {new Date(session.sessionDate).toLocaleDateString('es-ES')}
+                {new Date(session.sessionDate).toLocaleDateString()}
                 {session.driverName ? ` · ${session.driverName}` : ''}
                 {session.vehicleName ? ` · ${session.vehicleName}` : ''}
               </Mono>
@@ -882,24 +882,24 @@ const AnalyticsDetail: React.FC<{
           }}
         >
           <KpiCell
-            label="Media"
+            label="Average"
             value={formatLapTime(a.averageMs)}
-            sub={`mediana ${formatLapTime(a.medianMs)}`}
+            sub={`median ${formatLapTime(a.medianMs)}`}
           />
           <KpiCell
             label="Stdev"
             value={a.stdDevMs != null ? `±${(a.stdDevMs / 1000).toFixed(3)}s` : '—'}
-            sub="consistencia"
+            sub="consistency"
           />
           <KpiCell
-            label="Degradación"
+            label="Degradation"
             value={degradationLabel}
             sub={a.degradationR2 != null ? `R² ${a.degradationR2.toFixed(2)}` : undefined}
             tone={a.degradationMsPerLap && a.degradationMsPerLap > 0 ? 'yellow' : 'green'}
           />
-          <KpiCell label="Vueltas" value={String(a.totalLaps)} sub={`${a.validLaps} válidas`} />
+          <KpiCell label="Laps" value={String(a.totalLaps)} sub={`${a.validLaps} valid`} />
           <KpiCell
-            label="Inválidas"
+            label="Invalid"
             value={String(a.invalidLaps)}
             tone={a.invalidLaps > 0 ? 'red' : 'text'}
           />
@@ -909,8 +909,8 @@ const AnalyticsDetail: React.FC<{
 
       {/* Lap times chart */}
       <Panel
-        title="Tiempos por vuelta"
-        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} puntos</Mono>}
+        title="Lap times"
+        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} points</Mono>}
         padding={12}
       >
         <ResponsiveContainer width="100%" height={300}>
@@ -920,13 +920,13 @@ const AnalyticsDetail: React.FC<{
               dataKey="lapNumber"
               stroke={colors.textMute}
               tick={{ fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
-              label={{ value: 'Vuelta', position: 'insideBottom', offset: -5, fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+              label={{ value: 'Lap', position: 'insideBottom', offset: -5, fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
             />
             <YAxis
               stroke={colors.textMute}
               tick={{ fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
               tickFormatter={(v) => v.toFixed(2)}
-              label={{ value: 'Segundos', angle: -90, position: 'insideLeft', fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
+              label={{ value: 'Seconds', angle: -90, position: 'insideLeft', fill: colors.textMute, fontFamily: fonts.mono, fontSize: 10 }}
               domain={['auto', 'auto']}
             />
             <RTooltip
@@ -939,7 +939,7 @@ const AnalyticsDetail: React.FC<{
                 color: colors.text,
               }}
               formatter={(v: any) => (typeof v === 'number' ? `${v.toFixed(3)} s` : v)}
-              labelFormatter={(l) => `Vuelta ${l}`}
+              labelFormatter={(l) => `Lap ${l}`}
             />
             <Line
               type="monotone"
@@ -947,7 +947,7 @@ const AnalyticsDetail: React.FC<{
               stroke={colors.accent}
               strokeWidth={2}
               dot={{ r: 3, fill: colors.accent, stroke: colors.bg, strokeWidth: 1 }}
-              name="Tiempo"
+              name="Time"
             />
             <Scatter dataKey="outlier" fill={colors.orange} name="Outlier" />
             {a.bestLapMs != null && (
@@ -972,7 +972,7 @@ const AnalyticsDetail: React.FC<{
 
       {/* Two-up: sectors + summary */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <Panel title="Sectores óptimos" padding={16}>
+        <Panel title="Optimal sectors" padding={16}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <SectorRow label="Sector 1" value={formatLapTime(a.bestSector1Ms)} />
             <SectorRow label="Sector 2" value={formatLapTime(a.bestSector2Ms)} />
@@ -1009,42 +1009,42 @@ const AnalyticsDetail: React.FC<{
                 }}
               >
                 {bestDelta > 0
-                  ? `Dejas ${(bestDelta / 1000).toFixed(3)}s sobre la mesa`
-                  : '¡Vuelta perfecta!'}
+                  ? `Leaving ${(bestDelta / 1000).toFixed(3)}s on the table`
+                  : 'Perfect lap!'}
               </Mono>
             )}
           </div>
         </Panel>
-        <Panel title="Resumen" padding={16}>
+        <Panel title="Summary" padding={16}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <SummaryRow label="Vueltas totales" value={String(a.totalLaps)} />
-            <SummaryRow label="Vueltas válidas" value={String(a.validLaps)} tone="green" />
+            <SummaryRow label="Total laps" value={String(a.totalLaps)} />
+            <SummaryRow label="Valid laps" value={String(a.validLaps)} tone="green" />
             <SummaryRow
-              label="Vueltas inválidas"
+              label="Invalid laps"
               value={String(a.invalidLaps)}
               tone={a.invalidLaps > 0 ? 'red' : 'text'}
             />
             <SummaryRow
-              label="Outliers detectados"
+              label="Outliers detected"
               value={String(outliers)}
               tone={outliers > 0 ? 'orange' : 'text'}
             />
-            <SummaryRow label="Peor vuelta válida" value={formatLapTime(a.worstLapMs)} mono />
+            <SummaryRow label="Worst valid lap" value={formatLapTime(a.worstLapMs)} mono />
           </div>
         </Panel>
       </div>
 
       {/* Per-lap table (dense, handoff-style) */}
       <Panel
-        title="Detalle por vuelta"
-        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} vueltas</Mono>}
+        title="Lap detail"
+        right={<Mono style={{ color: colors.textMute }}>{a.perLap.length} laps</Mono>}
         padding={0}
       >
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['#', 'Tiempo', 'Gap', 'S1', 'S2', 'S3', 'Estado'].map((h, i) => (
+                {['#', 'Time', 'Gap', 'S1', 'S2', 'S3', 'Status'].map((h, i) => (
                   <th
                     key={h}
                     style={{
@@ -1120,7 +1120,7 @@ const AnalyticsDetail: React.FC<{
                       <div style={{ display: 'flex', gap: 6 }}>
                         {isBest && <Flag f="SB" />}
                         {!lap.valid && (
-                          <Tag tone="red">INVÁLIDA</Tag>
+                          <Tag tone="red">INVALID</Tag>
                         )}
                         {lap.outlier && <Tag tone="orange">OUTLIER</Tag>}
                       </div>

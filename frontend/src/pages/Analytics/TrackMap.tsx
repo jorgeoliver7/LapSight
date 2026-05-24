@@ -33,7 +33,7 @@ function buildSyntheticPath(): [number, number][] {
 }
 
 const SYNTHETIC: Circuit = {
-  name: 'Trazado genérico',
+  name: 'Generic layout',
   aliases: [],
   path: buildSyntheticPath(),
   sectorBoundaries: [0.33, 0.66],
@@ -123,7 +123,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     y: [path[0][1]],
     type: 'scatter' as const,
     mode: 'markers' as const,
-    name: 'Meta',
+    name: 'Finish line',
     marker: { color: colors.text, size: 12, symbol: 'diamond', line: { color: colors.bg, width: 2 } },
     hoverinfo: 'name' as const,
   };
@@ -133,7 +133,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     y: [path[s1End][1], path[s2End][1]],
     type: 'scatter' as const,
     mode: 'markers' as const,
-    name: 'Cambio sector',
+    name: 'Sector change',
     marker: { color: colors.accent, size: 10, symbol: 'line-ns', line: { width: 3, color: colors.accent } },
     hoverinfo: 'name' as const,
   };
@@ -142,7 +142,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     <Panel
       title={
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          Track map · {isReal ? circuit.name : 'genérico'}
+          Track map · {isReal ? circuit.name : 'generic'}
           {circuit.length_km && (
             <Mono style={{ color: colors.textMute, fontSize: 10, letterSpacing: '0.4px' }}>
               · {circuit.length_km} km
@@ -161,7 +161,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
                 marginLeft: 4,
               }}
             >
-              GPS real
+              real GPS
             </Mono>
           )}
         </span>
@@ -170,14 +170,14 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
         <TextField
           select
           size="small"
-          label="Vuelta"
+          label="Lap"
           value={selectedLapNumber}
           onChange={(e) => setSelectedLapNumber(Number(e.target.value))}
           sx={{ minWidth: 200 }}
         >
           {validLaps.map((l) => (
             <MenuItem key={l.lapNumber} value={l.lapNumber}>
-              V{l.lapNumber} — {formatLapTime(l.lapTimeMs)}
+              L{l.lapNumber} — {formatLapTime(l.lapTimeMs)}
               {l.lapNumber === analytics.bestLapNumber ? ' ★' : ''}
             </MenuItem>
           ))}
@@ -203,8 +203,8 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
           }}
         >
           {isReal
-            ? 'Trazado aproximado. Sectores coloreados según la vuelta seleccionada: verde mejor que P50, amarillo entre P50–P75, rojo peor que P75.'
-            : 'Circuito no reconocido — trazado genérico. Sectores se colorean igual.'}
+            ? 'Approximate layout. Sectors colored by the selected lap: green better than P50, yellow between P50–P75, red worse than P75.'
+            : 'Unrecognized circuit — generic layout. Sectors are colored the same way.'}
         </Mono>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {([1, 2, 3] as const).map((s) => {

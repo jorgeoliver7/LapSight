@@ -40,7 +40,7 @@ public class VehicleService {
     @Transactional
     public VehicleDto create(Long teamId, VehicleRequest request) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + teamId));
 
         Vehicle vehicle = new Vehicle();
         vehicle.setTeam(team);
@@ -67,7 +67,7 @@ public class VehicleService {
     private Vehicle getVehicleOrThrow(Long id, Long teamId) {
         return vehicleRepository.findByIdAndTeamId(id, teamId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Vehículo " + id + " no encontrado en el equipo " + teamId));
+                        "Vehicle " + id + " not found in team " + teamId));
     }
 
     private void applyRequest(Vehicle vehicle, VehicleRequest request) {

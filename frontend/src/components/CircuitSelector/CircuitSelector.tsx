@@ -35,19 +35,19 @@ const REGION_ORDER: Record<string, number> = {
 };
 
 const REGION_LABELS: Record<number, string> = {
-  1: '🇪🇸 España',
-  2: '🇪🇺 Europa',
+  1: '🇪🇸 Spain',
+  2: '🇪🇺 Europe',
   3: '🌏 Asia',
-  4: '🕌 Oriente Medio',
-  5: '🌎 Américas',
-  6: '🇦🇺 Oceanía',
-  99: '🏁 Otros',
+  4: '🕌 Middle East',
+  5: '🌎 Americas',
+  6: '🇦🇺 Oceania',
+  99: '🏁 Other',
 };
 
 const CircuitSelector: React.FC<Props> = ({
   value,
   onChange,
-  label = 'Circuito',
+  label = 'Circuit',
   required = false,
   fullWidth = false,
   size = 'medium',
@@ -151,7 +151,7 @@ const CircuitSelector: React.FC<Props> = ({
             label={label}
             required={required}
             size={size}
-            placeholder="Buscar o escribir circuito..."
+            placeholder="Search or type a circuit..."
           />
         )}
         fullWidth={fullWidth}

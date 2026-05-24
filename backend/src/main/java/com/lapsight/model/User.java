@@ -24,23 +24,23 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email debe tener un formato válido")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be a valid format")
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     @Column(nullable = false)
     private String password;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 50, message = "El nombre no puede exceder 50 caracteres")
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name cannot exceed 50 characters")
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 50, message = "El apellido no puede exceder 50 caracteres")
+    @NotBlank(message = "Last name is required")
+    @Size(max = 50, message = "Last name cannot exceed 50 characters")
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 

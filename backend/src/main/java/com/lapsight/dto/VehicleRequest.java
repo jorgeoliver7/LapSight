@@ -11,11 +11,11 @@ import java.math.BigDecimal;
 
 public class VehicleRequest {
 
-    @NotBlank(message = "El nombre del vehículo es obligatorio")
+    @NotBlank(message = "Vehicle name is required")
     @Size(max = 100)
     private String name;
 
-    @NotNull(message = "El tipo de vehículo es obligatorio")
+    @NotNull(message = "Vehicle type is required")
     private VehicleType vehicleType;
 
     private String chassisNumber;

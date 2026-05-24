@@ -61,7 +61,7 @@ public class SessionService {
             Long timeMs = LapTimeFormatter.parseToMs(input.getLapTime());
             if (timeMs == null) {
                 throw new IllegalArgumentException(
-                        "Vuelta " + input.getLapNumber() + ": tiempo inválido '" + input.getLapTime() + "'");
+                        "Lap " + input.getLapNumber() + ": invalid time '" + input.getLapTime() + "'");
             }
             LapTime lap = new LapTime(input.getLapNumber(), timeMs);
             lap.setSector1Ms(LapTimeFormatter.parseToMs(input.getSector1()));
@@ -90,14 +90,14 @@ public class SessionService {
     @Transactional
     public SessionDto create(Long teamId, SessionRequest request, MultipartFile csv) {
         if (csv == null || csv.isEmpty()) {
-            throw new IllegalArgumentException("El CSV de vueltas es obligatorio");
+            throw new IllegalArgumentException("Lap CSV file is required");
         }
 
         List<LapTime> laps;
         try {
             laps = csvParser.parse(csv.getInputStream());
         } catch (IOException e) {
-            throw new IllegalArgumentException("No se pudo leer el CSV: " + e.getMessage());
+            throw new IllegalArgumentException("Could not read the CSV: " + e.getMessage());
         }
 
         Session session = buildSession(teamId,
@@ -121,7 +121,7 @@ public class SessionService {
                                  Integer durationMinutes, String notes,
                                  Long vehicleId, Long driverId) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + teamId));
 
         Session session = new Session();
         session.setName(name);
@@ -136,13 +136,13 @@ public class SessionService {
         if (vehicleId != null) {
             Vehicle vehicle = vehicleRepository.findByIdAndTeamId(vehicleId, teamId)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Vehículo " + vehicleId + " no pertenece al equipo"));
+                            "Vehicle " + vehicleId + " does not belong to the team"));
             session.setVehicle(vehicle);
         }
         if (driverId != null) {
             User driver = userRepository.findByIdAndTeamId(driverId, teamId)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "Piloto " + driverId + " no pertenece al equipo"));
+                            "Driver " + driverId + " does not belong to the team"));
             session.setDriver(driver);
         }
         return session;
@@ -157,6 +157,6 @@ public class SessionService {
     private Session getSessionOrThrow(Long id, Long teamId) {
         return sessionRepository.findByIdAndTeamId(id, teamId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Sesión " + id + " no encontrada en el equipo " + teamId));
+                        "Session " + id + " not found in team " + teamId));
     }
 }

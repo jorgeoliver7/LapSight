@@ -1,12 +1,12 @@
 package com.lapsight.model;
 
 public enum VehicleStatus {
-    AVAILABLE("Disponible", "El vehículo está listo para usar"),
-    IN_USE("En uso", "El vehículo está siendo utilizado"),
-    MAINTENANCE("En mantenimiento", "El vehículo está en mantenimiento"),
-    REPAIR("En reparación", "El vehículo necesita reparación"),
-    OUT_OF_SERVICE("Fuera de servicio", "El vehículo no está operativo"),
-    TRANSPORT("En transporte", "El vehículo está siendo transportado");
+    AVAILABLE("Available", "The vehicle is ready to use"),
+    IN_USE("In use", "The vehicle is currently being used"),
+    MAINTENANCE("In maintenance", "The vehicle is in maintenance"),
+    REPAIR("In repair", "The vehicle needs repair"),
+    OUT_OF_SERVICE("Out of service", "The vehicle is not operational"),
+    TRANSPORT("In transport", "The vehicle is being transported");
 
     private final String displayName;
     private final String description;

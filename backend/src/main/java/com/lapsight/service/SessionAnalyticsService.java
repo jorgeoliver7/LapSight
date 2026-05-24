@@ -40,7 +40,7 @@ public class SessionAnalyticsService {
     public SessionAnalyticsDto compute(Long sessionId, Long teamId) {
         Session session = sessionRepository.findByIdAndTeamId(sessionId, teamId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Sesión " + sessionId + " no encontrada en el equipo " + teamId));
+                        "Session " + sessionId + " not found in team " + teamId));
 
         SessionAnalyticsDto dto = new SessionAnalyticsDto();
         dto.setSessionId(session.getId());

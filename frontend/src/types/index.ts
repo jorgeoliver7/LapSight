@@ -77,10 +77,10 @@ export enum VehicleType {
 }
 
 export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
-  [VehicleType.FORMULA_1]: 'Fórmula 1',
-  [VehicleType.FORMULA_2]: 'Fórmula 2',
-  [VehicleType.FORMULA_3]: 'Fórmula 3',
-  [VehicleType.FORMULA_4]: 'Fórmula 4',
+  [VehicleType.FORMULA_1]: 'Formula 1',
+  [VehicleType.FORMULA_2]: 'Formula 2',
+  [VehicleType.FORMULA_3]: 'Formula 3',
+  [VehicleType.FORMULA_4]: 'Formula 4',
   [VehicleType.FORMULA_FORD]: 'Formula Ford',
   [VehicleType.GT3]: 'GT3',
   [VehicleType.GT4]: 'GT4',
@@ -154,9 +154,9 @@ export enum SessionType {
 }
 
 export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
-  [SessionType.PRACTICE]: 'Libres',
-  [SessionType.QUALIFYING]: 'Clasificación',
-  [SessionType.RACE]: 'Carrera',
+  [SessionType.PRACTICE]: 'Practice',
+  [SessionType.QUALIFYING]: 'Qualifying',
+  [SessionType.RACE]: 'Race',
   [SessionType.TEST]: 'Test',
   [SessionType.SHAKEDOWN]: 'Shakedown',
   [SessionType.TIME_ATTACK]: 'Time Attack',
@@ -182,20 +182,20 @@ export enum EventType {
 }
 
 export const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  [EventType.RACE]: 'Carrera',
+  [EventType.RACE]: 'Race',
   [EventType.TEST]: 'Test',
-  [EventType.PRACTICE]: 'Libres',
-  [EventType.QUALIFYING]: 'Clasificación',
-  [EventType.TRAINING]: 'Entrenamiento',
-  [EventType.TRAVEL]: 'Viaje',
-  [EventType.MEETING]: 'Reunión',
-  [EventType.MAINTENANCE]: 'Mantenimiento',
-  [EventType.PRESENTATION]: 'Presentación',
-  [EventType.MEDIA]: 'Medios',
-  [EventType.SPONSOR_EVENT]: 'Evento sponsor',
+  [EventType.PRACTICE]: 'Practice',
+  [EventType.QUALIFYING]: 'Qualifying',
+  [EventType.TRAINING]: 'Training',
+  [EventType.TRAVEL]: 'Travel',
+  [EventType.MEETING]: 'Meeting',
+  [EventType.MAINTENANCE]: 'Maintenance',
+  [EventType.PRESENTATION]: 'Presentation',
+  [EventType.MEDIA]: 'Media',
+  [EventType.SPONSOR_EVENT]: 'Sponsor event',
   [EventType.SHAKEDOWN]: 'Shakedown',
   [EventType.TRACKDAY]: 'Track day',
-  [EventType.OTHER]: 'Otro',
+  [EventType.OTHER]: 'Other',
 };
 
 export enum EventStatus {
@@ -210,14 +210,14 @@ export enum EventStatus {
 }
 
 export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
-  [EventStatus.PLANNED]: 'Planificado',
-  [EventStatus.CONFIRMED]: 'Confirmado',
-  [EventStatus.IN_PROGRESS]: 'En curso',
-  [EventStatus.COMPLETED]: 'Completado',
-  [EventStatus.CANCELLED]: 'Cancelado',
-  [EventStatus.POSTPONED]: 'Pospuesto',
-  [EventStatus.WEATHER_DELAY]: 'Retraso por clima',
-  [EventStatus.TECHNICAL_ISSUE]: 'Problema técnico',
+  [EventStatus.PLANNED]: 'Planned',
+  [EventStatus.CONFIRMED]: 'Confirmed',
+  [EventStatus.IN_PROGRESS]: 'In progress',
+  [EventStatus.COMPLETED]: 'Completed',
+  [EventStatus.CANCELLED]: 'Cancelled',
+  [EventStatus.POSTPONED]: 'Postponed',
+  [EventStatus.WEATHER_DELAY]: 'Weather delay',
+  [EventStatus.TECHNICAL_ISSUE]: 'Technical issue',
 };
 
 export interface EventParticipant {
@@ -258,10 +258,10 @@ export enum TrackCondition {
 }
 
 export const TRACK_CONDITION_LABELS: Record<TrackCondition, string> = {
-  [TrackCondition.DRY]: 'Seco',
-  [TrackCondition.WET]: 'Lluvia',
-  [TrackCondition.MIXED]: 'Mixto',
-  [TrackCondition.DAMP]: 'Húmedo',
+  [TrackCondition.DRY]: 'Dry',
+  [TrackCondition.WET]: 'Wet',
+  [TrackCondition.MIXED]: 'Mixed',
+  [TrackCondition.DAMP]: 'Damp',
 };
 
 export enum TireCompound {

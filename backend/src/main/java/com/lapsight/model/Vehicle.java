@@ -23,12 +23,12 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del vehículo es obligatorio")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
+    @NotBlank(message = "Vehicle name is required")
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
     @Column(nullable = false, length = 100)
     private String name;
 
-    @NotNull(message = "El tipo de vehículo es obligatorio")
+    @NotNull(message = "Vehicle type is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "vehicle_type", nullable = false)
     private VehicleType vehicleType;
@@ -51,11 +51,11 @@ public class Vehicle {
     @Column(name = "year_manufactured")
     private Integer yearManufactured;
 
-    @PositiveOrZero(message = "Las horas de uso no pueden ser negativas")
+    @PositiveOrZero(message = "Usage hours cannot be negative")
     @Column(name = "total_hours", precision = 10, scale = 2)
     private BigDecimal totalHours = BigDecimal.ZERO;
 
-    @PositiveOrZero(message = "Los kilómetros no pueden ser negativos")
+    @PositiveOrZero(message = "Kilometers cannot be negative")
     @Column(name = "total_kilometers", precision = 10, scale = 2)
     private BigDecimal totalKilometers = BigDecimal.ZERO;
 

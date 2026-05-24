@@ -2,10 +2,10 @@ package com.lapsight.model;
 
 public enum VehicleType {
     // COCHES - Fórmula
-    FORMULA_1("Fórmula 1", VehicleCategory.CAR),
-    FORMULA_2("Fórmula 2", VehicleCategory.CAR),
-    FORMULA_3("Fórmula 3", VehicleCategory.CAR),
-    FORMULA_4("Fórmula 4", VehicleCategory.CAR),
+    FORMULA_1("Formula 1", VehicleCategory.CAR),
+    FORMULA_2("Formula 2", VehicleCategory.CAR),
+    FORMULA_3("Formula 3", VehicleCategory.CAR),
+    FORMULA_4("Formula 4", VehicleCategory.CAR),
     FORMULA_FORD("Formula Ford", VehicleCategory.CAR),
     
     // COCHES - GT/Resistencia

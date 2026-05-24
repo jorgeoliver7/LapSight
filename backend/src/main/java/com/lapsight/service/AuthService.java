@@ -73,7 +73,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         String token = jwtService.generateToken(user);
         return new AuthResponse(token, jwtService.getExpirationMillis(), UserDto.fromEntity(user));
@@ -86,7 +86,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Ya existe un usuario con ese email");
+            throw new IllegalArgumentException("An account with this email already exists");
         }
 
         VehicleCategory category = request.getTeamCategory() != null
@@ -94,7 +94,7 @@ public class AuthService {
                 : VehicleCategory.CAR;
 
         Team team = new Team(request.getTeamName(), category);
-        team.setDescription("Creado al registrar " + request.getEmail());
+        team.setDescription("Created when registering " + request.getEmail());
         team.setContactEmail(request.getEmail());
         team.setActive(true);
         Team savedTeam = teamRepository.save(team);
@@ -117,7 +117,7 @@ public class AuthService {
 
     public UserDto getCurrentUser(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return UserDto.fromEntity(user);
     }
 }

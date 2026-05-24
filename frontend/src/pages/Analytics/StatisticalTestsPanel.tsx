@@ -51,7 +51,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
 
   return (
     <Panel
-      title="Tests estadísticos"
+      title="Statistical tests"
       right={<Mono style={{ color: colors.textMute }}>Welch · MWU · Cohen's d</Mono>}
       padding={16}
     >
@@ -65,24 +65,24 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
           lineHeight: 1.5,
         }}
       >
-        Compara esta sesión con otra. ¿La diferencia de tiempos es significativa o sólo ruido?
+        Compare this session against another. Is the time difference significant, or just noise?
       </Mono>
 
       <TextField
         select
-        label="Comparar con sesión"
+        label="Compare with session"
         value={otherId}
         onChange={(e) => setOtherId(e.target.value === '' ? '' : Number(e.target.value))}
         size="small"
         fullWidth
         sx={{ mb: 2 }}
       >
-        <MenuItem value="">— Selecciona una sesión —</MenuItem>
+        <MenuItem value="">— Select a session —</MenuItem>
         {sessions
           .filter((s) => s.id !== analytics.sessionId)
           .map((s) => (
             <MenuItem key={s.id} value={s.id}>
-              {s.name} · {new Date(s.sessionDate).toLocaleDateString('es-ES')}
+              {s.name} · {new Date(s.sessionDate).toLocaleDateString()}
               {s.circuit ? ` · ${s.circuit}` : ''}
             </MenuItem>
           ))}
@@ -105,8 +105,8 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
               background: colors.surface2,
             }}
           >
-            <SCell label="Media A" value={formatLapTime(tTest.meanA)} />
-            <SCell label="Media B" value={formatLapTime(tTest.meanB)} />
+            <SCell label="Mean A" value={formatLapTime(tTest.meanA)} />
+            <SCell label="Mean B" value={formatLapTime(tTest.meanB)} />
             <SCell
               label="Δ (A − B)"
               value={`${tTest.diff > 0 ? '+' : ''}${(tTest.diff / 1000).toFixed(3)}s`}
@@ -124,7 +124,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Test', 'Estadístico', 'p-value', 'Interpretación'].map((h, i) => (
+                  {['Test', 'Statistic', 'p-value', 'Interpretation'].map((h, i) => (
                     <th
                       key={h}
                       style={{
@@ -157,7 +157,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         marginTop: 2,
                       }}
                     >
-                      asume distribución normal aproximada
+                      assumes approximately normal distribution
                     </Mono>
                   </TD>
                   <TD align="right" mono>
@@ -193,7 +193,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         marginTop: 2,
                       }}
                     >
-                      no paramétrico, robusto a outliers
+                      non-parametric, robust to outliers
                     </Mono>
                   </TD>
                   <TD align="right" mono>
@@ -229,7 +229,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         marginTop: 2,
                       }}
                     >
-                      tamaño del efecto
+                      effect size
                     </Mono>
                   </TD>
                   <TD align="right" mono>
@@ -240,7 +240,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
                   </TD>
                   <TD>
                     <EffectTag
-                      label={`efecto ${cohenDLabel(tTest.cohenD)}`}
+                      label={`${cohenDLabel(tTest.cohenD)} effect`}
                       strong={Math.abs(tTest.cohenD) >= 0.5}
                     />
                   </TD>
@@ -265,17 +265,17 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
           >
             {tTest.significant05 ? (
               <>
-                La diferencia es <strong>estadísticamente significativa</strong> al 5%. En media,
-                A es {tTest.diff < 0 ? 'más rápida' : 'más lenta'} por{' '}
+                The difference is <strong>statistically significant</strong> at 5%. On average,
+                A is {tTest.diff < 0 ? 'faster' : 'slower'} by{' '}
                 <Mono style={{ color: tTest.diff < 0 ? colors.green : colors.red, fontWeight: 600 }}>
                   {(Math.abs(tTest.diff) / 1000).toFixed(3)}s
                 </Mono>{' '}
-                (efecto {cohenDLabel(tTest.cohenD)}).
+                ({cohenDLabel(tTest.cohenD)} effect).
               </>
             ) : (
               <>
-                La diferencia <strong>no es significativa</strong> al 5% — podría explicarse por
-                variabilidad natural entre vueltas. Necesitarías más datos para confirmar.
+                The difference is <strong>not significant</strong> at 5% — it could be explained
+                by natural lap-to-lap variability. You would need more data to confirm.
               </>
             )}
           </div>
@@ -293,7 +293,7 @@ const StatisticalTestsPanel: React.FC<Props> = ({ analytics, sessions }) => {
             letterSpacing: '0.6px',
           }}
         >
-          No se pudo cargar la sesión seleccionada.
+          Could not load the selected session.
         </div>
       )}
     </Panel>

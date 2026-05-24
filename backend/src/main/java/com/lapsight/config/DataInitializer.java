@@ -86,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private Team createDemoTeam() {
         Team team = new Team(demoTeamName, VehicleCategory.CAR);
-        team.setDescription("Equipo demo creado en el primer arranque");
+        team.setDescription("Demo team created at first startup");
         team.setContactEmail("contacto@" + demoTeamName.toLowerCase().replace(" ", "") + ".com");
         team.setActive(true);
         Team saved = teamRepository.save(team);

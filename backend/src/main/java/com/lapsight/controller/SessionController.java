@@ -67,7 +67,7 @@ public class SessionController {
     private List<AnalyticsLapDto> getLapsForAdvancedAnalytics(Long id, User user) {
         Session session = sessionRepository.findByIdAndTeamId(id, user.getTeam().getId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Sesión " + id + " no encontrada en el equipo"));
+                        "Session " + id + " not found in team"));
         return session.getLaps().stream().map(AnalyticsLapDto::fromEntity).toList();
     }
 
@@ -123,7 +123,7 @@ public class SessionController {
                                             @AuthenticationPrincipal User current) {
         Session session = sessionRepository.findByIdAndTeamId(id, current.getTeam().getId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Sesión " + id + " no encontrada en el equipo"));
+                        "Session " + id + " not found in team"));
 
         java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("session_name", session.getName());
@@ -174,19 +174,19 @@ public class SessionController {
     @GetMapping("/template")
     public ResponseEntity<String> downloadTemplate() {
         String csv = """
-                # Plantilla de tiempos por vuelta para LapSight
-                # Edita este archivo con tus datos y súbelo en la pestaña "Subir CSV".
-                # Columnas reconocidas (en cualquier orden):
-                #   lap        Número de vuelta (1, 2, 3...)
-                #   time       Tiempo de vuelta. Formatos: 1:23.456 / 83.456 / 83456 (ms)
-                #   s1, s2, s3 Tiempos de sector (opcionales, mismo formato)
-                #   valid      true/false (opcional, por defecto true)
-                #   compound   SOFT / MEDIUM / HARD / INTERMEDIATE / WET (opcional)
-                #   fuel       Combustible en kg (opcional)
-                #   notes      Notas libres (opcional)
+                # Lap times template for LapSight
+                # Edit this file with your data and upload it on the "Upload CSV" tab.
+                # Recognized columns (in any order):
+                #   lap        Lap number (1, 2, 3...)
+                #   time       Lap time. Formats: 1:23.456 / 83.456 / 83456 (ms)
+                #   s1, s2, s3 Sector times (optional, same format)
+                #   valid      true/false (optional, defaults to true)
+                #   compound   SOFT / MEDIUM / HARD / INTERMEDIATE / WET (optional)
+                #   fuel       Fuel in kg (optional)
+                #   notes      Free-form notes (optional)
                 #
-                # Separadores admitidos: coma o punto y coma.
-                # Las líneas que empiezan por # se ignoran.
+                # Supported separators: comma or semicolon.
+                # Lines starting with # are ignored.
                 lap,time,s1,s2,s3,valid,compound,fuel,notes
                 1,1:24.512,28.123,32.001,24.388,true,SOFT,40.5,Out lap
                 2,1:19.234,26.011,29.541,23.682,true,SOFT,39.8,

@@ -20,12 +20,12 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del equipo es obligatorio")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
+    @NotBlank(message = "Team name is required")
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Size(max = 500, message = "La descripción no puede exceder 500 caracteres")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(length = 500)
     private String description;
 

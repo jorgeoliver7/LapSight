@@ -53,15 +53,15 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
     v == null ? '—' : `${v.toFixed(3)}${unit}`;
 
   const rows: RowData[] = [
-    { label: 'País', a: circuitA.country || '—', b: circuitB.country || '—' },
+    { label: 'Country', a: circuitA.country || '—', b: circuitB.country || '—' },
     {
-      label: 'Longitud',
+      label: 'Length',
       a: lenA ? `${lenA.toFixed(3)} km` : '—',
       b: lenB ? `${lenB.toFixed(3)} km` : '—',
       winner: lenA && lenB ? (lenA > lenB ? 'a' : lenA < lenB ? 'b' : null) : null,
     },
     {
-      label: 'Curvas',
+      label: 'Turns',
       a: extA.turns?.toString() ?? '—',
       b: extB.turns?.toString() ?? '—',
       winner:
@@ -70,12 +70,12 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           : null,
     },
     {
-      label: 'Sentido',
-      a: dirA === 'CW' ? '↻ Horario' : '↺ Antihorario',
-      b: dirB === 'CW' ? '↻ Horario' : '↺ Antihorario',
+      label: 'Direction',
+      a: dirA === 'CW' ? '↻ Clockwise' : '↺ Counter-clockwise',
+      b: dirB === 'CW' ? '↻ Clockwise' : '↺ Counter-clockwise',
     },
     {
-      label: 'Recta más larga',
+      label: 'Longest straight',
       a: fmt(longestStraightKmA, ' km'),
       b: fmt(longestStraightKmB, ' km'),
       winner:
@@ -84,7 +84,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           : null,
     },
     {
-      label: 'Altitud',
+      label: 'Altitude',
       a: extA.altitudeM ? `${extA.altitudeM} m` : '—',
       b: extB.altitudeM ? `${extB.altitudeM} m` : '—',
       winner:
@@ -92,13 +92,13 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           ? extA.altitudeM > extB.altitudeM ? 'a' : extA.altitudeM < extB.altitudeM ? 'b' : null
           : null,
     },
-    { label: 'Inaugurado', a: extA.opened?.toString() ?? '—', b: extB.opened?.toString() ?? '—' },
+    { label: 'Opened', a: extA.opened?.toString() ?? '—', b: extB.opened?.toString() ?? '—' },
     {
-      label: 'Categorías',
+      label: 'Categories',
       a: extA.categories?.join(', ') ?? '—',
       b: extB.categories?.join(', ') ?? '—',
     },
-    { label: 'Récord', a: extA.lapRecord ?? '—', b: extB.lapRecord ?? '—' },
+    { label: 'Lap record', a: extA.lapRecord ?? '—', b: extB.lapRecord ?? '—' },
   ];
 
   return (
@@ -113,7 +113,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           borderBottom: `1px solid ${colors.border}`,
         }}
       >
-        Comparador de circuitos
+        Circuit comparator
       </DialogTitle>
       <DialogContent>
         <Box display="flex" gap={2} flexDirection={{ xs: 'column', md: 'row' }} mt={2} mb={3}>
@@ -133,7 +133,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
               }}
             >
               <Label tone="dim" style={{ color, marginBottom: 6 }}>
-                CIRCUITO · {lbl}
+                CIRCUIT · {lbl}
               </Label>
               <div style={{ color: colors.text, fontWeight: 600, fontSize: 15, marginBottom: 8 }}>
                 {c.country || '🏁'} {c.name}
@@ -154,7 +154,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
             }}
           >
             <div style={{ padding: '8px 14px' }}>
-              <Label>Métrica</Label>
+              <Label>Metric</Label>
             </div>
             <div style={{ padding: '8px 14px', borderLeft: `1px solid ${colors.border}` }}>
               <Label style={{ color: COLOR_A }}>A · {circuitA.name}</Label>
@@ -247,7 +247,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
       </DialogContent>
       <DialogActions sx={{ p: 2, borderTop: `1px solid ${colors.border}` }}>
         <Button onClick={onClose} sx={{ color: colors.textDim, fontFamily: fonts.mono, letterSpacing: '1.2px' }}>
-          CERRAR
+          CLOSE
         </Button>
       </DialogActions>
     </Dialog>

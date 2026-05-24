@@ -1,14 +1,14 @@
 package com.lapsight.model;
 
 public enum MaintenanceType {
-    PREVENTIVE("Preventivo", "Mantenimiento programado regular"),
-    CORRECTIVE("Correctivo", "Reparación de fallo o avería"),
-    INSPECTION("Inspección", "Revisión técnica o inspección"),
-    SETUP("Setup", "Configuración y ajustes del vehículo"),
-    UPGRADE("Mejora", "Actualización o mejora de componentes"),
-    SEASONAL("Estacional", "Mantenimiento de temporada"),
-    POST_EVENT("Post-evento", "Revisión después de carrera o test"),
-    PRE_EVENT("Pre-evento", "Preparación antes de carrera o test");
+    PREVENTIVE("Preventive", "Regular scheduled maintenance"),
+    CORRECTIVE("Corrective", "Failure or breakdown repair"),
+    INSPECTION("Inspection", "Technical review or inspection"),
+    SETUP("Setup", "Vehicle configuration and adjustments"),
+    UPGRADE("Upgrade", "Component update or upgrade"),
+    SEASONAL("Seasonal", "Seasonal maintenance"),
+    POST_EVENT("Post-event", "Inspection after race or test"),
+    PRE_EVENT("Pre-event", "Preparation before race or test");
 
     private final String displayName;
     private final String description;

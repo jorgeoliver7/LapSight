@@ -21,25 +21,25 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre del evento es obligatorio")
-    @Size(max = 200, message = "El nombre no puede exceder 200 caracteres")
+    @NotBlank(message = "Event name is required")
+    @Size(max = 200, message = "Name cannot exceed 200 characters")
     @Column(nullable = false, length = 200)
     private String name;
 
-    @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
+    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     @Column(length = 1000)
     private String description;
 
-    @NotNull(message = "El tipo de evento es obligatorio")
+    @NotNull(message = "Event type is required")
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
     private EventType eventType;
 
-    @NotNull(message = "La fecha de inicio es obligatoria")
+    @NotNull(message = "Start date is required")
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
 
-    @NotNull(message = "La fecha de fin es obligatoria")
+    @NotNull(message = "End date is required")
     @Column(name = "end_date", nullable = false)
     private LocalDateTime endDate;
 

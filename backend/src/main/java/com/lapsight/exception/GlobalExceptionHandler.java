@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 fieldErrors.put(error.getField(), error.getDefaultMessage()));
-        Map<String, Object> body = baseBody(HttpStatus.BAD_REQUEST, "Datos inválidos");
+        Map<String, Object> body = baseBody(HttpStatus.BAD_REQUEST, "Invalid data");
         body.put("errors", fieldErrors);
         return ResponseEntity.badRequest().body(body);
     }
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBadCredentials(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(baseBody(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas"));
+                .body(baseBody(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(baseBody(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error interno: " + ex.getMessage()));
+                        "Internal error: " + ex.getMessage()));
     }
 
     private Map<String, Object> baseBody(HttpStatus status, String message) {

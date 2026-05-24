@@ -25,11 +25,11 @@ interface Props {
 type TabKey = 'distribution' | 'heatmap' | 'stints' | 'anomalies' | 'degradation';
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: 'distribution', label: 'Distribución' },
-  { key: 'heatmap', label: 'Heatmap sectores' },
+  { key: 'distribution', label: 'Distribution' },
+  { key: 'heatmap', label: 'Sector heatmap' },
   { key: 'stints', label: 'Stints' },
-  { key: 'anomalies', label: 'Anomalías' },
-  { key: 'degradation', label: 'Degradación' },
+  { key: 'anomalies', label: 'Anomalies' },
+  { key: 'degradation', label: 'Degradation' },
 ];
 
 const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
@@ -67,7 +67,7 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
     } catch (e: any) {
       setError((s) => ({
         ...s,
-        [key]: e?.response?.data?.message || 'Servicio de analytics no disponible',
+        [key]: e?.response?.data?.message || 'Analytics service unavailable',
       }));
     } finally {
       setLoading((s) => ({ ...s, [key]: false }));
@@ -96,7 +96,7 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
 
   return (
     <Panel
-      title="Análisis avanzado"
+      title="Advanced analytics"
       right={
         <Mono style={{ color: colors.textMute }}>pandas · sklearn · scipy</Mono>
       }
@@ -217,7 +217,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
     .map((l) => l.lapTimeMs / 1000);
 
   if (validTimes.length === 0) {
-    return <InfoNote>Sin vueltas válidas para mostrar distribución.</InfoNote>;
+    return <InfoNote>No valid laps to show distribution.</InfoNote>;
   }
 
   return (
@@ -234,7 +234,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             {
               y: validTimes,
               type: 'box' as const,
-              name: 'Tiempo',
+              name: 'Time',
               boxpoints: 'all' as const,
               jitter: 0.4,
               pointpos: 0,
@@ -256,7 +256,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Segundos',
+                text: 'Seconds',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -272,7 +272,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             {
               x: validTimes,
               type: 'histogram' as const,
-              name: 'Vueltas',
+              name: 'Laps',
               marker: {
                 color: colors.accent,
                 opacity: 0.7,
@@ -287,20 +287,20 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             height: 320,
             margin: { l: 50, r: 14, t: 30, b: 40 },
             title: {
-              text: 'Histograma',
+              text: 'Histogram',
               font: { family: fonts.mono, size: 11, color: colors.textDim },
             },
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Segundos',
+                text: 'Seconds',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Frecuencia',
+                text: 'Frequency',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -346,7 +346,7 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
                 bordercolor: colors.border,
               },
               hovertemplate:
-                'Vuelta %{x}<br>%{y}<br>Gap: %{z:.3f}s<extra></extra>',
+                'Lap %{x}<br>%{y}<br>Gap: %{z:.3f}s<extra></extra>',
             },
           ] as never
         }
@@ -357,7 +357,7 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Vuelta',
+                text: 'Lap',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -382,8 +382,8 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
           display: 'block',
         }}
       >
-        Cada celda muestra cuánto pierdes en ese sector respecto al mejor sector que has
-        hecho en toda la sesión. Verde = vuelta perfecta para ese sector.
+        Each cell shows how much you lose in that sector versus the best sector you achieved
+        in the whole session. Green = perfect lap for that sector.
       </Mono>
     </div>
   );
@@ -396,7 +396,7 @@ const StintsPanel: React.FC<{
   base: SessionAnalytics;
 }> = ({ data, base }) => {
   if (data.nStints === 0) {
-    return <InfoNote>Sesión demasiado corta para detectar stints.</InfoNote>;
+    return <InfoNote>Session too short to detect stints.</InfoNote>;
   }
 
   const stintColors = (idx: number) => apexPaletteSeries[idx % apexPaletteSeries.length];
@@ -422,9 +422,9 @@ const StintsPanel: React.FC<{
   return (
     <div>
       <InfoNote>
-        {data.nStints} stints detectados — método:{' '}
+        {data.nStints} stints detected — method:{' '}
         <strong style={{ color: colors.accent }}>
-          {data.method === 'compound-based' ? 'por compound' : 'KMeans 1D sobre lap_time'}
+          {data.method === 'compound-based' ? 'by compound' : 'KMeans 1D on lap_time'}
         </strong>
         .
       </InfoNote>
@@ -437,7 +437,7 @@ const StintsPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Vuelta',
+                text: 'Lap',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -445,7 +445,7 @@ const StintsPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Segundos',
+                text: 'Seconds',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -472,7 +472,7 @@ const StintsPanel: React.FC<{
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              {['Stint', 'Compound', 'Vueltas', 'Mejor', 'Media', 'Degradación'].map((h, i) => (
+              {['Stint', 'Compound', 'Laps', 'Best', 'Average', 'Degradation'].map((h, i) => (
                 <th
                   key={h}
                   style={{
@@ -541,7 +541,7 @@ const StintsPanel: React.FC<{
                     {s.degradationMsPerLap != null
                       ? `${s.degradationMsPerLap > 0 ? '+' : ''}${(
                           s.degradationMsPerLap / 1000
-                        ).toFixed(3)} s/v`
+                        ).toFixed(3)} s/lap`
                       : '—'}
                   </TD>
                 </tr>
@@ -573,11 +573,11 @@ const AnomaliesPanel: React.FC<{
   return (
     <div>
       <InfoNote tone={data.nAnomalies > 0 ? 'warn' : 'good'}>
-        IsolationForest detectó{' '}
+        IsolationForest detected{' '}
         <Mono style={{ fontWeight: 700, color: data.nAnomalies > 0 ? colors.orange : colors.green }}>
           {data.nAnomalies}
         </Mono>{' '}
-        vueltas anómalas de {base.validLaps} válidas.
+        anomalous laps out of {base.validLaps} valid.
       </InfoNote>
       <Plot
         data={
@@ -602,7 +602,7 @@ const AnomaliesPanel: React.FC<{
               y: anomalousLaps.map((l) => l.lapTimeMs / 1000),
               type: 'scatter' as const,
               mode: 'markers' as const,
-              name: 'Anomalía',
+              name: 'Anomaly',
               marker: {
                 color: colors.orange,
                 size: 14,
@@ -622,7 +622,7 @@ const AnomaliesPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Vuelta',
+                text: 'Lap',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -630,7 +630,7 @@ const AnomaliesPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Segundos',
+                text: 'Seconds',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -678,15 +678,15 @@ const DegradationPanel: React.FC<{
   return (
     <div>
       <InfoNote>
-        Ajuste lineal R² ={' '}
+        Linear fit R² ={' '}
         <Mono style={{ color: colors.text, fontWeight: 600 }}>
           {data.linear.rSquared.toFixed(3)}
         </Mono>{' '}
-        · polinómico grado {data.polynomial.degree} R² ={' '}
+        · polynomial degree {data.polynomial.degree} R² ={' '}
         <Mono style={{ color: colors.text, fontWeight: 600 }}>
           {data.polynomial.rSquared.toFixed(3)}
         </Mono>{' '}
-        · elegido:{' '}
+        · chosen:{' '}
         <Mono
           style={{
             color: colors.accent,
@@ -706,7 +706,7 @@ const DegradationPanel: React.FC<{
               y: times,
               type: 'scatter' as const,
               mode: 'markers' as const,
-              name: 'Vueltas válidas',
+              name: 'Valid laps',
               marker: {
                 color: colors.text,
                 size: 7,
@@ -726,7 +726,7 @@ const DegradationPanel: React.FC<{
               y: polyY,
               type: 'scatter' as const,
               mode: 'lines' as const,
-              name: `Polinómico g${data.polynomial.degree} (R² ${data.polynomial.rSquared.toFixed(2)})`,
+              name: `Polynomial d${data.polynomial.degree} (R² ${data.polynomial.rSquared.toFixed(2)})`,
               line: { color: colors.purple, width: 2.5 },
             },
           ] as never
@@ -738,7 +738,7 @@ const DegradationPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Vuelta',
+                text: 'Lap',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -746,7 +746,7 @@ const DegradationPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Segundos',
+                text: 'Seconds',
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },

@@ -1,14 +1,14 @@
 package com.lapsight.model;
 
 public enum UserRole {
-    MANAGER("Manager del Equipo", "Gestión completa del equipo"),
-    PILOT("Piloto", "Piloto del equipo"),
-    MECHANIC("Mecánico", "Mantenimiento y reparación de vehículos"),
-    ENGINEER("Ingeniero", "Análisis técnico y setup"),
-    LOGISTICS("Logística", "Gestión de viajes y transporte"),
-    FINANCE("Finanzas", "Gestión financiera y sponsors"),
-    MEDIA("Medios", "Comunicación y redes sociales"),
-    GUEST("Invitado", "Acceso limitado de solo lectura");
+    MANAGER("Team Manager", "Full team management"),
+    PILOT("Driver", "Team driver"),
+    MECHANIC("Mechanic", "Vehicle maintenance and repair"),
+    ENGINEER("Engineer", "Technical analysis and setup"),
+    LOGISTICS("Logistics", "Travel and transport management"),
+    FINANCE("Finance", "Financial and sponsor management"),
+    MEDIA("Media", "Communications and social media"),
+    GUEST("Guest", "Limited read-only access");
 
     private final String displayName;
     private final String description;

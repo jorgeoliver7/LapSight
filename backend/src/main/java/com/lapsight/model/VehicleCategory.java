@@ -2,8 +2,8 @@ package com.lapsight.model;
 
 public enum VehicleCategory {
     // Categorías principales
-    CAR("Coches"),
-    MOTORCYCLE("Motos");
+    CAR("Cars"),
+    MOTORCYCLE("Motorcycles");
 
     private final String displayName;
 

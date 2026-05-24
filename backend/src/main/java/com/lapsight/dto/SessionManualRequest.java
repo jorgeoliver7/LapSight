@@ -43,7 +43,7 @@ public class SessionManualRequest {
     private Long driverId;
 
     @Valid
-    @NotEmpty(message = "Debes añadir al menos una vuelta")
+    @NotEmpty(message = "You must add at least one lap")
     private List<LapInputDto> laps;
 
     public String getName() { return name; }

@@ -21,12 +21,12 @@ public class MaintenanceRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "La fecha de mantenimiento es obligatoria")
+    @NotNull(message = "Maintenance date is required")
     @Column(name = "maintenance_date", nullable = false)
     private LocalDateTime maintenanceDate;
 
-    @NotBlank(message = "La descripción es obligatoria")
-    @Size(max = 500, message = "La descripción no puede exceder 500 caracteres")
+    @NotBlank(message = "Description is required")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(nullable = false, length = 500)
     private String description;
 
@@ -34,15 +34,15 @@ public class MaintenanceRecord {
     @Column(name = "maintenance_type", nullable = false)
     private MaintenanceType maintenanceType;
 
-    @PositiveOrZero(message = "Las horas del vehículo no pueden ser negativas")
+    @PositiveOrZero(message = "Vehicle hours cannot be negative")
     @Column(name = "vehicle_hours_at_maintenance", precision = 10, scale = 2)
     private BigDecimal vehicleHoursAtMaintenance;
 
-    @PositiveOrZero(message = "Los kilómetros del vehículo no pueden ser negativos")
+    @PositiveOrZero(message = "Vehicle kilometers cannot be negative")
     @Column(name = "vehicle_km_at_maintenance", precision = 10, scale = 2)
     private BigDecimal vehicleKmAtMaintenance;
 
-    @PositiveOrZero(message = "El coste no puede ser negativo")
+    @PositiveOrZero(message = "Cost cannot be negative")
     @Column(name = "cost", precision = 10, scale = 2)
     private BigDecimal cost;
 

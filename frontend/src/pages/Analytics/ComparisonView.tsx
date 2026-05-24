@@ -142,7 +142,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                KPIs lado a lado
+                KPIs side by side
               </Typography>
               <TableContainer>
                 <Table size="small">
@@ -159,11 +159,11 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    <StatRow label="Mejor vuelta" va={a.bestLapMs} vb={b.bestLapMs} />
-                    <StatRow label="Media" va={a.averageMs} vb={b.averageMs} />
-                    <StatRow label="Mediana" va={a.medianMs} vb={b.medianMs} />
+                    <StatRow label="Best lap" va={a.bestLapMs} vb={b.bestLapMs} />
+                    <StatRow label="Average" va={a.averageMs} vb={b.averageMs} />
+                    <StatRow label="Median" va={a.medianMs} vb={b.medianMs} />
                     <StatRow
-                      label="Consistencia (σ)"
+                      label="Consistency (σ)"
                       va={a.stdDevMs}
                       vb={b.stdDevMs}
                       format={(n) => (n != null ? `±${(n / 1000).toFixed(3)}s` : '—')}
@@ -173,9 +173,9 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
                       va={a.theoreticalBestLapMs}
                       vb={b.theoreticalBestLapMs}
                     />
-                    <StatRow label="Mejor S1" va={a.bestSector1Ms} vb={b.bestSector1Ms} />
-                    <StatRow label="Mejor S2" va={a.bestSector2Ms} vb={b.bestSector2Ms} />
-                    <StatRow label="Mejor S3" va={a.bestSector3Ms} vb={b.bestSector3Ms} />
+                    <StatRow label="Best S1" va={a.bestSector1Ms} vb={b.bestSector1Ms} />
+                    <StatRow label="Best S2" va={a.bestSector2Ms} vb={b.bestSector2Ms} />
+                    <StatRow label="Best S3" va={a.bestSector3Ms} vb={b.bestSector3Ms} />
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -187,39 +187,39 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                Resumen
+                Summary
               </Typography>
               <Box display="flex" flexDirection="column" gap={1.5}>
                 <Box>
                   <Typography variant="caption" color="textSecondary">
-                    Diferencia de mejor vuelta
+                    Best lap delta
                   </Typography>
                   <Typography variant="h5" fontWeight={700} fontFamily="monospace">
                     {bestGap != null ? formatGap(bestGap) : '—'}
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    {bestGap != null && bestGap < 0 ? `${a.sessionName} es más rápida` : bestGap != null && bestGap > 0 ? `${b.sessionName} es más rápida` : 'Empate'}
+                    {bestGap != null && bestGap < 0 ? `${a.sessionName} is faster` : bestGap != null && bestGap > 0 ? `${b.sessionName} is faster` : 'Tie'}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="textSecondary">
-                    Diferencia de theoretical best
+                    Theoretical best delta
                   </Typography>
                   <Typography variant="h5" fontWeight={700} fontFamily="monospace">
                     {theoreticalGap != null ? formatGap(theoreticalGap) : '—'}
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    Potencial puro sumando mejores sectores
+                    Raw potential summing best sectors
                   </Typography>
                 </Box>
                 <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
                   <Chip
-                    label={`A: ${a.validLaps}/${a.totalLaps} válidas`}
+                    label={`A: ${a.validLaps}/${a.totalLaps} valid`}
                     size="small"
                     sx={{ bgcolor: COLOR_A, color: 'white' }}
                   />
                   <Chip
-                    label={`B: ${b.validLaps}/${b.totalLaps} válidas`}
+                    label={`B: ${b.validLaps}/${b.totalLaps} valid`}
                     size="small"
                     sx={{ bgcolor: COLOR_B, color: 'white' }}
                   />
@@ -233,20 +233,20 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
       <Card>
         <CardContent>
           <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Tiempos por vuelta (overlay)
+            Lap times (overlay)
           </Typography>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="lapNumber" label={{ value: 'Vuelta', position: 'insideBottom', offset: -5 }} />
+              <XAxis dataKey="lapNumber" label={{ value: 'Lap', position: 'insideBottom', offset: -5 }} />
               <YAxis
                 tickFormatter={(v) => v.toFixed(2)}
-                label={{ value: 'Segundos', angle: -90, position: 'insideLeft' }}
+                label={{ value: 'Seconds', angle: -90, position: 'insideLeft' }}
                 domain={['auto', 'auto']}
               />
               <RTooltip
                 formatter={(v: any) => (typeof v === 'number' ? `${v.toFixed(3)} s` : '—')}
-                labelFormatter={(l) => `Vuelta ${l}`}
+                labelFormatter={(l) => `Lap ${l}`}
               />
               <Legend />
               <Line
@@ -275,7 +275,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
       <Card>
         <CardContent>
           <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Gap por vuelta
+            Gap per lap
           </Typography>
           <TableContainer>
             <Table size="small">
@@ -283,10 +283,10 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell align="right" sx={{ color: COLOR_A }}>
-                    Tiempo A
+                    Time A
                   </TableCell>
                   <TableCell align="right" sx={{ color: COLOR_B }}>
-                    Tiempo B
+                    Time B
                   </TableCell>
                   <TableCell align="right">Gap (A − B)</TableCell>
                 </TableRow>

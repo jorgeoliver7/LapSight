@@ -1,20 +1,20 @@
 package com.lapsight.model;
 
 public enum EventType {
-    RACE("Carrera", "Evento de competición oficial"),
-    TEST("Test", "Sesión de pruebas y desarrollo"),
-    PRACTICE("Entrenamientos", "Sesión de entrenamientos"),
-    QUALIFYING("Clasificación", "Sesión de clasificación"),
-    TRAINING("Formación", "Entrenamiento del equipo"),
-    TRAVEL("Viaje", "Desplazamiento del equipo"),
-    MEETING("Reunión", "Reunión del equipo o con sponsors"),
-    MAINTENANCE("Mantenimiento", "Sesión de mantenimiento programado"),
-    PRESENTATION("Presentación", "Presentación del equipo o vehículo"),
-    MEDIA("Medios", "Evento mediático o promocional"),
-    SPONSOR_EVENT("Evento Sponsor", "Evento relacionado con sponsors"),
-    SHAKEDOWN("Shakedown", "Primera prueba de vehículo nuevo o modificado"),
-    TRACKDAY("Trackday", "Día de pista abierto"),
-    OTHER("Otro", "Otro tipo de evento");
+    RACE("Race", "Official competition event"),
+    TEST("Test", "Testing and development session"),
+    PRACTICE("Practice", "Practice session"),
+    QUALIFYING("Qualifying", "Qualifying session"),
+    TRAINING("Training", "Team training"),
+    TRAVEL("Travel", "Team transfer"),
+    MEETING("Meeting", "Team or sponsor meeting"),
+    MAINTENANCE("Maintenance", "Scheduled maintenance session"),
+    PRESENTATION("Presentation", "Team or vehicle presentation"),
+    MEDIA("Media", "Media or promotional event"),
+    SPONSOR_EVENT("Sponsor Event", "Sponsor-related event"),
+    SHAKEDOWN("Shakedown", "First test of new or modified vehicle"),
+    TRACKDAY("Trackday", "Open track day"),
+    OTHER("Other", "Other event type");
 
     private final String displayName;
     private final String description;

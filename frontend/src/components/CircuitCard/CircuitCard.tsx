@@ -114,7 +114,7 @@ const CircuitCard: React.FC<Props> = ({
               }}
             >
               {circuit.length_km.toFixed(3)} km
-              {extras.turns ? ` · ${extras.turns} curvas` : ''}
+              {extras.turns ? ` · ${extras.turns} turns` : ''}
               {extras.direction ? ` · ${extras.direction === 'CW' ? '↻' : '↺'}` : ''}
             </Mono>
           )}
@@ -190,7 +190,7 @@ const CircuitCard: React.FC<Props> = ({
         }}
       >
         <Pill active={!!circuit.realData}>
-          {circuit.realData ? 'GPS real' : 'Estilizado'}
+          {circuit.realData ? 'Real GPS' : 'Stylized'}
         </Pill>
         {sessionsCount != null && sessionsCount > 0 && (
           <div style={{ textAlign: 'right' }}>
@@ -204,7 +204,7 @@ const CircuitCard: React.FC<Props> = ({
                 lineHeight: 1,
               }}
             >
-              {sessionsCount} sesión{sessionsCount === 1 ? '' : 'es'}
+              {sessionsCount} session{sessionsCount === 1 ? '' : 's'}
             </Mono>
             {personalBestMs != null && (
               <Mono

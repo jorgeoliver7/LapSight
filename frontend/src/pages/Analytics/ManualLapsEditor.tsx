@@ -64,8 +64,8 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
           lineHeight: 1.5,
         }}
       >
-        Tiempos en formato <code style={{ color: colors.accent }}>1:23.456</code> o{' '}
-        <code style={{ color: colors.accent }}>83.456</code>. Sectores opcionales.
+        Times in <code style={{ color: colors.accent }}>1:23.456</code> or{' '}
+        <code style={{ color: colors.accent }}>83.456</code> format. Sectors optional.
       </Mono>
 
       <TableContainer component={Paper} variant="outlined">
@@ -73,12 +73,12 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ width: 50 }}>#</TableCell>
-              <TableCell sx={{ minWidth: 110 }}>Tiempo *</TableCell>
+              <TableCell sx={{ minWidth: 110 }}>Time *</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S1</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S2</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S3</TableCell>
-              <TableCell sx={{ width: 70 }}>Válida</TableCell>
-              <TableCell sx={{ minWidth: 100 }}>Neumático</TableCell>
+              <TableCell sx={{ width: 70 }}>Valid</TableCell>
+              <TableCell sx={{ minWidth: 100 }}>Tire</TableCell>
               <TableCell sx={{ width: 50 }}></TableCell>
             </TableRow>
           </TableHead>
@@ -87,7 +87,7 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Mono style={{ color: colors.textMute, fontSize: 11, letterSpacing: '0.4px' }}>
-                    Pulsa "Añadir vuelta" para empezar
+                    Click "Add lap" to start
                   </Mono>
                 </TableCell>
               </TableRow>
@@ -177,9 +177,9 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
       </TableContainer>
 
       <Box mt={1} display="flex" justifyContent="space-between" alignItems="center">
-        <Label>{laps.length} {laps.length === 1 ? 'vuelta' : 'vueltas'}</Label>
+        <Label>{laps.length} {laps.length === 1 ? 'lap' : 'laps'}</Label>
         <Button startIcon={<AddIcon />} onClick={addLap} size="small">
-          Añadir vuelta
+          Add lap
         </Button>
       </Box>
     </Box>

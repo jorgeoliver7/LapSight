@@ -61,7 +61,7 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
                 response.setHeader("Retry-After", String.valueOf(retryAfterSec));
                 response.setContentType("application/json");
                 response.getWriter().write(
-                        "{\"message\":\"Demasiadas peticiones. Reintenta en " + retryAfterSec + "s\"}"
+                        "{\"message\":\"Too many requests. Retry in " + retryAfterSec + "s\"}"
                 );
                 return;
             }

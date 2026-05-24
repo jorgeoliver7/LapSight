@@ -50,10 +50,10 @@ public class EventService {
     @Transactional
     public EventDto create(Long teamId, EventRequest request) {
         if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio");
+            throw new IllegalArgumentException("End date must be after the start date");
         }
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Equipo no encontrado: " + teamId));
+                .orElseThrow(() -> new EntityNotFoundException("Team not found: " + teamId));
 
         Event event = new Event();
         applyRequest(event, request, teamId);
@@ -67,7 +67,7 @@ public class EventService {
     public EventDto update(Long id, Long teamId, EventRequest request) {
         Event event = getEventOrThrow(id, teamId);
         if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio");
+            throw new IllegalArgumentException("End date must be after the start date");
         }
         applyRequest(event, request, teamId);
         return EventDto.fromEntity(eventRepository.save(event));
@@ -82,7 +82,7 @@ public class EventService {
     private Event getEventOrThrow(Long id, Long teamId) {
         return eventRepository.findByIdAndTeamId(id, teamId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Evento " + id + " no encontrado en el equipo " + teamId));
+                        "Event " + id + " not found in team " + teamId));
     }
 
     private void applyRequest(Event event, EventRequest request, Long teamId) {
@@ -102,7 +102,7 @@ public class EventService {
             List<User> participants = request.getParticipantIds().stream()
                     .map(uid -> userRepository.findByIdAndTeamId(uid, teamId)
                             .orElseThrow(() -> new EntityNotFoundException(
-                                    "Participante " + uid + " no pertenece al equipo")))
+                                    "Participant " + uid + " does not belong to the team")))
                     .toList();
             event.getParticipants().clear();
             event.getParticipants().addAll(participants);
@@ -112,7 +112,7 @@ public class EventService {
             List<Vehicle> vehicles = request.getVehicleIds().stream()
                     .map(vid -> vehicleRepository.findByIdAndTeamId(vid, teamId)
                             .orElseThrow(() -> new EntityNotFoundException(
-                                    "Vehículo " + vid + " no pertenece al equipo")))
+                                    "Vehicle " + vid + " does not belong to the team")))
                     .toList();
             event.getVehicles().clear();
             event.getVehicles().addAll(vehicles);

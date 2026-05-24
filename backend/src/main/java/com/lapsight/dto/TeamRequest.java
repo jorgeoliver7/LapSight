@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 
 public class TeamRequest {
 
-    @NotBlank(message = "El nombre del equipo es obligatorio")
+    @NotBlank(message = "Team name is required")
     @Size(max = 100)
     private String name;
 
@@ -16,7 +16,7 @@ public class TeamRequest {
 
     private String logoUrl;
 
-    @NotNull(message = "La categoría principal es obligatoria")
+    @NotNull(message = "Primary category is required")
     private VehicleCategory primaryCategory;
 
     private String contactEmail;

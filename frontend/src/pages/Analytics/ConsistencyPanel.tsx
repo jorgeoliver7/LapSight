@@ -132,10 +132,10 @@ function scoreColor(score: number): string {
 }
 
 function scoreLabel(score: number): string {
-  if (score >= 80) return 'Excelente';
-  if (score >= 60) return 'Bueno';
-  if (score >= 40) return 'Regular';
-  return 'Mejorable';
+  if (score >= 80) return 'Excellent';
+  if (score >= 60) return 'Good';
+  if (score >= 40) return 'Average';
+  return 'Needs work';
 }
 
 const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
@@ -143,7 +143,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
 
   if (m.cv == null || m.consistencyScore == null) {
     return (
-      <Panel title="Consistencia" padding={16}>
+      <Panel title="Consistency" padding={16}>
         <Mono
           style={{
             color: colors.textMute,
@@ -151,7 +151,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             letterSpacing: '0.4px',
           }}
         >
-          Se necesitan al menos 2 vueltas válidas para calcular consistencia.
+          At least 2 valid laps are needed to calculate consistency.
         </Mono>
       </Panel>
     );
@@ -163,7 +163,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
 
   return (
     <Panel
-      title="Consistencia"
+      title="Consistency"
       right={
         <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <Mono
@@ -212,14 +212,14 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
         }}
       >
         <KCell
-          label="CV (varianza)"
+          label="CV (variance)"
           value={`${cvPct}%`}
-          sub="stdev / media · pro <0.5%"
+          sub="stdev / mean · pro <0.5%"
         />
         <KCell
           label="IQR (P25–P75)"
           value={`±${m.iqrMs != null ? (m.iqrMs / 2 / 1000).toFixed(2) : '—'}s`}
-          sub="50% central de vueltas"
+          sub="central 50% of laps"
         />
         <KCell
           label="Hot lap window"
@@ -227,12 +227,12 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             m.hotLapWindow ? formatLapTime(m.hotLapWindow.avgMs) : '—'
           }
           sub={
-            m.hotLapWindow ? `media de 3 desde V${m.hotLapWindow.startLap}` : 'sin datos'
+            m.hotLapWindow ? `avg of 3 from L${m.hotLapWindow.startLap}` : 'no data'
           }
           tone={m.hotLapWindow ? 'accent' : 'text'}
         />
         <KCell
-          label="% cerca del best"
+          label="% near best"
           value={
             <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
               <span>{m.paceWindow1pct.toFixed(0)}%</span>
@@ -257,7 +257,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             background: colors.surface,
           }}
         >
-          <Label>Consistencia por sector</Label>
+          <Label>Consistency by sector</Label>
           <div
             style={{
               display: 'grid',
@@ -303,7 +303,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
                           fontWeight: 600,
                         }}
                       >
-                        ⚠ MENOS CONSISTENTE
+                        ⚠ LEAST CONSISTENT
                       </Mono>
                     )}
                   </div>
@@ -343,15 +343,15 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             letterSpacing: '0.3px',
           }}
         >
-          Score = CV ponderado sobre vueltas válidas (sin outliers).
+          Score = CV weighted over valid laps (without outliers).
           {m.weakestSector && m.sectorVariance.length > 1 && (
             <>
               {' '}
-              Sector más variable:{' '}
+              Most variable sector:{' '}
               <span style={{ color: colors.red, fontWeight: 600 }}>
                 S{m.weakestSector}
               </span>{' '}
-              — practica esa sección.
+              — practice that section.
             </>
           )}
         </Mono>

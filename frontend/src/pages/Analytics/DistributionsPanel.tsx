@@ -81,8 +81,8 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
 
   return (
     <Panel
-      title="Distribuciones · lap times"
-      right={<Mono style={{ color: colors.textMute }}>histograma · KDE · mediana</Mono>}
+      title="Distributions · lap times"
+      right={<Mono style={{ color: colors.textMute }}>histogram · KDE · median</Mono>}
       padding={16}
     >
       <Mono
@@ -95,16 +95,16 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
           display: 'block',
         }}
       >
-        Compara la <em>forma</em> de las distribuciones, no sólo el promedio.
+        Compare the <em>shape</em> of the distributions, not just the average.
       </Mono>
 
       <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-        <InputLabel>Superponer sesiones (máx 5)</InputLabel>
+        <InputLabel>Overlay sessions (max 5)</InputLabel>
         <Select
           multiple
           value={overlayIds}
           onChange={(e) => setOverlayIds((e.target.value as number[]).slice(0, 5))}
-          input={<OutlinedInput label="Superponer sesiones (máx 5)" />}
+          input={<OutlinedInput label="Overlay sessions (max 5)" />}
           renderValue={(selected) => (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {(selected as number[]).map((id) => {
@@ -118,7 +118,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
             .filter((s) => s.id !== analytics.sessionId)
             .map((s) => (
               <MenuItem key={s.id} value={s.id}>
-                {s.name} · {new Date(s.sessionDate).toLocaleDateString('es-ES')}
+                {s.name} · {new Date(s.sessionDate).toLocaleDateString()}
               </MenuItem>
             ))}
         </Select>
@@ -183,7 +183,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Densidad',
+                  text: 'Density',
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
               },
@@ -201,7 +201,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
             letterSpacing: '0.4px',
           }}
         >
-          Se necesitan al menos 2 vueltas válidas para mostrar la distribución.
+          At least 2 valid laps are needed to show the distribution.
         </Mono>
       )}
 

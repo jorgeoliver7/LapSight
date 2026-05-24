@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (err) {
-          const message = extractError(err, 'Error de autenticación');
+          const message = extractError(err, 'Authentication error');
           set({
             user: null,
             token: null,
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
         } catch (err) {
-          const message = extractError(err, 'Error en el registro');
+          const message = extractError(err, 'Registration error');
           set({ isLoading: false, error: message });
           throw err;
         }

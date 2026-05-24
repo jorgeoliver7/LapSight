@@ -91,7 +91,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             flexWrap: 'wrap',
           }}
         >
-          <Label>SESIONES COMPARADAS</Label>
+          <Label>COMPARED SESSIONS</Label>
           {analytics.map((a, idx) => (
             <div
               key={a.sessionId}
@@ -172,7 +172,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                       display: 'block',
                     }}
                   >
-                    {formatGap(gapToRef)} vs mejor
+                    {formatGap(gapToRef)} vs best
                   </Mono>
                 )}
               </div>
@@ -185,8 +185,8 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                   borderTop: `1px solid ${colors.border}`,
                 }}
               >
-                <KRow label="Media" value={formatLapTime(a.averageMs)} />
-                <KRow label="Mediana" value={formatLapTime(a.medianMs)} />
+                <KRow label="Average" value={formatLapTime(a.averageMs)} />
+                <KRow label="Median" value={formatLapTime(a.medianMs)} />
                 <KRow
                   label="σ"
                   value={a.stdDevMs != null ? `±${(a.stdDevMs / 1000).toFixed(3)}s` : '—'}
@@ -196,7 +196,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                   value={formatLapTime(a.theoreticalBestLapMs)}
                 />
                 <KRow
-                  label="Válidas"
+                  label="Valid"
                   value={`${a.validLaps}/${a.totalLaps}`}
                 />
               </div>
@@ -207,8 +207,8 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
 
       {/* Line overlay */}
       <Panel
-        title="Tiempos por vuelta · overlay"
-        right={<Mono style={{ color: colors.textMute }}>todas las sesiones</Mono>}
+        title="Lap times · overlay"
+        right={<Mono style={{ color: colors.textMute }}>all sessions</Mono>}
         padding={12}
       >
         <Plot
@@ -220,7 +220,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               xaxis: {
                 ...(apexPlotlyLayout().xaxis as object),
                 title: {
-                  text: 'Vuelta',
+                  text: 'Lap',
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 dtick: 1,
@@ -228,7 +228,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Segundos',
+                  text: 'Seconds',
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 tickformat: '.2f',
@@ -249,7 +249,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
       </Panel>
 
       {/* Violin plot */}
-      <Panel title="Distribuciones · violin" padding={12}>
+      <Panel title="Distributions · violin" padding={12}>
         <Mono
           style={{
             fontSize: 11,
@@ -260,8 +260,8 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             lineHeight: 1.5,
           }}
         >
-          Cada "violín" es la densidad de probabilidad de los tiempos. Box interior =
-          cuartiles. Pico ancho y simétrico = pace concentrado (consistente).
+          Each "violin" is the probability density of lap times. Inner box = quartiles.
+          Wide, symmetric peak = concentrated pace (consistent).
         </Mono>
         <Plot
           data={violinData as never}
@@ -272,7 +272,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Segundos',
+                  text: 'Seconds',
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 tickformat: '.2f',
@@ -287,7 +287,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
       </Panel>
 
       {/* Comparison table */}
-      <Panel title="Tabla comparativa" padding={0}>
+      <Panel title="Comparison table" padding={0}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -306,7 +306,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                     borderBottom: `1px solid ${colors.borderHi}`,
                   }}
                 >
-                  Métrica
+                  Metric
                 </th>
                 {analytics.map((a, idx) => (
                   <th
@@ -332,22 +332,22 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             </thead>
             <tbody>
               <ComparisonRow
-                label="Mejor vuelta"
+                label="Best lap"
                 values={analytics.map((a) => a.bestLapMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Media"
+                label="Average"
                 values={analytics.map((a) => a.averageMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Mediana"
+                label="Median"
                 values={analytics.map((a) => a.medianMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Consistencia (σ)"
+                label="Consistency (σ)"
                 values={analytics.map((a) => a.stdDevMs)}
                 format={(n) => (n != null ? `±${(n / 1000).toFixed(3)}s` : '—')}
                 lowerIsBetter
@@ -358,17 +358,17 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Mejor S1"
+                label="Best S1"
                 values={analytics.map((a) => a.bestSector1Ms)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Mejor S2"
+                label="Best S2"
                 values={analytics.map((a) => a.bestSector2Ms)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Mejor S3"
+                label="Best S3"
                 values={analytics.map((a) => a.bestSector3Ms)}
                 format={formatLapTime}
                 last

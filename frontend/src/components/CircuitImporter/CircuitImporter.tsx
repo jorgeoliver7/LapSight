@@ -76,24 +76,24 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Importar circuito desde GeoJSON</DialogTitle>
+      <DialogTitle>Import circuit from GeoJSON</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
           <Typography variant="body2" color="textSecondary">
-            Sube un fichero GeoJSON con un LineString (coordenadas [lng, lat]).
-            Se almacenará localmente en tu navegador.
+            Upload a GeoJSON file with a LineString (coordinates [lng, lat]).
+            It will be stored locally in your browser.
           </Typography>
 
           <Box display="flex" gap={2} flexWrap="wrap">
             <TextField
-              label="Nombre"
+              label="Name"
               value={name}
               onChange={(e) => { setName(e.target.value); if (geoText) tryParse(geoText, e.target.value, country, lengthKm); }}
               size="small"
               sx={{ flex: 2, minWidth: 200 }}
             />
             <TextField
-              label="País (ISO)"
+              label="Country (ISO)"
               value={country}
               onChange={(e) => { setCountry(e.target.value); if (geoText) tryParse(geoText, name, e.target.value, lengthKm); }}
               size="small"
@@ -102,7 +102,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
               sx={{ width: 100 }}
             />
             <TextField
-              label="Longitud (km)"
+              label="Length (km)"
               value={lengthKm}
               onChange={(e) => { setLengthKm(e.target.value); if (geoText) tryParse(geoText, name, country, e.target.value); }}
               size="small"
@@ -117,7 +117,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
             component="label"
             startIcon={<UploadIcon />}
           >
-            Seleccionar archivo .geojson
+            Select .geojson file
             <input
               type="file"
               hidden
@@ -130,7 +130,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
           </Button>
 
           <TextField
-            label="O pega el JSON aquí"
+            label="Or paste the JSON here"
             multiline
             fullWidth
             minRows={4}
@@ -148,10 +148,10 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
               <Box>
                 <Typography variant="subtitle2" sx={{ color: colors.text }}>{preview.name}</Typography>
                 <Typography variant="caption" sx={{ color: colors.textDim, display: 'block', fontFamily: 'monospace' }}>
-                  {preview.country || '—'} · {preview.length_km ? `${preview.length_km.toFixed(3)} km` : 'sin longitud'}
+                  {preview.country || '—'} · {preview.length_km ? `${preview.length_km.toFixed(3)} km` : 'no length'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: colors.textMute, display: 'block', fontFamily: 'monospace' }}>
-                  {preview.path.length} puntos
+                  {preview.path.length} points
                 </Typography>
               </Box>
             </Box>
@@ -159,9 +159,9 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancelar</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button variant="contained" onClick={handleImport} disabled={!preview}>
-          Importar
+          Import
         </Button>
       </DialogActions>
     </Dialog>

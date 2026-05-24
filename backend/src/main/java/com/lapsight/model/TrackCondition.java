@@ -1,10 +1,10 @@
 package com.lapsight.model;
 
 public enum TrackCondition {
-    DRY("Seco"),
-    WET("Lluvia"),
-    MIXED("Mixto"),
-    DAMP("Húmedo");
+    DRY("Dry"),
+    WET("Wet"),
+    MIXED("Mixed"),
+    DAMP("Damp");
 
     private final String displayName;
 

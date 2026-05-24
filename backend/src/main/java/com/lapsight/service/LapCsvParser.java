@@ -129,7 +129,7 @@ public class LapCsvParser {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             String headerLine = nextDataLine(reader);
             if (headerLine == null) {
-                throw new IllegalArgumentException("CSV vacío");
+                throw new IllegalArgumentException("Empty CSV");
             }
 
             char sep = detectSeparator(headerLine);
@@ -167,7 +167,7 @@ public class LapCsvParser {
             autoLap = lap.getLapNumber() + 1;
         }
         if (laps.isEmpty()) {
-            throw new IllegalArgumentException("CSV sin filas de datos");
+            throw new IllegalArgumentException("CSV has no data rows");
         }
         return laps;
     }
@@ -198,7 +198,7 @@ public class LapCsvParser {
 
         Long timeMs = readTime(cells, colIndex.get("time"));
         if (timeMs == null) {
-            throw new IllegalArgumentException("Vuelta " + lapNumber + ": falta el tiempo");
+            throw new IllegalArgumentException("Lap " + lapNumber + ": missing time");
         }
 
         LapTime lap = new LapTime(lapNumber, timeMs);

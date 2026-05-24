@@ -237,7 +237,7 @@ const Dashboard: React.FC = () => {
               letterSpacing: '0.4px',
             }}
           >
-            Últimas {ANALYTICS_RECENT_LIMIT} sesiones · {analyticsLoading ? 'cargando analytics…' : 'datos al día'}
+            Latest {ANALYTICS_RECENT_LIMIT} sessions · {analyticsLoading ? 'loading analytics…' : 'up to date'}
           </Mono>
         </div>
         <ToolButton onClick={() => setRefreshTick((t) => t + 1)} disabled={loading}>
@@ -254,19 +254,19 @@ const Dashboard: React.FC = () => {
             gap: 0,
           }}
         >
-          <KpiCell label="Sesiones" value={loading ? '—' : kpis.sessions} />
-          <KpiCell label="Vueltas reg." value={loading ? '—' : kpis.totalLaps} />
+          <KpiCell label="Sessions" value={loading ? '—' : kpis.sessions} />
+          <KpiCell label="Laps recorded" value={loading ? '—' : kpis.totalLaps} />
           <KpiCell
-            label="Válidas"
+            label="Valid"
             value={kpis.validLaps}
-            sub={`de ${kpis.totalCandidate} totales`}
+            sub={`of ${kpis.totalCandidate} total`}
           />
-          <KpiCell label="Pilotos" value={loading ? '—' : kpis.drivers} />
-          <KpiCell label="Vehículos" value={loading ? '—' : kpis.vehicles} />
+          <KpiCell label="Drivers" value={loading ? '—' : kpis.drivers} />
+          <KpiCell label="Vehicles" value={loading ? '—' : kpis.vehicles} />
           <KpiCell
-            label="Km totales"
+            label="Total km"
             value={kpis.totalKm.toFixed(0)}
-            sub="estimados"
+            sub="estimated"
             last
           />
         </div>
@@ -319,7 +319,7 @@ const Dashboard: React.FC = () => {
               }}
             />
             <div>
-              <Label>Mejor vuelta · dataset reciente</Label>
+              <Label>Best lap · recent dataset</Label>
               <Mono
                 style={{
                   fontSize: 36,
@@ -343,11 +343,11 @@ const Dashboard: React.FC = () => {
                 {allTimeBest.session.driverName || '—'} · {allTimeBest.session.circuit || '—'}
                 {allTimeBest.session.vehicleName ? ` · ${allTimeBest.session.vehicleName}` : ''}
                 {' · '}
-                {new Date(allTimeBest.session.sessionDate).toLocaleDateString('es-ES')}
+                {new Date(allTimeBest.session.sessionDate).toLocaleDateString()}
               </Mono>
             </div>
             <ToolButton onClick={() => navigate('/analytics')} variant="accent">
-              Abrir análisis →
+              Open analytics →
             </ToolButton>
           </div>
         </Panel>
@@ -361,26 +361,26 @@ const Dashboard: React.FC = () => {
           gap: 12,
         }}
       >
-        {/* Best por circuito */}
+        {/* Best per circuit */}
         <Panel
-          title="Best lap · por circuito"
+          title="Best lap · per circuit"
           right={
             <Mono style={{ color: colors.textMute }}>
-              {bestByCircuit.length} circuito{bestByCircuit.length === 1 ? '' : 's'}
+              {bestByCircuit.length} circuit{bestByCircuit.length === 1 ? '' : 's'}
             </Mono>
           }
           padding={0}
         >
           {loading ? (
-            <EmptyState text="Cargando…" />
+            <EmptyState text="Loading…" />
           ) : bestByCircuit.length === 0 ? (
-            <EmptyState text="Sin datos todavía." />
+            <EmptyState text="No data yet." />
           ) : (
             <DenseTable
               columns={[
-                { key: 'circuit', label: 'Circuito', align: 'left', grow: 1 },
+                { key: 'circuit', label: 'Circuit', align: 'left', grow: 1 },
                 { key: 'sessions', label: 'Ses', align: 'right' },
-                { key: 'laps', label: 'Vueltas', align: 'right' },
+                { key: 'laps', label: 'Laps', align: 'right' },
                 { key: 'best', label: 'Best', align: 'right', mono: true },
                 { key: 'theor', label: 'Theor.', align: 'right', mono: true, dim: true },
                 { key: 'delta', label: 'Δ', align: 'right', mono: true, tone: 'yellow' },
@@ -406,21 +406,21 @@ const Dashboard: React.FC = () => {
           )}
         </Panel>
 
-        {/* Leaderboard pilotos */}
+        {/* Drivers leaderboard */}
         <Panel
-          title="Leaderboard · pilotos"
+          title="Leaderboard · drivers"
           right={<Mono style={{ color: colors.textMute }}>by best lap</Mono>}
           padding={0}
         >
           {loading ? (
-            <EmptyState text="Cargando…" />
+            <EmptyState text="Loading…" />
           ) : driversLeaderboard.length === 0 ? (
-            <EmptyState text="Sin datos." />
+            <EmptyState text="No data." />
           ) : (
             <DenseTable
               columns={[
                 { key: 'pos', label: '#', align: 'left', mono: true, width: 28 },
-                { key: 'name', label: 'Piloto', align: 'left', grow: 1 },
+                { key: 'name', label: 'Driver', align: 'left', grow: 1 },
                 { key: 'sessions', label: 'Ses', align: 'right' },
                 { key: 'laps', label: 'Laps', align: 'right' },
                 { key: 'best', label: 'Best', align: 'right', mono: true },
@@ -442,14 +442,14 @@ const Dashboard: React.FC = () => {
           )}
         </Panel>
 
-        {/* Evolución PB */}
+        {/* PB evolution */}
         <Panel
-          title="Evolución best lap"
-          right={<Mono style={{ color: colors.textMute }}>{pbEvolution.length} puntos</Mono>}
+          title="Best lap evolution"
+          right={<Mono style={{ color: colors.textMute }}>{pbEvolution.length} points</Mono>}
           padding={12}
         >
           {pbEvolution.length < 2 ? (
-            <EmptyState text="Mínimo 2 sesiones con analytics." />
+            <EmptyState text="Need at least 2 sessions with analytics." />
           ) : (
             <Plot
               data={
@@ -482,14 +482,14 @@ const Dashboard: React.FC = () => {
           )}
         </Panel>
 
-        {/* Distribución por circuito */}
+        {/* Per-circuit distribution */}
         <Panel
-          title="Distribución · por circuito"
-          right={<Mono style={{ color: colors.textMute }}>boxplot · válidas</Mono>}
+          title="Distribution · per circuit"
+          right={<Mono style={{ color: colors.textMute }}>boxplot · valid laps</Mono>}
           padding={12}
         >
           {lapTimesDist.length === 0 ? (
-            <EmptyState text="Sin datos suficientes para boxplots." />
+            <EmptyState text="Not enough data for boxplots." />
           ) : (
             <Plot
               data={
@@ -525,9 +525,9 @@ const Dashboard: React.FC = () => {
         </Panel>
       </div>
 
-      {/* Sesiones recientes */}
+      {/* Recent sessions */}
       <Panel
-        title="Sesiones recientes"
+        title="Recent sessions"
         right={
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {upcomingEvents.length > 0 && (
@@ -539,8 +539,7 @@ const Dashboard: React.FC = () => {
                 }}
                 onClick={() => navigate('/calendar')}
               >
-                {upcomingEvents.length} evento{upcomingEvents.length === 1 ? '' : 's'} próximo
-                {upcomingEvents.length === 1 ? '' : 's'} →
+                {upcomingEvents.length} upcoming event{upcomingEvents.length === 1 ? '' : 's'} →
               </Mono>
             )}
             <Mono
@@ -551,22 +550,22 @@ const Dashboard: React.FC = () => {
               }}
               onClick={() => navigate('/analytics')}
             >
-              Ir a análisis →
+              Go to analytics →
             </Mono>
           </div>
         }
         padding={0}
       >
         {loading ? (
-          <EmptyState text="Cargando…" />
+          <EmptyState text="Loading…" />
         ) : (
           <DenseTable
             columns={[
-              { key: 'name', label: 'Sesión', align: 'left', grow: 2 },
-              { key: 'date', label: 'Fecha', align: 'left', mono: true },
-              { key: 'circuit', label: 'Circuito', align: 'left', grow: 1 },
-              { key: 'driver', label: 'Piloto', align: 'left' },
-              { key: 'vehicle', label: 'Vehículo', align: 'left' },
+              { key: 'name', label: 'Session', align: 'left', grow: 2 },
+              { key: 'date', label: 'Date', align: 'left', mono: true },
+              { key: 'circuit', label: 'Circuit', align: 'left', grow: 1 },
+              { key: 'driver', label: 'Driver', align: 'left' },
+              { key: 'vehicle', label: 'Vehicle', align: 'left' },
               { key: 'laps', label: 'Laps', align: 'right' },
               { key: 'best', label: 'Best', align: 'right', mono: true },
               { key: 'median', label: 'Median', align: 'right', mono: true, dim: true },
@@ -586,7 +585,7 @@ const Dashboard: React.FC = () => {
                 onClick: () => navigate('/analytics'),
                 cells: {
                   name: session.name,
-                  date: new Date(session.sessionDate).toLocaleDateString('es-ES'),
+                  date: new Date(session.sessionDate).toLocaleDateString(),
                   circuit: session.circuit || '—',
                   driver: session.driverName || '—',
                   vehicle: session.vehicleName || '—',

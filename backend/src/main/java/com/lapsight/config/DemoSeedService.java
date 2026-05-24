@@ -150,7 +150,7 @@ public class DemoSeedService {
         createSession(team, "Quali F4 - Jarama", "Circuito del Jarama", now.minusDays(14),
                 SessionType.QUALIFYING, TrackCondition.DRY, 15, f4, alonso,
                 List.of(new StintSpec(8, 95400, 30, TireCompound.SOFT)),
-                "Vuelta de pole 1:35.4. Sesión limpia, pista en condiciones óptimas.",
+                "Pole lap 1:35.4. Clean session, track in optimal conditions.",
                 1001L);
 
         // 2. F4 race Jarama — 2 stints (soft + medium), 18 vueltas, degradación visible
@@ -160,7 +160,7 @@ public class DemoSeedService {
                         new StintSpec(10, 95800, 80, TireCompound.SOFT),
                         new StintSpec(8, 96400, 60, TireCompound.MEDIUM)
                 ),
-                "Cambio de compuesto en vuelta 11. Buena gestión de degradación.",
+                "Compound switch on lap 11. Good degradation management.",
                 1002L);
 
         // 3. GT3 enduro Cheste — stint largo con degradación clara
@@ -170,7 +170,7 @@ public class DemoSeedService {
                         new StintSpec(15, 89200, 110, TireCompound.MEDIUM),
                         new StintSpec(15, 90500, 130, TireCompound.HARD)
                 ),
-                "Strint de medium + hard. Degradación notable hacia el final, plan de boxes correcto.",
+                "Medium + hard stint. Notable degradation towards the end, pit plan was correct.",
                 1003L);
 
         // 4. MotoGP test Aragón — varias series corras
@@ -180,28 +180,28 @@ public class DemoSeedService {
                         new StintSpec(6, 91500, 50, TireCompound.MEDIUM),
                         new StintSpec(7, 91100, 70, TireCompound.SOFT)
                 ),
-                "Comparativa medium vs soft. Soft +0.4s mejor en vuelta limpia.",
+                "Medium vs soft comparison. Soft +0.4s better on a clean lap.",
                 1004L);
 
         // 5. TCR practice Navarra — sesión con out lap + 1 vuelta inválida (track limits)
-        createSession(team, "Libres TCR - Navarra", "Circuito de Navarra", now.minusDays(5),
+        createSession(team, "Practice TCR - Navarra", "Circuito de Navarra", now.minusDays(5),
                 SessionType.PRACTICE, TrackCondition.DRY, 25, tcr, delaRosa,
                 List.of(new StintSpec(12, 100100, 70, TireCompound.MEDIUM)),
-                "1ª sesión de la jornada. Track limits en vuelta 6 anulada.",
+                "First session of the day. Track limits on lap 6 invalidated.",
                 1005L);
 
         // 6. F4 race con lluvia: tiempos +6s, condición WET
-        createSession(team, "Race F4 - Cheste (lluvia)", "Circuit Ricardo Tormo", now.minusDays(3),
+        createSession(team, "Race F4 - Cheste (rain)", "Circuit Ricardo Tormo", now.minusDays(3),
                 SessionType.RACE, TrackCondition.WET, 25, f4, alonso,
                 List.of(new StintSpec(12, 102500, 90, TireCompound.WET)),
-                "Lluvia constante. Lap times ~6s por encima de seco. Pista exigente.",
+                "Constant rain. Lap times ~6s above dry. Demanding track.",
                 1006L);
 
         // 7. Shakedown reciente
         createSession(team, "Shakedown GT3 - Castellolí", "Parcmotor Castellolí", now.minusDays(1),
                 SessionType.SHAKEDOWN, TrackCondition.DRY, 20, gt3, sainz,
                 List.of(new StintSpec(6, 87800, 40, TireCompound.SOFT)),
-                "Verificación post-mantenimiento. Todo OK.",
+                "Post-maintenance verification. All OK.",
                 1007L);
     }
 

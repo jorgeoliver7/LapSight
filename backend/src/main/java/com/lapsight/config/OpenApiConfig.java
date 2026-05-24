@@ -23,17 +23,18 @@ public class OpenApiConfig {
                         .description("""
                                 **LapSight — See every lap.**
 
-                                API REST de análisis de telemetría y estadística de tiempos por vuelta
-                                para equipos de motorsport.
+                                REST API for telemetry analysis and lap-time statistics for
+                                motorsport teams.
 
-                                **Arquitectura**: Spring Boot 3.2 (este servicio) + microservicio Python FastAPI
-                                con pandas/scipy/sklearn para análisis avanzado (stints KMeans, anomalías
-                                IsolationForest, regresión polinómica de degradación).
+                                **Architecture**: Spring Boot 3.2 (this service) + Python FastAPI
+                                microservice with pandas/scipy/sklearn for advanced analytics
+                                (KMeans stints, IsolationForest anomalies, polynomial degradation
+                                regression).
 
-                                **Autenticación**: JWT Bearer. Usa `POST /auth/login` con tus
-                                credenciales (o `POST /auth/demo` si la demo está habilitada via
-                                APP_SEED_DEMO_DATA=true) para obtener un token, y pulsa "Authorize"
-                                arriba a la derecha para añadirlo a todas las llamadas.
+                                **Authentication**: JWT Bearer. Call `POST /auth/login` with your
+                                credentials (or `POST /auth/demo` when demo mode is enabled via
+                                APP_SEED_DEMO_DATA=true) to obtain a token, then click "Authorize"
+                                at the top right to attach it to all calls.
                                 """)
                         .version("1.0.0")
                         .contact(new Contact()
@@ -47,6 +48,6 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Pega aquí el token devuelto por /auth/login")));
+                                .description("Paste the token returned by /auth/login here")));
     }
 }

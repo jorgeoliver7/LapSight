@@ -23,9 +23,9 @@ interface DataPoint {
 }
 
 const VAR_LABEL: Record<Variable, { label: string; unit: string }> = {
-  trackTemp: { label: 'Temperatura de pista', unit: '°C' },
-  ambientTemp: { label: 'Temperatura ambiente', unit: '°C' },
-  humidity: { label: 'Humedad relativa', unit: '%' },
+  trackTemp: { label: 'Track temperature', unit: '°C' },
+  ambientTemp: { label: 'Air temperature', unit: '°C' },
+  humidity: { label: 'Relative humidity', unit: '%' },
 };
 
 const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
@@ -98,10 +98,10 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
 
   return (
     <Panel
-      title="Impacto de condiciones"
+      title="Conditions impact"
       right={
         <Mono style={{ color: colors.textMute }}>
-          {currentCircuit ? `circuito · ${currentCircuit}` : '— sin circuito —'}
+          {currentCircuit ? `circuit · ${currentCircuit}` : '— no circuit —'}
         </Mono>
       }
       padding={16}
@@ -116,8 +116,8 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
           display: 'block',
         }}
       >
-        Regresión lineal de tu mejor vuelta contra una variable de condiciones, en todas las
-        sesiones del mismo circuito.
+        Linear regression of your best lap against a conditions variable across all sessions
+        on the same circuit.
       </Mono>
 
       <div
@@ -129,13 +129,13 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
         }}
       >
         <Pill active={variable === 'trackTemp'} onClick={() => setVariable('trackTemp')}>
-          Temp pista
+          Track temp
         </Pill>
         <Pill active={variable === 'ambientTemp'} onClick={() => setVariable('ambientTemp')}>
-          Temp aire
+          Air temp
         </Pill>
         <Pill active={variable === 'humidity'} onClick={() => setVariable('humidity')}>
-          Humedad
+          Humidity
         </Pill>
       </div>
 
@@ -157,9 +157,9 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
             lineHeight: 1.5,
           }}
         >
-          Necesitas al menos 3 sesiones en este circuito con "
-          <span style={{ color: colors.text }}>{VAR_LABEL[variable].label}</span>" rellenado para
-          hacer la regresión. Tienes <Mono style={{ color: colors.text, fontWeight: 600 }}>{dataPoints.length}</Mono>.
+          You need at least 3 sessions on this circuit with "
+          <span style={{ color: colors.text }}>{VAR_LABEL[variable].label}</span>" filled in to
+          run the regression. You have <Mono style={{ color: colors.text, fontWeight: 600 }}>{dataPoints.length}</Mono>.
         </div>
       ) : (
         <>
@@ -171,7 +171,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                   y: dataPoints.map((p) => p.y / 1000),
                   type: 'scatter' as const,
                   mode: 'markers' as const,
-                  name: 'Sesiones',
+                  name: 'Sessions',
                   marker: {
                     color: colors.accent,
                     size: 8,
@@ -179,7 +179,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                   },
                   text: dataPoints.map(
                     (p) =>
-                      `${p.session.name}<br>${new Date(p.session.sessionDate).toLocaleDateString('es-ES')}`,
+                      `${p.session.name}<br>${new Date(p.session.sessionDate).toLocaleDateString()}`,
                   ),
                   hovertemplate:
                     '%{text}<br>%{x} ' +
@@ -193,7 +193,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         y: [fit.predict(minX) / 1000, fit.predict(maxX) / 1000],
                         type: 'scatter' as const,
                         mode: 'lines' as const,
-                        name: `Ajuste (R²=${fit.r2.toFixed(3)})`,
+                        name: `Fit (R²=${fit.r2.toFixed(3)})`,
                         line: { color: colors.purple, width: 2, dash: 'dash' as const },
                       },
                     ]
@@ -235,7 +235,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    {['Métrica', 'Valor', 'Interpretación'].map((h, i) => (
+                    {['Metric', 'Value', 'Interpretation'].map((h, i) => (
                       <th
                         key={h}
                         style={{
@@ -268,8 +268,8 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                     }
                     interp={
                       <>
-                        Cada {VAR_LABEL[variable].unit === '°C' ? 'grado' : 'punto'}{' '}
-                        {fit.slope > 0 ? 'añade' : 'quita'}{' '}
+                        Each {VAR_LABEL[variable].unit === '°C' ? 'degree' : 'point'}{' '}
+                        {fit.slope > 0 ? 'adds' : 'removes'}{' '}
                         <Mono
                           style={{
                             color: fit.slope > 0 ? colors.red : colors.green,
@@ -278,7 +278,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         >
                           {Math.abs(fit.slope).toFixed(0)} ms
                         </Mono>{' '}
-                        a tu mejor vuelta.
+                        on your best lap.
                       </>
                     }
                   />
@@ -287,23 +287,23 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                     value={<Mono>{fit.r2.toFixed(3)}</Mono>}
                     interp={
                       fit.r2 > 0.7
-                        ? 'correlación fuerte'
+                        ? 'strong correlation'
                         : fit.r2 > 0.4
-                          ? 'correlación moderada'
+                          ? 'moderate correlation'
                           : fit.r2 > 0.2
-                            ? 'correlación débil'
-                            : 'sin correlación clara — muchos otros factores'
+                            ? 'weak correlation'
+                            : 'no clear correlation — many other factors'
                     }
                   />
                   <FitRow
-                    metric="n sesiones"
+                    metric="n sessions"
                     value={<Mono>{fit.n}</Mono>}
                     interp={
                       fit.n < 5
-                        ? 'Muestra pequeña, conclusiones limitadas.'
+                        ? 'Small sample, limited conclusions.'
                         : fit.n < 10
-                          ? 'Muestra razonable.'
-                          : 'Muestra robusta.'
+                          ? 'Reasonable sample.'
+                          : 'Robust sample.'
                     }
                     last
                   />

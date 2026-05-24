@@ -1,14 +1,14 @@
 package com.lapsight.model;
 
 public enum EventStatus {
-    PLANNED("Planificado", "Evento planificado pero no confirmado"),
-    CONFIRMED("Confirmado", "Evento confirmado y programado"),
-    IN_PROGRESS("En curso", "Evento actualmente en desarrollo"),
-    COMPLETED("Completado", "Evento finalizado exitosamente"),
-    CANCELLED("Cancelado", "Evento cancelado"),
-    POSTPONED("Pospuesto", "Evento pospuesto a nueva fecha"),
-    WEATHER_DELAY("Retraso por clima", "Evento retrasado por condiciones climáticas"),
-    TECHNICAL_ISSUE("Problema técnico", "Evento afectado por problemas técnicos");
+    PLANNED("Planned", "Event planned but not confirmed"),
+    CONFIRMED("Confirmed", "Event confirmed and scheduled"),
+    IN_PROGRESS("In progress", "Event currently underway"),
+    COMPLETED("Completed", "Event finished successfully"),
+    CANCELLED("Cancelled", "Event cancelled"),
+    POSTPONED("Postponed", "Event postponed to a new date"),
+    WEATHER_DELAY("Weather delay", "Event delayed by weather conditions"),
+    TECHNICAL_ISSUE("Technical issue", "Event affected by technical issues");
 
     private final String displayName;
     private final String description;
