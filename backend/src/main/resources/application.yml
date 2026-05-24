@@ -49,8 +49,9 @@ management:
 
 logging:
   level:
-    com.lapsight: DEBUG
-    org.springframework.security: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.lapsight: ${LOG_LEVEL_APP:INFO}
+    org.springframework.security: ${LOG_LEVEL_SECURITY:WARN}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -63,10 +64,14 @@ app:
     admin-email: ${APP_SEED_ADMIN_EMAIL:admin@lapsight.app}
     admin-password: ${APP_SEED_ADMIN_PASSWORD:admin123}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
-    demo-data: ${APP_SEED_DEMO_DATA:true}
+    demo-data: ${APP_SEED_DEMO_DATA:false}
   analytics:
     python-url: ${PYTHON_ANALYTICS_URL:http://localhost:8000}
     timeout-ms: ${PYTHON_ANALYTICS_TIMEOUT_MS:10000}
+  rate-limit:
+    auth:
+      max-requests: ${APP_RATE_LIMIT_AUTH_MAX:10}
+      window-seconds: ${APP_RATE_LIMIT_AUTH_WINDOW_SEC:60}
 
 ---
 # Perfil de desarrollo

@@ -17,6 +17,8 @@ import Calendar from './pages/Calendar/Calendar';
 import Analytics from './pages/Analytics/Analytics';
 import Circuits from './pages/Circuits/Circuits';
 import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import Landing from './pages/Landing/Landing';
 import { useAuthStore } from './store/authStore';
 import { muiTheme } from './theme/muiTheme';
 
@@ -47,8 +49,10 @@ function App() {
         <Router>
           {!isAuthenticated ? (
             <Routes>
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           ) : (
             <Layout>
@@ -63,6 +67,7 @@ function App() {
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/circuits" element={<Circuits />} />
                 <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/register" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Layout>

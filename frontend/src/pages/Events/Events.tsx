@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Typography,
   Button,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -11,7 +9,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -43,7 +40,9 @@ import {
 } from '../../types';
 import { useAuthStore } from '../../store/authStore';
 import CircuitSelector from '../../components/CircuitSelector/CircuitSelector';
-import { PageHeader } from '../../components/apex';
+import { PageHeader, Mono, StatusTag, type StatusTone } from '../../components/apex';
+import { colors, fonts } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
 interface FormState extends EventRequest {}
 
@@ -61,18 +60,36 @@ const emptyForm = (): FormState => ({
   vehicleIds: [],
 });
 
-const STATUS_COLOR: Record<EventStatus, 'success' | 'info' | 'warning' | 'error' | 'default'> = {
-  [EventStatus.PLANNED]: 'default',
-  [EventStatus.CONFIRMED]: 'info',
-  [EventStatus.IN_PROGRESS]: 'warning',
-  [EventStatus.COMPLETED]: 'success',
-  [EventStatus.CANCELLED]: 'error',
-  [EventStatus.POSTPONED]: 'warning',
-  [EventStatus.WEATHER_DELAY]: 'warning',
-  [EventStatus.TECHNICAL_ISSUE]: 'error',
+const STATUS_TONE: Record<EventStatus, StatusTone> = {
+  [EventStatus.PLANNED]: 'mute',
+  [EventStatus.CONFIRMED]: 'accent',
+  [EventStatus.IN_PROGRESS]: 'yellow',
+  [EventStatus.COMPLETED]: 'green',
+  [EventStatus.CANCELLED]: 'red',
+  [EventStatus.POSTPONED]: 'orange',
+  [EventStatus.WEATHER_DELAY]: 'cyan',
+  [EventStatus.TECHNICAL_ISSUE]: 'red',
+};
+
+const TYPE_TONE: Record<EventType, StatusTone> = {
+  [EventType.RACE]: 'red',
+  [EventType.QUALIFYING]: 'orange',
+  [EventType.PRACTICE]: 'accent',
+  [EventType.TEST]: 'cyan',
+  [EventType.SHAKEDOWN]: 'cyan',
+  [EventType.TRACKDAY]: 'accent',
+  [EventType.TRAINING]: 'green',
+  [EventType.MAINTENANCE]: 'yellow',
+  [EventType.MEETING]: 'purple',
+  [EventType.MEDIA]: 'mute',
+  [EventType.SPONSOR_EVENT]: 'purple',
+  [EventType.PRESENTATION]: 'purple',
+  [EventType.TRAVEL]: 'mute',
+  [EventType.OTHER]: 'mute',
 };
 
 const Events: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const canEdit = user?.role === UserRole.MANAGER || user?.role === UserRole.LOGISTICS;
   const canDelete = user?.role === UserRole.MANAGER;
@@ -101,7 +118,7 @@ const Events: React.FC = () => {
       setVehicles(vs);
       setError(null);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Error cargando eventos');
+      setError(e?.response?.data?.message || t('events.msg.loadError'));
     } finally {
       setLoading(false);
     }
@@ -146,122 +163,151 @@ const Events: React.FC = () => {
       };
       if (editingId) {
         await eventsApi.update(editingId, payload);
-        setSnack({ msg: 'Evento actualizado', severity: 'success' });
+        setSnack({ msg: t('events.msg.updated'), severity: 'success' });
       } else {
         await eventsApi.create(payload);
-        setSnack({ msg: 'Evento creado', severity: 'success' });
+        setSnack({ msg: t('events.msg.created'), severity: 'success' });
       }
       setDialogOpen(false);
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al guardar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('events.msg.saveError'), severity: 'error' });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Eliminar este evento?')) return;
+    if (!window.confirm(t('events.msg.deleteConfirm'))) return;
     try {
       await eventsApi.remove(id);
-      setSnack({ msg: 'Evento eliminado', severity: 'success' });
+      setSnack({ msg: t('events.msg.deleted'), severity: 'success' });
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al eliminar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('events.msg.deleteError'), severity: 'error' });
     }
   };
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <PageHeader
-        eyebrow="OPERATIVO · EVENTOS"
-        title="Eventos"
-        subtitle="Carreras, tests, libres y reuniones del equipo"
+        eyebrow={t('events.eyebrow')}
+        title={t('events.title')}
+        subtitle={t('events.subtitle', { count: events.length })}
         actions={
           canEdit && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-              Nuevo evento
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreate}
+              sx={{
+                bgcolor: colors.accent,
+                color: colors.bg,
+                fontFamily: fonts.mono,
+                fontSize: 11,
+                letterSpacing: '1.2px',
+                px: 2,
+                '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+              }}
+            >
+              {t('events.new')}
             </Button>
           )
         }
       />
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
           {error}
         </Alert>
       )}
 
-      <Paper>
+      <Box sx={{ border: `1px solid ${colors.border}`, background: colors.surface }}>
         {loading ? (
           <Box p={4} textAlign="center">
-            <CircularProgress />
+            <CircularProgress sx={{ color: colors.accent }} />
           </Box>
         ) : (
           <TableContainer>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Evento</TableCell>
-                  <TableCell>Fechas</TableCell>
-                  <TableCell>Circuito / Ubicación</TableCell>
-                  <TableCell align="right">Pilotos</TableCell>
-                  <TableCell align="right">Vehículos</TableCell>
-                  <TableCell>Estado</TableCell>
-                  {canEdit && <TableCell align="right">Acciones</TableCell>}
+                  <TableCell>{t('events.col.event')}</TableCell>
+                  <TableCell>{t('events.col.dates')}</TableCell>
+                  <TableCell>{t('events.col.circuitLocation')}</TableCell>
+                  <TableCell align="right">{t('events.col.drivers')}</TableCell>
+                  <TableCell align="right">{t('events.col.vehicles')}</TableCell>
+                  <TableCell>{t('events.col.status')}</TableCell>
+                  {canEdit && <TableCell align="right">{t('common.actions')}</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {events.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={canEdit ? 7 : 6} align="center" sx={{ py: 4 }}>
-                      <Typography color="textSecondary">No hay eventos planificados</Typography>
+                    <TableCell
+                      colSpan={canEdit ? 7 : 6}
+                      align="center"
+                      sx={{ py: 5, color: colors.textMute, fontFamily: fonts.mono, fontSize: 12 }}
+                    >
+                      {t('events.empty')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   events.map((ev) => (
-                    <TableRow key={ev.id} hover>
+                    <TableRow key={ev.id} hover sx={{ '&:hover': { backgroundColor: colors.surface2 } }}>
                       <TableCell>
-                        <Typography fontWeight={500}>{ev.name}</Typography>
-                        <Chip
-                          label={EVENT_TYPE_LABELS[ev.eventType]}
-                          size="small"
-                          variant="outlined"
-                          sx={{ mt: 0.5 }}
-                        />
+                        <Box display="flex" flexDirection="column" gap={0.5}>
+                          <span style={{ color: colors.text, fontWeight: 600, fontSize: 13 }}>
+                            {ev.name}
+                          </span>
+                          <StatusTag tone={TYPE_TONE[ev.eventType]} size="sm" dot={false}>
+                            {EVENT_TYPE_LABELS[ev.eventType]}
+                          </StatusTag>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Mono style={{ display: 'block', fontSize: 11, color: colors.text }}>
                           {new Date(ev.startDate).toLocaleString('es-ES', {
                             day: '2-digit',
                             month: 'short',
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          → {new Date(ev.endDate).toLocaleString('es-ES', {
+                        </Mono>
+                        <Mono style={{ display: 'block', fontSize: 10, color: colors.textMute, marginTop: 2 }}>
+                          →{' '}
+                          {new Date(ev.endDate).toLocaleString('es-ES', {
                             day: '2-digit',
                             month: 'short',
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
-                        </Typography>
+                        </Mono>
                       </TableCell>
                       <TableCell>
-                        {ev.circuitName || '—'}
+                        <span style={{ color: ev.circuitName ? colors.text : colors.textMute, fontSize: 12 }}>
+                          {ev.circuitName || '—'}
+                        </span>
                         {ev.location && (
-                          <Typography variant="caption" color="textSecondary" display="block">
+                          <Mono
+                            style={{ display: 'block', fontSize: 10, color: colors.textMute, marginTop: 2 }}
+                          >
                             {ev.location}
-                          </Typography>
+                          </Mono>
                         )}
                       </TableCell>
-                      <TableCell align="right">{ev.participants?.length || 0}</TableCell>
-                      <TableCell align="right">{ev.vehicles?.length || 0}</TableCell>
+                      <TableCell align="right">
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {ev.participants?.length || 0}
+                        </Mono>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {ev.vehicles?.length || 0}
+                        </Mono>
+                      </TableCell>
                       <TableCell>
-                        <Chip
-                          label={EVENT_STATUS_LABELS[ev.status]}
-                          size="small"
-                          color={STATUS_COLOR[ev.status]}
-                        />
+                        <StatusTag tone={STATUS_TONE[ev.status]}>
+                          {EVENT_STATUS_LABELS[ev.status]}
+                        </StatusTag>
                       </TableCell>
                       {canEdit && (
                         <TableCell align="right">
@@ -269,7 +315,11 @@ const Events: React.FC = () => {
                             <EditIcon fontSize="small" />
                           </IconButton>
                           {canDelete && (
-                            <IconButton size="small" onClick={() => handleDelete(ev.id)}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(ev.id)}
+                              sx={{ color: colors.textMute, '&:hover': { color: colors.red } }}
+                            >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           )}
@@ -282,14 +332,24 @@ const Events: React.FC = () => {
             </Table>
           </TableContainer>
         )}
-      </Paper>
+      </Box>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{editingId ? 'Editar evento' : 'Nuevo evento'}</DialogTitle>
+        <DialogTitle
+          sx={{
+            fontFamily: fonts.mono,
+            fontSize: 13,
+            letterSpacing: '1.4px',
+            textTransform: 'uppercase',
+            color: colors.textDim,
+          }}
+        >
+          {editingId ? t('events.edit') : t('events.create')}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} pt={1}>
             <TextField
-              label="Nombre"
+              label={t('events.form.name')}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -297,19 +357,19 @@ const Events: React.FC = () => {
             />
             <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
               <TextField
-                label="Tipo"
+                label={t('events.form.type')}
                 select
                 value={form.eventType}
                 onChange={(e) => setForm({ ...form, eventType: e.target.value as EventType })}
               >
-                {Object.values(EventType).map((t) => (
-                  <MenuItem key={t} value={t}>
-                    {EVENT_TYPE_LABELS[t]}
+                {Object.values(EventType).map((et) => (
+                  <MenuItem key={et} value={et}>
+                    {EVENT_TYPE_LABELS[et]}
                   </MenuItem>
                 ))}
               </TextField>
               <TextField
-                label="Estado"
+                label={t('events.form.status')}
                 select
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })}
@@ -321,14 +381,14 @@ const Events: React.FC = () => {
                 ))}
               </TextField>
               <TextField
-                label="Fecha inicio"
+                label={t('events.form.startDate')}
                 type="datetime-local"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
-                label="Fecha fin"
+                label={t('events.form.endDate')}
                 type="datetime-local"
                 value={form.endDate}
                 onChange={(e) => setForm({ ...form, endDate: e.target.value })}
@@ -339,12 +399,12 @@ const Events: React.FC = () => {
                 onChange={(v) => setForm({ ...form, circuitName: v })}
               />
               <TextField
-                label="Ubicación"
+                label={t('events.form.location')}
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
               />
               <TextField
-                label="Presupuesto (€)"
+                label={t('events.form.budget')}
                 type="number"
                 value={form.budgetAllocated ?? ''}
                 onChange={(e) =>
@@ -355,7 +415,7 @@ const Events: React.FC = () => {
                 }
               />
               <TextField
-                label="Coste real (€)"
+                label={t('events.form.actualCost')}
                 type="number"
                 value={form.actualCost ?? ''}
                 onChange={(e) =>
@@ -367,12 +427,12 @@ const Events: React.FC = () => {
               />
             </Box>
             <FormControl fullWidth>
-              <InputLabel>Pilotos / Equipo</InputLabel>
+              <InputLabel>{t('events.form.participants')}</InputLabel>
               <Select
                 multiple
                 value={form.participantIds || []}
                 onChange={(e) => setForm({ ...form, participantIds: e.target.value as number[] })}
-                input={<OutlinedInput label="Pilotos / Equipo" />}
+                input={<OutlinedInput label={t('events.form.participants')} />}
                 renderValue={(selected) =>
                   users
                     .filter((u) => (selected as number[]).includes(u.id))
@@ -388,12 +448,12 @@ const Events: React.FC = () => {
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel>Vehículos</InputLabel>
+              <InputLabel>{t('events.form.vehicles')}</InputLabel>
               <Select
                 multiple
                 value={form.vehicleIds || []}
                 onChange={(e) => setForm({ ...form, vehicleIds: e.target.value as number[] })}
-                input={<OutlinedInput label="Vehículos" />}
+                input={<OutlinedInput label={t('events.form.vehicles')} />}
                 renderValue={(selected) =>
                   vehicles
                     .filter((v) => (selected as number[]).includes(v.id))
@@ -409,7 +469,7 @@ const Events: React.FC = () => {
               </Select>
             </FormControl>
             <TextField
-              label="Descripción"
+              label={t('events.form.description')}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               multiline
@@ -417,7 +477,7 @@ const Events: React.FC = () => {
               fullWidth
             />
             <TextField
-              label="Notas"
+              label={t('events.form.notes')}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               multiline
@@ -426,10 +486,23 @@ const Events: React.FC = () => {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={!form.name}>
-            Guardar
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDialogOpen(false)} sx={{ color: colors.textDim }}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={!form.name}
+            sx={{
+              bgcolor: colors.accent,
+              color: colors.bg,
+              fontFamily: fonts.mono,
+              letterSpacing: '1.2px',
+              '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+            }}
+          >
+            {t('common.save').toUpperCase()}
           </Button>
         </DialogActions>
       </Dialog>
@@ -440,7 +513,11 @@ const Events: React.FC = () => {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        {snack ? <Alert severity={snack.severity}>{snack.msg}</Alert> : undefined}
+        {snack ? (
+          <Alert severity={snack.severity} sx={{ borderRadius: 0 }}>
+            {snack.msg}
+          </Alert>
+        ) : undefined}
       </Snackbar>
     </Box>
   );

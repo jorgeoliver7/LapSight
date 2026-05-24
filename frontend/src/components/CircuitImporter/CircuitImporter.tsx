@@ -7,6 +7,7 @@ import { CloudUpload as UploadIcon } from '@mui/icons-material';
 import { parseGeoJson, normalizeCoords, saveCustomCircuit } from '../../data/customCircuits';
 import { Circuit } from '../../data/circuits';
 import CircuitMiniMap from '../CircuitMiniMap/CircuitMiniMap';
+import { colors } from '../../theme/tokens';
 
 interface Props {
   open: boolean;
@@ -142,14 +143,14 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
           {error && <Alert severity="error">{error}</Alert>}
 
           {preview && (
-            <Box sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 1, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <CircuitMiniMap circuit={preview} size={120} stroke="#d32f2f" strokeWidth={3} showStart />
+            <Box sx={{ p: 2, bgcolor: colors.surface2, border: `1px solid ${colors.border}`, borderLeft: `3px solid ${colors.accent}`, display: 'flex', gap: 2, alignItems: 'center' }}>
+              <CircuitMiniMap circuit={preview} size={120} stroke={colors.accent} strokeWidth={2.5} showStart />
               <Box>
-                <Typography variant="subtitle2">{preview.name}</Typography>
-                <Typography variant="caption" color="textSecondary" display="block">
+                <Typography variant="subtitle2" sx={{ color: colors.text }}>{preview.name}</Typography>
+                <Typography variant="caption" sx={{ color: colors.textDim, display: 'block', fontFamily: 'monospace' }}>
                   {preview.country || '—'} · {preview.length_km ? `${preview.length_km.toFixed(3)} km` : 'sin longitud'}
                 </Typography>
-                <Typography variant="caption" color="textSecondary" display="block">
+                <Typography variant="caption" sx={{ color: colors.textMute, display: 'block', fontFamily: 'monospace' }}>
                   {preview.path.length} puntos
                 </Typography>
               </Box>

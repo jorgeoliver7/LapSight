@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { colors, fonts, space } from '../../theme/tokens';
 import { Label } from '../apex/Label';
 import { Mono } from '../apex/Mono';
+import { LanguageSwitch } from '../apex/LanguageSwitch';
 import { useAuthStore } from '../../store/authStore';
 
 export interface SessionMeta {
@@ -23,29 +25,29 @@ export interface SessionMeta {
 }
 
 interface NavTabSpec {
-  label: string;
+  labelKey: string;
   path: string;
   roles?: string[];
 }
 
 interface SecondaryItem {
-  label: string;
+  labelKey: string;
   path: string;
   roles?: string[];
 }
 
 const PRIMARY_TABS: NavTabSpec[] = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Sesiones', path: '/analytics' },
-  { label: 'Circuitos', path: '/circuits' },
+  { labelKey: 'nav.dashboard', path: '/dashboard' },
+  { labelKey: 'nav.sessions', path: '/analytics' },
+  { labelKey: 'nav.circuits', path: '/circuits' },
 ];
 
 const SECONDARY: SecondaryItem[] = [
-  { label: 'Pilotos', path: '/users', roles: ['MANAGER'] },
-  { label: 'Vehículos', path: '/vehicles' },
-  { label: 'Eventos', path: '/events' },
-  { label: 'Calendario', path: '/calendar' },
-  { label: 'Equipos', path: '/teams', roles: ['MANAGER', 'FINANCE'] },
+  { labelKey: 'nav.pilots', path: '/users', roles: ['MANAGER'] },
+  { labelKey: 'nav.vehicles', path: '/vehicles' },
+  { labelKey: 'nav.events', path: '/events' },
+  { labelKey: 'nav.calendar', path: '/calendar' },
+  { labelKey: 'nav.teams', path: '/teams', roles: ['MANAGER', 'FINANCE'] },
 ];
 
 interface SessionHeaderProps {
@@ -56,6 +58,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -137,7 +140,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
               letterSpacing: '0.6px',
             }}
           >
-            v1.0 · TELEMETRY
+            v1.0 · {t('nav.telemetry')}
           </Mono>
         </div>
       </div>
@@ -164,7 +167,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
               letterSpacing: '0.6px',
             }}
           >
-            NO ACTIVE SESSION
+            {t('nav.noActiveSession')}
           </div>
         )}
       </div>
@@ -177,20 +180,29 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
           height: '100%',
         }}
       >
-        {tabs.map((t) => {
+        {tabs.map((tab) => {
           const active =
-            location.pathname === t.path ||
-            (t.path !== '/' && location.pathname.startsWith(t.path));
+            location.pathname === tab.path ||
+            (tab.path !== '/' && location.pathname.startsWith(tab.path));
           return (
             <NavTab
-              key={t.path}
+              key={tab.path}
               active={active}
-              onClick={() => navigate(t.path)}
+              onClick={() => navigate(tab.path)}
             >
-              {t.label}
+              {t(tab.labelKey)}
             </NavTab>
           );
         })}
+        <div
+          style={{
+            width: 1,
+            height: 28,
+            background: colors.border,
+            margin: '0 12px',
+          }}
+        />
+        <LanguageSwitch />
         <div
           style={{
             width: 1,
@@ -283,7 +295,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
               {secondary.length > 0 && (
                 <>
                   <div style={{ padding: '8px 14px 4px' }}>
-                    <Label size="micro">Datos · Admin</Label>
+                    <Label size="micro">{t('nav.adminData')}</Label>
                   </div>
                   {secondary.map((s) => (
                     <MenuRow
@@ -293,7 +305,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
                         navigate(s.path);
                       }}
                     >
-                      {s.label}
+                      {t(s.labelKey)}
                     </MenuRow>
                   ))}
                 </>
@@ -313,7 +325,7 @@ export function SessionHeader({ meta }: SessionHeaderProps) {
                 }}
                 tone="red"
               >
-                Cerrar sesión
+                {t('nav.logOut')}
               </MenuRow>
             </div>
           )}

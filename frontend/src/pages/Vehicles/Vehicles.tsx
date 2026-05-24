@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Typography,
   Button,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -11,7 +9,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -38,24 +35,17 @@ import {
   UserRole,
 } from '../../types';
 import { useAuthStore } from '../../store/authStore';
-import { PageHeader } from '../../components/apex';
+import { PageHeader, Mono, StatusTag, type StatusTone } from '../../components/apex';
+import { colors, fonts } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
-const STATUS_LABELS: Record<VehicleStatus, string> = {
-  [VehicleStatus.AVAILABLE]: 'Disponible',
-  [VehicleStatus.IN_USE]: 'En uso',
-  [VehicleStatus.MAINTENANCE]: 'Mantenimiento',
-  [VehicleStatus.REPAIR]: 'Reparación',
-  [VehicleStatus.OUT_OF_SERVICE]: 'Fuera de servicio',
-  [VehicleStatus.TRANSPORT]: 'En transporte',
-};
-
-const STATUS_COLOR: Record<VehicleStatus, 'success' | 'info' | 'warning' | 'error' | 'default'> = {
-  [VehicleStatus.AVAILABLE]: 'success',
-  [VehicleStatus.IN_USE]: 'info',
-  [VehicleStatus.MAINTENANCE]: 'warning',
-  [VehicleStatus.REPAIR]: 'warning',
-  [VehicleStatus.OUT_OF_SERVICE]: 'error',
-  [VehicleStatus.TRANSPORT]: 'default',
+const STATUS_TONE: Record<VehicleStatus, StatusTone> = {
+  [VehicleStatus.AVAILABLE]: 'green',
+  [VehicleStatus.IN_USE]: 'accent',
+  [VehicleStatus.MAINTENANCE]: 'yellow',
+  [VehicleStatus.REPAIR]: 'orange',
+  [VehicleStatus.OUT_OF_SERVICE]: 'red',
+  [VehicleStatus.TRANSPORT]: 'mute',
 };
 
 const emptyForm: VehicleRequest = {
@@ -76,7 +66,16 @@ const emptyForm: VehicleRequest = {
 };
 
 const Vehicles: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
+  const STATUS_LABELS: Record<VehicleStatus, string> = {
+    [VehicleStatus.AVAILABLE]: t('vehicles.status.AVAILABLE'),
+    [VehicleStatus.IN_USE]: t('vehicles.status.IN_USE'),
+    [VehicleStatus.MAINTENANCE]: t('vehicles.status.MAINTENANCE'),
+    [VehicleStatus.REPAIR]: t('vehicles.status.REPAIR'),
+    [VehicleStatus.OUT_OF_SERVICE]: t('vehicles.status.OUT_OF_SERVICE'),
+    [VehicleStatus.TRANSPORT]: t('vehicles.status.TRANSPORT'),
+  };
   const canEdit =
     user?.role === UserRole.MANAGER ||
     user?.role === UserRole.ENGINEER ||
@@ -98,7 +97,7 @@ const Vehicles: React.FC = () => {
       setVehicles(data);
       setError(null);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Error cargando vehículos');
+      setError(e?.response?.data?.message || t('vehicles.msg.loadError'));
     } finally {
       setLoading(false);
     }
@@ -139,113 +138,160 @@ const Vehicles: React.FC = () => {
     try {
       if (editingId) {
         await vehiclesApi.update(editingId, form);
-        setSnack({ msg: 'Vehículo actualizado', severity: 'success' });
+        setSnack({ msg: t('vehicles.msg.updated'), severity: 'success' });
       } else {
         await vehiclesApi.create(form);
-        setSnack({ msg: 'Vehículo creado', severity: 'success' });
+        setSnack({ msg: t('vehicles.msg.created'), severity: 'success' });
       }
       setDialogOpen(false);
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al guardar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('vehicles.msg.saveError'), severity: 'error' });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Desactivar este vehículo?')) return;
+    if (!window.confirm(t('vehicles.msg.deleteConfirm'))) return;
     try {
       await vehiclesApi.remove(id);
-      setSnack({ msg: 'Vehículo desactivado', severity: 'success' });
+      setSnack({ msg: t('vehicles.msg.deleted'), severity: 'success' });
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al eliminar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('vehicles.msg.deleteError'), severity: 'error' });
     }
   };
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <PageHeader
-        eyebrow="OPERATIVO · VEHÍCULOS"
-        title="Vehículos"
-        subtitle="Inventario de vehículos del equipo"
+        eyebrow={t('vehicles.eyebrow')}
+        title={t('vehicles.title')}
+        subtitle={t('vehicles.subtitle', { count: vehicles.length })}
         actions={
           canEdit && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-              Nuevo vehículo
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreate}
+              sx={{
+                bgcolor: colors.accent,
+                color: colors.bg,
+                fontFamily: fonts.mono,
+                fontSize: 11,
+                letterSpacing: '1.2px',
+                px: 2,
+                '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+              }}
+            >
+              {t('vehicles.new')}
             </Button>
           )
         }
       />
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
           {error}
         </Alert>
       )}
 
-      <Paper>
+      <Box sx={{ border: `1px solid ${colors.border}`, background: colors.surface }}>
         {loading ? (
           <Box p={4} textAlign="center">
-            <CircularProgress />
+            <CircularProgress sx={{ color: colors.accent }} />
           </Box>
         ) : (
           <TableContainer>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Tipo</TableCell>
-                  <TableCell>Fabricante / Modelo</TableCell>
-                  <TableCell align="right">Horas</TableCell>
-                  <TableCell align="right">Km</TableCell>
-                  <TableCell>Estado</TableCell>
-                  {canEdit && <TableCell align="right">Acciones</TableCell>}
+                  <TableCell>{t('vehicles.col.name')}</TableCell>
+                  <TableCell>{t('vehicles.col.type')}</TableCell>
+                  <TableCell>{t('vehicles.col.manufacturer')}</TableCell>
+                  <TableCell align="right">{t('vehicles.col.hours')}</TableCell>
+                  <TableCell align="right">{t('vehicles.col.km')}</TableCell>
+                  <TableCell>{t('vehicles.col.status')}</TableCell>
+                  {canEdit && <TableCell align="right">{t('common.actions')}</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {vehicles.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={canEdit ? 7 : 6} align="center" sx={{ py: 4 }}>
-                      <Typography color="textSecondary">No hay vehículos todavía</Typography>
+                    <TableCell
+                      colSpan={canEdit ? 7 : 6}
+                      align="center"
+                      sx={{ py: 5, color: colors.textMute, fontFamily: fonts.mono, fontSize: 12 }}
+                    >
+                      {t('vehicles.empty')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   vehicles.map((v) => (
-                    <TableRow key={v.id} hover>
+                    <TableRow
+                      key={v.id}
+                      hover
+                      sx={{ '&:hover': { backgroundColor: colors.surface2 } }}
+                    >
                       <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography fontWeight={500}>{v.name}</Typography>
+                        <Box display="flex" alignItems="center" gap={0.75}>
+                          <span style={{ color: colors.text, fontWeight: 600, fontSize: 13 }}>
+                            {v.name}
+                          </span>
                           {v.needsMaintenance && (
-                            <Tooltip title="Requiere mantenimiento">
-                              <WarningIcon color="warning" fontSize="small" />
+                            <Tooltip title={t('vehicles.msg.maintenanceNeeded')}>
+                              <WarningIcon sx={{ color: colors.yellow, fontSize: 16 }} />
                             </Tooltip>
                           )}
                         </Box>
                         {v.chassisNumber && (
-                          <Typography variant="caption" color="textSecondary">
-                            Chasis: {v.chassisNumber}
-                          </Typography>
+                          <Mono
+                            style={{
+                              fontSize: 10,
+                              color: colors.textMute,
+                              marginTop: 2,
+                              display: 'block',
+                            }}
+                          >
+                            {t('vehicles.msg.chassis')} · {v.chassisNumber}
+                          </Mono>
                         )}
                       </TableCell>
-                      <TableCell>{VEHICLE_TYPE_LABELS[v.vehicleType]}</TableCell>
                       <TableCell>
-                        {v.manufacturer || '—'} {v.model && `/ ${v.model}`}
+                        <span style={{ color: colors.textDim, fontSize: 12 }}>
+                          {VEHICLE_TYPE_LABELS[v.vehicleType]}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span style={{ color: colors.text, fontSize: 12 }}>
+                          {v.manufacturer || '—'} {v.model && `/ ${v.model}`}
+                        </span>
                         {v.yearManufactured && (
-                          <Typography variant="caption" color="textSecondary" display="block">
+                          <Mono
+                            style={{
+                              fontSize: 10,
+                              color: colors.textMute,
+                              display: 'block',
+                              marginTop: 2,
+                            }}
+                          >
                             {v.yearManufactured}
-                          </Typography>
+                          </Mono>
                         )}
                       </TableCell>
-                      <TableCell align="right">{Number(v.totalHours).toFixed(1)}</TableCell>
                       <TableCell align="right">
-                        {Number(v.totalKilometers).toLocaleString('es-ES')}
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {Number(v.totalHours).toFixed(1)}
+                        </Mono>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {Number(v.totalKilometers).toLocaleString('es-ES')}
+                        </Mono>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={STATUS_LABELS[v.status]}
-                          size="small"
-                          color={STATUS_COLOR[v.status]}
-                        />
+                        <StatusTag tone={STATUS_TONE[v.status]}>
+                          {STATUS_LABELS[v.status]}
+                        </StatusTag>
                       </TableCell>
                       {canEdit && (
                         <TableCell align="right">
@@ -253,7 +299,11 @@ const Vehicles: React.FC = () => {
                             <EditIcon fontSize="small" />
                           </IconButton>
                           {canDelete && (
-                            <IconButton size="small" onClick={() => handleDelete(v.id)}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(v.id)}
+                              sx={{ color: colors.textMute, '&:hover': { color: colors.red } }}
+                            >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           )}
@@ -266,34 +316,36 @@ const Vehicles: React.FC = () => {
             </Table>
           </TableContainer>
         )}
-      </Paper>
+      </Box>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{editingId ? 'Editar vehículo' : 'Nuevo vehículo'}</DialogTitle>
+        <DialogTitle sx={{ fontFamily: fonts.mono, fontSize: 13, letterSpacing: '1.4px', textTransform: 'uppercase', color: colors.textDim }}>
+          {editingId ? t('vehicles.edit') : t('vehicles.create')}
+        </DialogTitle>
         <DialogContent>
           <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2} pt={1}>
             <TextField
-              label="Nombre"
+              label={t('vehicles.form.name')}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
               sx={{ gridColumn: 'span 2' }}
             />
             <TextField
-              label="Tipo"
+              label={t('vehicles.form.type')}
               value={form.vehicleType}
               onChange={(e) => setForm({ ...form, vehicleType: e.target.value as VehicleType })}
               select
               required
             >
-              {Object.values(VehicleType).map((t) => (
-                <MenuItem key={t} value={t}>
-                  {VEHICLE_TYPE_LABELS[t]}
+              {Object.values(VehicleType).map((vt) => (
+                <MenuItem key={vt} value={vt}>
+                  {VEHICLE_TYPE_LABELS[vt]}
                 </MenuItem>
               ))}
             </TextField>
             <TextField
-              label="Estado"
+              label={t('vehicles.form.status')}
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value as VehicleStatus })}
               select
@@ -305,17 +357,17 @@ const Vehicles: React.FC = () => {
               ))}
             </TextField>
             <TextField
-              label="Fabricante"
+              label={t('vehicles.form.manufacturer')}
               value={form.manufacturer}
               onChange={(e) => setForm({ ...form, manufacturer: e.target.value })}
             />
             <TextField
-              label="Modelo"
+              label={t('vehicles.form.model')}
               value={form.model}
               onChange={(e) => setForm({ ...form, model: e.target.value })}
             />
             <TextField
-              label="Año"
+              label={t('vehicles.form.year')}
               type="number"
               value={form.yearManufactured ?? ''}
               onChange={(e) =>
@@ -326,34 +378,34 @@ const Vehicles: React.FC = () => {
               }
             />
             <TextField
-              label="Nº chasis"
+              label={t('vehicles.form.chassisNumber')}
               value={form.chassisNumber}
               onChange={(e) => setForm({ ...form, chassisNumber: e.target.value })}
             />
             <TextField
-              label="Nº motor"
+              label={t('vehicles.form.engineNumber')}
               value={form.engineNumber}
               onChange={(e) => setForm({ ...form, engineNumber: e.target.value })}
             />
             <TextField
-              label="Matrícula"
+              label={t('vehicles.form.registrationNumber')}
               value={form.registrationNumber}
               onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })}
             />
             <TextField
-              label="Horas totales"
+              label={t('vehicles.form.totalHours')}
               type="number"
               value={form.totalHours ?? 0}
               onChange={(e) => setForm({ ...form, totalHours: Number(e.target.value) })}
             />
             <TextField
-              label="Km totales"
+              label={t('vehicles.form.totalKm')}
               type="number"
               value={form.totalKilometers ?? 0}
               onChange={(e) => setForm({ ...form, totalKilometers: Number(e.target.value) })}
             />
             <TextField
-              label="Próximo mant. (horas)"
+              label={t('vehicles.form.nextMaintHours')}
               type="number"
               value={form.nextMaintenanceHours ?? ''}
               onChange={(e) =>
@@ -364,7 +416,7 @@ const Vehicles: React.FC = () => {
               }
             />
             <TextField
-              label="Próximo mant. (km)"
+              label={t('vehicles.form.nextMaintKm')}
               type="number"
               value={form.nextMaintenanceKm ?? ''}
               onChange={(e) =>
@@ -375,7 +427,7 @@ const Vehicles: React.FC = () => {
               }
             />
             <TextField
-              label="Notas"
+              label={t('vehicles.form.notes')}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               multiline
@@ -384,10 +436,23 @@ const Vehicles: React.FC = () => {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={!form.name}>
-            Guardar
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDialogOpen(false)} sx={{ color: colors.textDim }}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={!form.name}
+            sx={{
+              bgcolor: colors.accent,
+              color: colors.bg,
+              fontFamily: fonts.mono,
+              letterSpacing: '1.2px',
+              '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+            }}
+          >
+            {t('common.save').toUpperCase()}
           </Button>
         </DialogActions>
       </Dialog>
@@ -398,7 +463,11 @@ const Vehicles: React.FC = () => {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        {snack ? <Alert severity={snack.severity}>{snack.msg}</Alert> : undefined}
+        {snack ? (
+          <Alert severity={snack.severity} sx={{ borderRadius: 0 }}>
+            {snack.msg}
+          </Alert>
+        ) : undefined}
       </Snackbar>
     </Box>
   );

@@ -1,9 +1,11 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography, Divider } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box } from '@mui/material';
 import { Circuit } from '../../data/circuits';
 import { getCircuitExtras } from '../../data/circuitMeta';
 import { computeDirection, totalPathLength, findLongestStraight } from '../../data/circuitCharacteristics';
 import CircuitMiniMap from '../../components/CircuitMiniMap/CircuitMiniMap';
+import { colors, fonts } from '../../theme/tokens';
+import { Mono, Label } from '../../components/apex';
 
 interface Props {
   circuitA: Circuit | null;
@@ -16,9 +18,11 @@ interface RowData {
   label: string;
   a: string;
   b: string;
-  /** ¿Qué es "mejor"? null = sin comparar, 'a'/'b' = ese gana. */
   winner?: 'a' | 'b' | null;
 }
+
+const COLOR_A = colors.accent;
+const COLOR_B = colors.purple;
 
 const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose }) => {
   if (!circuitA || !circuitB) return null;
@@ -49,11 +53,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
     v == null ? '—' : `${v.toFixed(3)}${unit}`;
 
   const rows: RowData[] = [
-    {
-      label: 'País',
-      a: circuitA.country || '—',
-      b: circuitB.country || '—',
-    },
+    { label: 'País', a: circuitA.country || '—', b: circuitB.country || '—' },
     {
       label: 'Longitud',
       a: lenA ? `${lenA.toFixed(3)} km` : '—',
@@ -66,11 +66,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
       b: extB.turns?.toString() ?? '—',
       winner:
         extA.turns != null && extB.turns != null
-          ? extA.turns > extB.turns
-            ? 'a'
-            : extA.turns < extB.turns
-            ? 'b'
-            : null
+          ? extA.turns > extB.turns ? 'a' : extA.turns < extB.turns ? 'b' : null
           : null,
     },
     {
@@ -84,11 +80,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
       b: fmt(longestStraightKmB, ' km'),
       winner:
         longestStraightKmA && longestStraightKmB
-          ? longestStraightKmA > longestStraightKmB
-            ? 'a'
-            : longestStraightKmA < longestStraightKmB
-            ? 'b'
-            : null
+          ? longestStraightKmA > longestStraightKmB ? 'a' : longestStraightKmA < longestStraightKmB ? 'b' : null
           : null,
     },
     {
@@ -97,99 +89,166 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
       b: extB.altitudeM ? `${extB.altitudeM} m` : '—',
       winner:
         extA.altitudeM != null && extB.altitudeM != null
-          ? extA.altitudeM > extB.altitudeM
-            ? 'a'
-            : extA.altitudeM < extB.altitudeM
-            ? 'b'
-            : null
+          ? extA.altitudeM > extB.altitudeM ? 'a' : extA.altitudeM < extB.altitudeM ? 'b' : null
           : null,
     },
-    {
-      label: 'Inaugurado',
-      a: extA.opened?.toString() ?? '—',
-      b: extB.opened?.toString() ?? '—',
-    },
+    { label: 'Inaugurado', a: extA.opened?.toString() ?? '—', b: extB.opened?.toString() ?? '—' },
     {
       label: 'Categorías',
       a: extA.categories?.join(', ') ?? '—',
       b: extB.categories?.join(', ') ?? '—',
     },
-    {
-      label: 'Récord',
-      a: extA.lapRecord ?? '—',
-      b: extB.lapRecord ?? '—',
-    },
+    { label: 'Récord', a: extA.lapRecord ?? '—', b: extB.lapRecord ?? '—' },
   ];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Comparador de circuitos</DialogTitle>
-      <DialogContent dividers>
-        <Box display="flex" gap={3} flexDirection={{ xs: 'column', md: 'row' }} mb={3}>
-          {[circuitA, circuitB].map((c, i) => (
-            <Box key={c.name} flex={1} sx={{ bgcolor: '#fafafa', borderRadius: 1, p: 2, textAlign: 'center' }}>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+      <DialogTitle
+        sx={{
+          fontFamily: fonts.mono,
+          fontSize: 13,
+          letterSpacing: '1.4px',
+          textTransform: 'uppercase',
+          color: colors.textDim,
+          borderBottom: `1px solid ${colors.border}`,
+        }}
+      >
+        Comparador de circuitos
+      </DialogTitle>
+      <DialogContent>
+        <Box display="flex" gap={2} flexDirection={{ xs: 'column', md: 'row' }} mt={2} mb={3}>
+          {[
+            { c: circuitA, color: COLOR_A, lbl: 'A' },
+            { c: circuitB, color: COLOR_B, lbl: 'B' },
+          ].map(({ c, color, lbl }) => (
+            <Box
+              key={c.name}
+              flex={1}
+              sx={{
+                background: colors.surface2,
+                border: `1px solid ${colors.border}`,
+                borderLeft: `3px solid ${color}`,
+                p: 2,
+                textAlign: 'center',
+              }}
+            >
+              <Label tone="dim" style={{ color, marginBottom: 6 }}>
+                CIRCUITO · {lbl}
+              </Label>
+              <div style={{ color: colors.text, fontWeight: 600, fontSize: 15, marginBottom: 8 }}>
                 {c.country || '🏁'} {c.name}
-              </Typography>
-              <CircuitMiniMap circuit={c} size={240} stroke={i === 0 ? '#d32f2f' : '#1976d2'} strokeWidth={3} showStart />
+              </div>
+              <CircuitMiniMap circuit={c} size={240} stroke={color} strokeWidth={2.5} showStart />
             </Box>
           ))}
         </Box>
 
-        <Divider sx={{ mb: 2 }} />
-
-        <Box>
-          {rows.map((row) => (
+        <Box sx={{ border: `1px solid ${colors.border}` }}>
+          <Box
+            display="grid"
+            gridTemplateColumns="1fr 1fr 1fr"
+            gap={0}
+            sx={{
+              background: colors.surface2,
+              borderBottom: `1px solid ${colors.borderHi}`,
+            }}
+          >
+            <div style={{ padding: '8px 14px' }}>
+              <Label>Métrica</Label>
+            </div>
+            <div style={{ padding: '8px 14px', borderLeft: `1px solid ${colors.border}` }}>
+              <Label style={{ color: COLOR_A }}>A · {circuitA.name}</Label>
+            </div>
+            <div style={{ padding: '8px 14px', borderLeft: `1px solid ${colors.border}` }}>
+              <Label style={{ color: COLOR_B }}>B · {circuitB.name}</Label>
+            </div>
+          </Box>
+          {rows.map((row, idx) => (
             <Box
               key={row.label}
               display="grid"
               gridTemplateColumns="1fr 1fr 1fr"
-              gap={2}
-              alignItems="center"
-              sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}
+              gap={0}
+              sx={{
+                borderBottom: idx < rows.length - 1 ? `1px solid ${colors.border}` : 'none',
+                '&:hover': { backgroundColor: colors.surface2 },
+              }}
             >
-              <Typography variant="body2" color="textSecondary" fontWeight={500}>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  color: colors.textDim,
+                  fontSize: 11,
+                  fontFamily: fonts.mono,
+                  letterSpacing: 0.4,
+                  textTransform: 'uppercase',
+                }}
+              >
                 {row.label}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: row.winner === 'a' ? 700 : 400,
-                  color: row.winner === 'a' ? 'primary.main' : 'text.primary',
+              </div>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  fontFamily: fonts.mono,
+                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: row.winner === 'a' ? 700 : 500,
+                  color: row.winner === 'a' ? COLOR_A : colors.text,
+                  fontSize: 12,
+                  borderLeft: `1px solid ${colors.border}`,
                 }}
               >
                 {row.a}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: row.winner === 'b' ? 700 : 400,
-                  color: row.winner === 'b' ? 'info.main' : 'text.primary',
+              </div>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  fontFamily: fonts.mono,
+                  fontVariantNumeric: 'tabular-nums',
+                  fontWeight: row.winner === 'b' ? 700 : 500,
+                  color: row.winner === 'b' ? COLOR_B : colors.text,
+                  fontSize: 12,
+                  borderLeft: `1px solid ${colors.border}`,
                 }}
               >
                 {row.b}
-              </Typography>
+              </div>
             </Box>
           ))}
         </Box>
 
         {extA.funFact && (
-          <Box mt={2} p={1.5} bgcolor="error.light" sx={{ opacity: 0.85, borderRadius: 1 }}>
-            <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
-              💡 <strong>{circuitA.name}:</strong> {extA.funFact}
-            </Typography>
+          <Box
+            mt={2}
+            p={1.5}
+            sx={{
+              background: colors.surface2,
+              borderLeft: `3px solid ${COLOR_A}`,
+            }}
+          >
+            <Mono style={{ fontSize: 11, color: colors.textDim, fontStyle: 'italic' }}>
+              💡 <strong style={{ color: COLOR_A }}>{circuitA.name}:</strong> {extA.funFact}
+            </Mono>
           </Box>
         )}
         {extB.funFact && (
-          <Box mt={1} p={1.5} bgcolor="info.light" sx={{ opacity: 0.85, borderRadius: 1 }}>
-            <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
-              💡 <strong>{circuitB.name}:</strong> {extB.funFact}
-            </Typography>
+          <Box
+            mt={1}
+            p={1.5}
+            sx={{
+              background: colors.surface2,
+              borderLeft: `3px solid ${COLOR_B}`,
+            }}
+          >
+            <Mono style={{ fontSize: 11, color: colors.textDim, fontStyle: 'italic' }}>
+              💡 <strong style={{ color: COLOR_B }}>{circuitB.name}:</strong> {extB.funFact}
+            </Mono>
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
+      <DialogActions sx={{ p: 2, borderTop: `1px solid ${colors.border}` }}>
+        <Button onClick={onClose} sx={{ color: colors.textDim, fontFamily: fonts.mono, letterSpacing: '1.2px' }}>
+          CERRAR
+        </Button>
       </DialogActions>
     </Dialog>
   );

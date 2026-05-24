@@ -1,9 +1,8 @@
 package com.lapsight.dto.auth;
 
-import com.lapsight.model.UserRole;
+import com.lapsight.model.VehicleCategory;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
@@ -24,10 +23,11 @@ public class RegisterRequest {
     @Size(max = 50)
     private String lastName;
 
-    @NotNull(message = "El equipo es obligatorio")
-    private Long teamId;
+    @NotBlank(message = "El nombre del equipo es obligatorio")
+    @Size(max = 100)
+    private String teamName;
 
-    private UserRole role;
+    private VehicleCategory teamCategory;
 
     private String phoneNumber;
 
@@ -65,20 +65,20 @@ public class RegisterRequest {
         this.lastName = lastName;
     }
 
-    public Long getTeamId() {
-        return teamId;
+    public String getTeamName() {
+        return teamName;
     }
 
-    public void setTeamId(Long teamId) {
-        this.teamId = teamId;
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 
-    public UserRole getRole() {
-        return role;
+    public VehicleCategory getTeamCategory() {
+        return teamCategory;
     }
 
-    public void setRole(UserRole role) {
-        this.role = role;
+    public void setTeamCategory(VehicleCategory teamCategory) {
+        this.teamCategory = teamCategory;
     }
 
     public String getPhoneNumber() {

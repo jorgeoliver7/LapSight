@@ -7,6 +7,7 @@ import com.lapsight.dto.auth.RegisterRequest;
 import com.lapsight.model.Team;
 import com.lapsight.model.User;
 import com.lapsight.model.UserRole;
+import com.lapsight.model.VehicleCategory;
 import com.lapsight.repository.TeamRepository;
 import com.lapsight.repository.UserRepository;
 import com.lapsight.security.JwtService;
@@ -50,15 +51,25 @@ public class AuthService {
         return new AuthResponse(token, jwtService.getExpirationMillis(), UserDto.fromEntity(user));
     }
 
+    /**
+     * Self-register: crea un nuevo team propio para el usuario y le asigna rol MANAGER.
+     * El team es 100% del nuevo usuario — no se reutiliza ningún team existente.
+     */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Ya existe un usuario con ese email");
         }
 
-        Team team = teamRepository.findById(request.getTeamId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Equipo no encontrado: " + request.getTeamId()));
+        VehicleCategory category = request.getTeamCategory() != null
+                ? request.getTeamCategory()
+                : VehicleCategory.CAR;
+
+        Team team = new Team(request.getTeamName(), category);
+        team.setDescription("Creado al registrar " + request.getEmail());
+        team.setContactEmail(request.getEmail());
+        team.setActive(true);
+        Team savedTeam = teamRepository.save(team);
 
         User user = new User();
         user.setEmail(request.getEmail());
@@ -66,8 +77,8 @@ public class AuthService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(request.getRole() != null ? request.getRole() : UserRole.GUEST);
-        user.setTeam(team);
+        user.setRole(UserRole.MANAGER);
+        user.setTeam(savedTeam);
         user.setActive(true);
 
         User saved = userRepository.save(user);

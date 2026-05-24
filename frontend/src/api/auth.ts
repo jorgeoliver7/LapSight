@@ -11,8 +11,8 @@ export interface RegisterPayload {
   password: string;
   firstName: string;
   lastName: string;
-  teamId: number;
-  role?: string;
+  teamName: string;
+  teamCategory?: 'CAR' | 'MOTORCYCLE';
   phoneNumber?: string;
 }
 

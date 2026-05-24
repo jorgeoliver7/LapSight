@@ -1,19 +1,16 @@
-import React from 'react';
-import { Card, CardActionArea, CardContent, Box, Typography, Chip, Stack } from '@mui/material';
+import React, { useState } from 'react';
 import { Circuit } from '../../data/circuits';
 import { getCircuitExtras } from '../../data/circuitMeta';
 import CircuitMiniMap from '../CircuitMiniMap/CircuitMiniMap';
+import { colors, fonts } from '../../theme/tokens';
+import { Mono, Pill } from '../apex';
 
 interface Props {
   circuit: Circuit;
   onClick?: (circuit: Circuit) => void;
-  /** Si está seleccionado en modo comparación. */
   selected?: boolean;
-  /** Si está seleccionable (visual). */
   selectable?: boolean;
-  /** Récord personal de mejor vuelta para este circuito (ms). */
   personalBestMs?: number;
-  /** Cuántas sesiones tienes en este circuito. */
   sessionsCount?: number;
 }
 
@@ -38,102 +35,194 @@ const CircuitCard: React.FC<Props> = ({
   circuit,
   onClick,
   selected = false,
-  selectable = false,
   personalBestMs,
   sessionsCount,
 }) => {
   const extras = getCircuitExtras(circuit.name);
+  const [hover, setHover] = useState(false);
+
+  const bg = selected
+    ? colors.surface3
+    : hover
+      ? colors.surface2
+      : colors.surface;
+  const borderColor = selected
+    ? colors.accent
+    : hover
+      ? colors.borderHi
+      : colors.border;
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
+    <div
+      onClick={() => onClick?.(circuit)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: bg,
+        border: `1px solid ${borderColor}`,
         height: '100%',
-        transition: 'all 0.15s ease',
-        borderColor: selected ? 'primary.main' : undefined,
-        borderWidth: selected ? 2 : 1,
-        '&:hover': {
-          boxShadow: 3,
-          transform: 'translateY(-2px)',
-        },
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: 14,
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'background 120ms ease, border-color 120ms ease',
+        position: 'relative',
       }}
     >
-      <CardActionArea
-        onClick={() => onClick?.(circuit)}
-        disabled={!onClick}
-        sx={{ height: '100%', alignItems: 'stretch' }}
-      >
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 1.5 }}>
-          {/* Header: bandera + nombre */}
-          <Box display="flex" alignItems="flex-start" gap={1}>
-            <Typography component="span" sx={{ fontSize: '1.5em', lineHeight: 1, flexShrink: 0 }}>
-              {COUNTRY_FLAGS[circuit.country || ''] || '🏁'}
-            </Typography>
-            <Box flex={1} minWidth={0}>
-              <Typography variant="subtitle2" fontWeight={600} sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}>
-                {circuit.name}
-              </Typography>
-              {circuit.length_km && (
-                <Typography variant="caption" color="textSecondary" fontFamily="monospace">
-                  {circuit.length_km.toFixed(3)} km
-                  {extras.turns ? ` · ${extras.turns} curvas` : ''}
-                  {extras.direction ? ` · ${extras.direction === 'CW' ? '↻' : '↺'}` : ''}
-                </Typography>
-              )}
-            </Box>
-          </Box>
+      {selected && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 3,
+            height: '100%',
+            background: colors.accent,
+          }}
+        />
+      )}
 
-          {/* Mini-mapa */}
-          <Box display="flex" justifyContent="center" alignItems="center" py={1}>
-            <CircuitMiniMap circuit={circuit} size={140} stroke={selected ? '#d32f2f' : '#424242'} />
-          </Box>
-
-          {/* Chips de categorías */}
-          {extras.categories && extras.categories.length > 0 && (
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-              {extras.categories.slice(0, 4).map((cat) => (
-                <Chip
-                  key={cat}
-                  label={cat}
-                  size="small"
-                  variant="outlined"
-                  sx={{ height: 20, fontSize: '0.65rem' }}
-                />
-              ))}
-              {extras.categories.length > 4 && (
-                <Chip label={`+${extras.categories.length - 4}`} size="small" sx={{ height: 20, fontSize: '0.65rem' }} />
-              )}
-            </Stack>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0 }}>
+          {COUNTRY_FLAGS[circuit.country || ''] || '🏁'}
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: 13,
+              fontWeight: 600,
+              color: colors.text,
+              lineHeight: 1.25,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {circuit.name}
+          </div>
+          {circuit.length_km && (
+            <Mono
+              style={{
+                fontSize: 10,
+                color: colors.textMute,
+                marginTop: 4,
+                letterSpacing: 0.3,
+                display: 'block',
+              }}
+            >
+              {circuit.length_km.toFixed(3)} km
+              {extras.turns ? ` · ${extras.turns} curvas` : ''}
+              {extras.direction ? ` · ${extras.direction === 'CW' ? '↻' : '↺'}` : ''}
+            </Mono>
           )}
+        </div>
+      </div>
 
-          {/* Footer: GPS real + stats personales */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mt="auto">
-            {circuit.realData ? (
-              <Chip label="GPS real" size="small" color="success" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
-            ) : (
-              <Chip label="estilizado" size="small" color="default" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: 4,
+          paddingBottom: 4,
+        }}
+      >
+        <CircuitMiniMap
+          circuit={circuit}
+          size={140}
+          stroke={selected ? colors.accent : colors.textDim}
+          strokeWidth={selected ? 2 : 1.5}
+        />
+      </div>
+
+      {extras.categories && extras.categories.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {extras.categories.slice(0, 4).map((cat) => (
+            <span
+              key={cat}
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: 0.6,
+                textTransform: 'uppercase',
+                color: colors.textDim,
+                border: `1px solid ${colors.border}`,
+                padding: '2px 6px',
+                height: 18,
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              {cat}
+            </span>
+          ))}
+          {extras.categories.length > 4 && (
+            <span
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 9,
+                fontWeight: 600,
+                color: colors.textMute,
+                padding: '2px 6px',
+                height: 18,
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              +{extras.categories.length - 4}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: 'auto',
+          paddingTop: 6,
+          borderTop: `1px solid ${colors.border}`,
+        }}
+      >
+        <Pill active={!!circuit.realData}>
+          {circuit.realData ? 'GPS real' : 'Estilizado'}
+        </Pill>
+        {sessionsCount != null && sessionsCount > 0 && (
+          <div style={{ textAlign: 'right' }}>
+            <Mono
+              style={{
+                display: 'block',
+                fontSize: 9,
+                color: colors.textMute,
+                letterSpacing: 0.6,
+                textTransform: 'uppercase',
+                lineHeight: 1,
+              }}
+            >
+              {sessionsCount} sesión{sessionsCount === 1 ? '' : 'es'}
+            </Mono>
+            {personalBestMs != null && (
+              <Mono
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: colors.accent,
+                  display: 'block',
+                  marginTop: 2,
+                }}
+              >
+                {formatLapMs(personalBestMs)}
+              </Mono>
             )}
-            {sessionsCount != null && sessionsCount > 0 && (
-              <Box textAlign="right">
-                <Typography variant="caption" color="textSecondary" display="block" lineHeight={1}>
-                  {sessionsCount} sesión{sessionsCount === 1 ? '' : 'es'}
-                </Typography>
-                {personalBestMs != null && (
-                  <Typography variant="caption" fontFamily="monospace" fontWeight={600} color="primary.main">
-                    {formatLapMs(personalBestMs)}
-                  </Typography>
-                )}
-              </Box>
-            )}
-          </Box>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

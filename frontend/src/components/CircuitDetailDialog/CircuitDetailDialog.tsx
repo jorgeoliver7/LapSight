@@ -14,6 +14,7 @@ import CircuitMiniMap from '../CircuitMiniMap/CircuitMiniMap';
 import { sessionsApi, formatLapTime } from '../../api/sessions';
 import { eventsApi } from '../../api/events';
 import type { Session, Event, SessionAnalytics } from '../../types';
+import { colors } from '../../theme/tokens';
 
 interface Props {
   circuit: Circuit | null;
@@ -163,7 +164,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
 
         <DialogContent dividers>
           <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3} mb={2}>
-            <Box flex={1} display="flex" justifyContent="center" alignItems="center" sx={{ bgcolor: '#fafafa', borderRadius: 1, p: 2 }}>
+            <Box flex={1} display="flex" justifyContent="center" alignItems="center" sx={{ bgcolor: colors.surface2, borderRadius: 0, p: 2, border: `1px solid ${colors.border}` }}>
               <CircuitMiniMap circuit={circuit} size={280} showStart showSectors strokeWidth={3} />
             </Box>
             <Box flex={1}>
@@ -204,8 +205,8 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                   </Box>
                 )}
                 {extras.funFact && (
-                  <Box sx={{ mt: 1, p: 1.5, bgcolor: 'info.light', borderRadius: 1, opacity: 0.85 }}>
-                    <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
+                  <Box sx={{ mt: 1, p: 1.5, bgcolor: colors.surface2, borderLeft: `3px solid ${colors.accent}` }}>
+                    <Typography variant="caption" sx={{ fontStyle: 'italic', color: colors.textDim }}>
                       💡 {extras.funFact}
                     </Typography>
                   </Box>

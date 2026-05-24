@@ -1,18 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Box, Typography, TextField, InputAdornment, Chip, Stack, Button, Paper, IconButton,
-  ToggleButton, ToggleButtonGroup, Tooltip, Divider, Snackbar, Alert,
+  Box, TextField, InputAdornment, Button, IconButton,
+  Snackbar, Alert,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Add as AddIcon,
   CompareArrows as CompareIcon,
   Clear as ClearIcon,
-  GpsFixed as GpsIcon,
-  Public as PublicIcon,
-  EmojiEvents as TrophyIcon,
-  Straighten as StraightenIcon,
-  Layers as LayersIcon,
 } from '@mui/icons-material';
 import { Circuit, findCircuit } from '../../data/circuits';
 import { getCircuitExtras } from '../../data/circuitMeta';
@@ -21,9 +16,11 @@ import CircuitCard from '../../components/CircuitCard/CircuitCard';
 import CircuitDetailDialog from '../../components/CircuitDetailDialog/CircuitDetailDialog';
 import CircuitImporter from '../../components/CircuitImporter/CircuitImporter';
 import CircuitComparison from './CircuitComparison';
-import { sessionsApi, formatLapTime } from '../../api/sessions';
-import type { Session, SessionAnalytics } from '../../types';
-import { PageHeader } from '../../components/apex';
+import { sessionsApi } from '../../api/sessions';
+import type { Session } from '../../types';
+import { PageHeader, Mono, Pill, MiniStat, Label } from '../../components/apex';
+import { colors, fonts } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
 type RegionFilter = 'all' | 'es' | 'eu' | 'asia' | 'me' | 'am' | 'oc';
 type DataFilter = 'all' | 'gps' | 'stylized';
@@ -38,17 +35,17 @@ const REGION_MAP: Record<string, RegionFilter> = {
   AU: 'oc',
 };
 
-const REGION_LABELS: Record<RegionFilter, string> = {
-  all: 'Todas',
-  es: '🇪🇸 España',
-  eu: '🇪🇺 Europa',
-  asia: '🌏 Asia',
-  me: '🕌 O. Medio',
-  am: '🌎 Américas',
-  oc: '🇦🇺 Oceanía',
-};
-
 const Circuits: React.FC = () => {
+  const { t } = useTranslation();
+  const REGION_LABELS: Record<RegionFilter, string> = {
+    all: t('circuits.regions.all'),
+    es: t('circuits.regions.es'),
+    eu: t('circuits.regions.eu'),
+    asia: t('circuits.regions.asia'),
+    me: t('circuits.regions.me'),
+    am: t('circuits.regions.am'),
+    oc: t('circuits.regions.oc'),
+  };
   const { circuits: allCircuits, refresh } = useAllCircuits();
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState<RegionFilter>('all');
@@ -62,7 +59,6 @@ const Circuits: React.FC = () => {
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [snack, setSnack] = useState<string | null>(null);
 
-  // Sesiones cargadas para mostrar récord personal por circuito
   const [sessions, setSessions] = useState<Session[]>([]);
   const [bestLapsByCircuit, setBestLapsByCircuit] = useState<Record<string, number>>({});
 
@@ -70,11 +66,9 @@ const Circuits: React.FC = () => {
     sessionsApi.list().then(setSessions).catch(() => setSessions([]));
   }, []);
 
-  // Calcular mejor vuelta por circuito (canonical name) cargando analytics de cada sesión
   useEffect(() => {
     if (sessions.length === 0) return;
     let cancelled = false;
-    // Solo cargamos las sesiones que tienen circuito
     const withCircuit = sessions.filter((s) => s.circuit);
     Promise.all(
       withCircuit.map((s) =>
@@ -99,7 +93,6 @@ const Circuits: React.FC = () => {
     return () => { cancelled = true; };
   }, [sessions]);
 
-  // Sesiones por circuito (canonical)
   const sessionsByCircuit = useMemo(() => {
     const map: Record<string, number> = {};
     for (const s of sessions) {
@@ -110,12 +103,10 @@ const Circuits: React.FC = () => {
     return map;
   }, [sessions]);
 
-  // Filtrado y ordenación
   const filtered = useMemo(() => {
     const normalizedSearch = search.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     return allCircuits
       .filter((c) => {
-        // Filtro de búsqueda
         if (normalizedSearch) {
           const hay = [c.name, ...c.aliases, c.country || '']
             .join(' ')
@@ -124,12 +115,10 @@ const Circuits: React.FC = () => {
             .replace(/[̀-ͯ]/g, '');
           if (!hay.includes(normalizedSearch)) return false;
         }
-        // Filtro de región
         if (region !== 'all') {
           const cReg = REGION_MAP[c.country || ''] || 'eu';
           if (cReg !== region) return false;
         }
-        // Filtro de tipo de datos
         if (dataFilter === 'gps' && !c.realData) return false;
         if (dataFilter === 'stylized' && c.realData) return false;
         return true;
@@ -144,10 +133,8 @@ const Circuits: React.FC = () => {
       });
   }, [allCircuits, search, region, dataFilter, sortBy]);
 
-  // Stats globales
   const stats = useMemo(() => {
     const gps = allCircuits.filter((c) => c.realData).length;
-    const stylized = allCircuits.filter((c) => !c.realData).length;
     const totalKmAvail = allCircuits.reduce((acc, c) => acc + (c.length_km || 0), 0);
     const totalKmDriven = sessions.reduce((acc, s) => {
       const c = findCircuit(s.circuit);
@@ -156,23 +143,16 @@ const Circuits: React.FC = () => {
     const topCircuits = Object.entries(sessionsByCircuit)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 3);
-    return { total: allCircuits.length, gps, stylized, totalKmAvail, totalKmDriven, topCircuits };
+    return { total: allCircuits.length, gps, totalKmAvail, totalKmDriven, topCircuits };
   }, [allCircuits, sessions, sessionsByCircuit]);
 
   const handleCardClick = (c: Circuit) => {
     if (compareMode) {
-      if (compareA?.name === c.name) {
-        setCompareA(null);
-      } else if (compareB?.name === c.name) {
-        setCompareB(null);
-      } else if (!compareA) {
-        setCompareA(c);
-      } else if (!compareB) {
-        setCompareB(c);
-      } else {
-        // Reemplazar A
-        setCompareA(c);
-      }
+      if (compareA?.name === c.name) setCompareA(null);
+      else if (compareB?.name === c.name) setCompareB(null);
+      else if (!compareA) setCompareA(c);
+      else if (!compareB) setCompareB(c);
+      else setCompareA(c);
     } else {
       setSelected(c);
     }
@@ -180,7 +160,7 @@ const Circuits: React.FC = () => {
 
   const handleImported = (c: Circuit) => {
     refresh();
-    setSnack(`Circuito "${c.name}" importado`);
+    setSnack(t('circuits.imported', { name: c.name }));
   };
 
   const exitCompare = () => {
@@ -193,104 +173,169 @@ const Circuits: React.FC = () => {
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <PageHeader
-        eyebrow="TELEMETRY · CIRCUITOS"
-        title="Circuitos"
-        subtitle="Galería completa con trazados, récords personales y notas técnicas."
+        eyebrow={t('circuits.eyebrow')}
+        title={t('circuits.title')}
+        subtitle={t('circuits.subtitle')}
         actions={
-          <Stack direction="row" spacing={1}>
+          <Box display="flex" gap={1}>
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={() => setImporterOpen(true)}
+              sx={{
+                borderColor: colors.border,
+                color: colors.textDim,
+                fontFamily: fonts.mono,
+                fontSize: 10,
+                letterSpacing: '1.2px',
+                '&:hover': { borderColor: colors.borderHi, color: colors.text, bgcolor: colors.surface2 },
+              }}
             >
-              Importar GeoJSON
+              {t('circuits.importGeoJson')}
             </Button>
-            <ToggleButton
-              value="compare"
-              selected={compareMode}
-              onChange={() => (compareMode ? exitCompare() : setCompareMode(true))}
-              color="primary"
-              size="small"
+            <Button
+              variant="outlined"
+              startIcon={<CompareIcon />}
+              onClick={() => (compareMode ? exitCompare() : setCompareMode(true))}
+              sx={{
+                borderColor: compareMode ? colors.accent : colors.border,
+                color: compareMode ? colors.accent : colors.textDim,
+                bgcolor: compareMode ? `${colors.accent}14` : 'transparent',
+                fontFamily: fonts.mono,
+                fontSize: 10,
+                letterSpacing: '1.2px',
+                '&:hover': {
+                  borderColor: colors.accent,
+                  color: colors.accent,
+                  bgcolor: `${colors.accent}1f`,
+                },
+              }}
             >
-              <CompareIcon sx={{ mr: 1 }} fontSize="small" />
-              {compareMode ? 'Salir comparar' : 'Comparar'}
-            </ToggleButton>
-          </Stack>
+              {compareMode ? t('circuits.exitCompare') : t('circuits.compare')}
+            </Button>
+          </Box>
         }
       />
 
-      {/* Stats */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Box display="grid" gridTemplateColumns={{ xs: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={2}>
-          <StatBox icon={<PublicIcon />} label="Circuitos" value={stats.total.toString()} />
-          <StatBox icon={<GpsIcon />} label="GPS reales" value={`${stats.gps}/${stats.total}`} />
-          <StatBox icon={<StraightenIcon />} label="Km totales" value={`${stats.totalKmAvail.toFixed(0)} km`} />
-          <StatBox
-            icon={<LayersIcon />}
-            label="Tus km en pista"
-            value={stats.totalKmDriven > 0 ? `${stats.totalKmDriven.toFixed(0)} km` : '—'}
-          />
-          <Box>
-            <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5}>
-              <TrophyIcon fontSize="small" /> Top usados
-            </Typography>
-            {stats.topCircuits.length === 0 ? (
-              <Typography variant="body2" color="textSecondary">—</Typography>
-            ) : (
-              stats.topCircuits.map(([name, count]) => (
-                <Typography key={name} variant="caption" display="block" sx={{ lineHeight: 1.3 }}>
-                  {name.length > 22 ? name.slice(0, 22) + '…' : name}
-                  <Typography component="span" variant="caption" color="textSecondary"> ({count})</Typography>
-                </Typography>
-              ))
-            )}
+      <Box
+        sx={{
+          background: colors.surface,
+          border: `1px solid ${colors.border}`,
+          p: 2,
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' },
+          gap: 2,
+        }}
+      >
+        <MiniStat label={t('circuits.stats.total')} value={stats.total} />
+        <MiniStat label={t('circuits.stats.gps')} value={`${stats.gps}/${stats.total}`} tone="accent" />
+        <MiniStat label={t('circuits.stats.totalKm')} value={`${stats.totalKmAvail.toFixed(0)} km`} />
+        <MiniStat
+          label={t('circuits.stats.yourKm')}
+          value={stats.totalKmDriven > 0 ? `${stats.totalKmDriven.toFixed(0)} km` : '—'}
+          tone={stats.totalKmDriven > 0 ? 'green' : 'dim'}
+        />
+        <Box>
+          <Label tone="mute">{t('circuits.stats.topUsed')}</Label>
+          {stats.topCircuits.length === 0 ? (
+            <Mono style={{ fontSize: 12, color: colors.textMute, marginTop: 4, display: 'block' }}>—</Mono>
+          ) : (
+            <div style={{ marginTop: 4 }}>
+              {stats.topCircuits.map(([name, count]) => (
+                <Mono
+                  key={name}
+                  style={{
+                    fontSize: 11,
+                    display: 'block',
+                    lineHeight: 1.4,
+                    color: colors.text,
+                  }}
+                >
+                  {name.length > 20 ? name.slice(0, 20) + '…' : name}
+                  <span style={{ color: colors.textMute }}> ({count})</span>
+                </Mono>
+              ))}
+            </div>
+          )}
+        </Box>
+      </Box>
+
+      {compareMode && (
+        <Box
+          sx={{
+            background: colors.surface2,
+            border: `1px solid ${colors.accent}`,
+            borderLeft: `3px solid ${colors.accent}`,
+            p: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          <Mono style={{ fontSize: 11, color: colors.textDim, letterSpacing: 0.4 }}>
+            <strong style={{ color: colors.accent }}>{t('circuits.compareBar.intro')}</strong>
+          </Mono>
+          <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+            <span
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 10,
+                fontWeight: 600,
+                color: compareA ? colors.accent : colors.textMute,
+                border: `1px solid ${compareA ? colors.accent : colors.border}`,
+                padding: '3px 8px',
+                letterSpacing: 0.5,
+              }}
+            >
+              A · {compareA?.name || '—'}
+            </span>
+            <span
+              style={{
+                fontFamily: fonts.mono,
+                fontSize: 10,
+                fontWeight: 600,
+                color: compareB ? colors.accent : colors.textMute,
+                border: `1px solid ${compareB ? colors.accent : colors.border}`,
+                padding: '3px 8px',
+                letterSpacing: 0.5,
+              }}
+            >
+              B · {compareB?.name || '—'}
+            </span>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={!compareA || !compareB}
+              onClick={() => setComparisonOpen(true)}
+              sx={{
+                bgcolor: colors.accent,
+                color: colors.bg,
+                fontFamily: fonts.mono,
+                fontSize: 10,
+                letterSpacing: '1.2px',
+                '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+              }}
+            >
+              {t('circuits.compareBar.compareBtn')}
+            </Button>
           </Box>
         </Box>
-      </Paper>
-
-      {/* Compare bar */}
-      {compareMode && (
-        <Paper variant="outlined" sx={{ p: 2, mb: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
-            <Typography variant="body2">
-              <strong>Modo comparación:</strong> selecciona dos circuitos para compararlos.
-            </Typography>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip
-                label={compareA ? `A: ${compareA.name}` : 'A: —'}
-                size="small"
-                onDelete={compareA ? () => setCompareA(null) : undefined}
-                sx={{ bgcolor: 'background.paper' }}
-              />
-              <Chip
-                label={compareB ? `B: ${compareB.name}` : 'B: —'}
-                size="small"
-                onDelete={compareB ? () => setCompareB(null) : undefined}
-                sx={{ bgcolor: 'background.paper' }}
-              />
-              <Button
-                size="small"
-                variant="contained"
-                color="secondary"
-                disabled={!compareA || !compareB}
-                onClick={() => setComparisonOpen(true)}
-              >
-                Comparar
-              </Button>
-            </Stack>
-          </Box>
-        </Paper>
       )}
 
-      {/* Filtros */}
-      <Box display="flex" gap={2} mb={2} flexWrap="wrap" alignItems="center">
+      <Box display="flex" gap={1.5} flexWrap="wrap" alignItems="center">
         <TextField
           size="small"
-          placeholder="Buscar circuito..."
+          placeholder={t('circuits.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" sx={{ color: colors.textMute }} />
+              </InputAdornment>
+            ),
             endAdornment: search ? (
               <InputAdornment position="end">
                 <IconButton size="small" onClick={() => setSearch('')}>
@@ -301,48 +346,39 @@ const Circuits: React.FC = () => {
           }}
           sx={{ minWidth: 240 }}
         />
-        <ToggleButtonGroup
-          value={region}
-          exclusive
-          size="small"
-          onChange={(_, v) => v && setRegion(v)}
-        >
+        <Box display="flex" gap={0.5} flexWrap="wrap">
           {(Object.entries(REGION_LABELS) as [RegionFilter, string][]).map(([k, v]) => (
-            <ToggleButton key={k} value={k} sx={{ textTransform: 'none', fontSize: '0.75rem', py: 0.5 }}>
+            <Pill key={k} active={region === k} onClick={() => setRegion(k)}>
               {v}
-            </ToggleButton>
+            </Pill>
           ))}
-        </ToggleButtonGroup>
-        <ToggleButtonGroup
-          value={dataFilter}
-          exclusive
-          size="small"
-          onChange={(_, v) => v && setDataFilter(v)}
-        >
-          <ToggleButton value="all" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>Todos</ToggleButton>
-          <ToggleButton value="gps" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>GPS real</ToggleButton>
-          <ToggleButton value="stylized" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>Estilizado</ToggleButton>
-        </ToggleButtonGroup>
-        <Divider orientation="vertical" flexItem />
-        <ToggleButtonGroup
-          value={sortBy}
-          exclusive
-          size="small"
-          onChange={(_, v) => v && setSortBy(v)}
-        >
-          <ToggleButton value="name" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>A-Z</ToggleButton>
-          <ToggleButton value="length-desc" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>Más largo</ToggleButton>
-          <ToggleButton value="length-asc" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>Más corto</ToggleButton>
-          <ToggleButton value="turns-desc" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>+ Curvas</ToggleButton>
-        </ToggleButtonGroup>
+        </Box>
+        <Box display="flex" gap={0.5}>
+          <Pill active={dataFilter === 'all'} onClick={() => setDataFilter('all')}>{t('circuits.data.all')}</Pill>
+          <Pill active={dataFilter === 'gps'} onClick={() => setDataFilter('gps')}>{t('circuits.data.gps')}</Pill>
+          <Pill active={dataFilter === 'stylized'} onClick={() => setDataFilter('stylized')}>{t('circuits.data.stylized')}</Pill>
+        </Box>
+        <Box
+          sx={{
+            width: 1,
+            height: 22,
+            background: colors.border,
+            mx: 0.5,
+          }}
+        />
+        <Box display="flex" gap={0.5}>
+          <Pill active={sortBy === 'name'} onClick={() => setSortBy('name')}>{t('circuits.sort.name')}</Pill>
+          <Pill active={sortBy === 'length-desc'} onClick={() => setSortBy('length-desc')}>{t('circuits.sort.lengthDesc')}</Pill>
+          <Pill active={sortBy === 'length-asc'} onClick={() => setSortBy('length-asc')}>{t('circuits.sort.lengthAsc')}</Pill>
+          <Pill active={sortBy === 'turns-desc'} onClick={() => setSortBy('turns-desc')}>{t('circuits.sort.turnsDesc')}</Pill>
+        </Box>
       </Box>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <Box textAlign="center" py={8}>
-          <Typography variant="body1" color="textSecondary">
-            No hay circuitos que coincidan con los filtros.
-          </Typography>
+          <Mono style={{ color: colors.textMute, fontSize: 12, letterSpacing: 1 }}>
+            {t('circuits.noResults')}
+          </Mono>
         </Box>
       ) : (
         <Box
@@ -354,7 +390,7 @@ const Circuits: React.FC = () => {
             lg: 'repeat(4, 1fr)',
             xl: 'repeat(5, 1fr)',
           }}
-          gap={2}
+          gap={1.5}
         >
           {filtered.map((c) => (
             <CircuitCard
@@ -393,19 +429,14 @@ const Circuits: React.FC = () => {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        {snack ? <Alert severity="success" onClose={() => setSnack(null)}>{snack}</Alert> : undefined}
+        {snack ? (
+          <Alert severity="success" sx={{ borderRadius: 0 }} onClose={() => setSnack(null)}>
+            {snack}
+          </Alert>
+        ) : undefined}
       </Snackbar>
     </Box>
   );
 };
-
-const StatBox: React.FC<{ icon: React.ReactElement; label: string; value: string }> = ({ icon, label, value }) => (
-  <Box>
-    <Typography variant="caption" color="textSecondary" display="flex" alignItems="center" gap={0.5}>
-      {React.cloneElement(icon, { fontSize: 'small' })} {label}
-    </Typography>
-    <Typography variant="h6" fontWeight={600}>{value}</Typography>
-  </Box>
-);
 
 export default Circuits;

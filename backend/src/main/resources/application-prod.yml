@@ -1,0 +1,85 @@
+# Perfil de producción. Activar con SPRING_PROFILES_ACTIVE=prod
+# Pensado para deploy en Railway / Fly.io / Render con Postgres gestionada.
+
+spring:
+  datasource:
+    # URL en formato Spring estándar: jdbc:postgresql://host:port/db
+    # Si el proveedor te da una URL postgres:// (Railway/Heroku style), transfórmala antes
+    # o usa SPRING_DATASOURCE_URL/USERNAME/PASSWORD por separado.
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL:10}
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+  forward-headers-strategy: framework
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+
+logging:
+  level:
+    root: INFO
+    com.lapsight: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
+app:
+  cors:
+    # CORS debe configurarse explícitamente con el dominio público del frontend
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
+  seed:
+    admin-email: ${APP_SEED_ADMIN_EMAIL:admin@lapsight.app}
+    admin-password: ${APP_SEED_ADMIN_PASSWORD}
+    team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
+    # En producción la demo seed está apagada por defecto. Activar solo si el deploy
+    # está pensado como portfolio público con datos demo visibles.
+    demo-data: ${APP_SEED_DEMO_DATA:false}
+  analytics:
+    python-url: ${PYTHON_ANALYTICS_URL}
+    timeout-ms: ${PYTHON_ANALYTICS_TIMEOUT_MS:15000}
+  rate-limit:
+    auth:
+      max-requests: ${APP_RATE_LIMIT_AUTH_MAX:10}
+      window-seconds: ${APP_RATE_LIMIT_AUTH_WINDOW_SEC:60}

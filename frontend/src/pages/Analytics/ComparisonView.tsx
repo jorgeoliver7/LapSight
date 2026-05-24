@@ -121,7 +121,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
     <Box display="flex" flexDirection="column" gap={2}>
       <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
         <Box display="flex" alignItems="center" gap={1}>
-          <Box sx={{ width: 12, height: 12, bgcolor: COLOR_A, borderRadius: 0.5 }} />
+          <Box sx={{ width: 12, height: 12, bgcolor: COLOR_A, borderRadius: 0 }} />
           <Typography variant="h6" fontWeight={600}>
             {a.sessionName}
           </Typography>
@@ -130,7 +130,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
           vs
         </Typography>
         <Box display="flex" alignItems="center" gap={1}>
-          <Box sx={{ width: 12, height: 12, bgcolor: COLOR_B, borderRadius: 0.5 }} />
+          <Box sx={{ width: 12, height: 12, bgcolor: COLOR_B, borderRadius: 0 }} />
           <Typography variant="h6" fontWeight={600}>
             {b.sessionName}
           </Typography>

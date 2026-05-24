@@ -5,6 +5,7 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  MenuItem,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuthStore } from '../../store/authStore';
@@ -13,38 +14,48 @@ import { useTranslation } from 'react-i18next';
 import { colors, fonts } from '../../theme/tokens';
 import { Label, Mono, LanguageSwitch } from '../../components/apex';
 
-const Login: React.FC = () => {
+type Category = 'CAR' | 'MOTORCYCLE';
+
+const Register: React.FC = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [teamName, setTeamName] = useState('');
+  const [teamCategory, setTeamCategory] = useState<Category>('CAR');
   const [showPassword, setShowPassword] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ email?: string; password?: string }>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { register, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const validateForm = () => {
-    const errors: { email?: string; password?: string } = {};
-    if (!email) {
-      errors.email = t('common.required');
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.email = t('common.invalidEmail');
-    }
-    if (!password) {
-      errors.password = t('common.required');
-    } else if (password.length < 6) {
-      errors.password = t('common.minChars', { n: 6 });
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!firstName) errs.firstName = t('common.required');
+    if (!lastName) errs.lastName = t('common.required');
+    if (!email) errs.email = t('common.required');
+    else if (!/\S+@\S+\.\S+/.test(email)) errs.email = t('common.invalidEmail');
+    if (!password) errs.password = t('common.required');
+    else if (password.length < 6) errs.password = t('common.minChars', { n: 6 });
+    if (!teamName) errs.teamName = t('common.required');
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    if (!validateForm()) return;
+    if (!validate()) return;
     try {
-      await login(email, password);
+      await register({
+        firstName,
+        lastName,
+        email,
+        password,
+        teamName,
+        teamCategory,
+      });
       navigate('/dashboard');
     } catch {
       /* handled in store */
@@ -64,7 +75,6 @@ const Login: React.FC = () => {
         overflow: 'hidden',
       }}
     >
-      {/* Decorative grid background */}
       <div
         style={{
           position: 'absolute',
@@ -81,7 +91,7 @@ const Login: React.FC = () => {
           top: '20%',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 480,
+          width: 520,
           height: 320,
           background: `radial-gradient(circle at center, ${colors.accentDim}55 0%, transparent 70%)`,
           pointerEvents: 'none',
@@ -93,28 +103,21 @@ const Login: React.FC = () => {
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: 440,
+          maxWidth: 520,
           background: colors.surface,
           border: `1px solid ${colors.border}`,
         }}
       >
-        {/* Brand header */}
         <div
           style={{
-            padding: '28px 28px 22px',
+            padding: '24px 28px 18px',
             borderBottom: `1px solid ${colors.border}`,
             display: 'flex',
             alignItems: 'center',
             gap: 14,
           }}
         >
-          <div
-            style={{
-              width: 10,
-              height: 40,
-              background: colors.accent,
-            }}
-          />
+          <div style={{ width: 10, height: 40, background: colors.accent }} />
           <div>
             <div
               style={{
@@ -131,12 +134,12 @@ const Login: React.FC = () => {
               style={{
                 fontSize: 10,
                 color: colors.textMute,
-                marginTop: 8,
+                marginTop: 6,
                 letterSpacing: '1.2px',
                 textTransform: 'uppercase',
               }}
             >
-              v1.0 · See every lap
+              {t('auth.register.subtitle')}
             </Mono>
           </div>
           <div style={{ marginLeft: 'auto' }}>
@@ -144,18 +147,18 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: '24px 28px 28px' }}>
-          <Label>{t('auth.login.eyebrow')}</Label>
+        <form onSubmit={handleSubmit} style={{ padding: '22px 28px 26px' }}>
+          <Label>{t('auth.register.eyebrow')}</Label>
           <div
             style={{
               fontSize: 20,
               fontWeight: 600,
               color: colors.text,
               marginTop: 6,
-              marginBottom: 22,
+              marginBottom: 18,
             }}
           >
-            {t('auth.login.title')}
+            {t('auth.register.title')}
           </div>
 
           {error && (
@@ -164,8 +167,37 @@ const Login: React.FC = () => {
             </Alert>
           )}
 
-          <div style={{ marginBottom: 14 }}>
-            <Label>{t('auth.login.email')}</Label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <Label>{t('auth.register.firstName')}</Label>
+              <TextField
+                fullWidth
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                error={!!formErrors.firstName}
+                helperText={formErrors.firstName}
+                size="small"
+                sx={{ mt: 0.5 }}
+                autoComplete="given-name"
+              />
+            </div>
+            <div>
+              <Label>{t('auth.register.lastName')}</Label>
+              <TextField
+                fullWidth
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                error={!!formErrors.lastName}
+                helperText={formErrors.lastName}
+                size="small"
+                sx={{ mt: 0.5 }}
+                autoComplete="family-name"
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <Label>{t('auth.register.email')}</Label>
             <TextField
               fullWidth
               type="email"
@@ -175,23 +207,23 @@ const Login: React.FC = () => {
               helperText={formErrors.email}
               size="small"
               sx={{ mt: 0.5 }}
-              placeholder={t('auth.login.emailPlaceholder')}
               autoComplete="email"
+              placeholder={t('auth.register.emailPlaceholder')}
             />
           </div>
 
-          <div style={{ marginBottom: 18 }}>
-            <Label>{t('auth.login.password')}</Label>
+          <div style={{ marginTop: 12 }}>
+            <Label>{t('auth.register.password')}</Label>
             <TextField
               fullWidth
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={!!formErrors.password}
-              helperText={formErrors.password}
+              helperText={formErrors.password || t('auth.register.passwordHelp')}
               size="small"
               sx={{ mt: 0.5 }}
-              autoComplete="current-password"
+              autoComplete="new-password"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -213,12 +245,64 @@ const Login: React.FC = () => {
             />
           </div>
 
+          <div
+            style={{
+              marginTop: 18,
+              paddingTop: 14,
+              borderTop: `1px solid ${colors.border}`,
+            }}
+          >
+            <Label tone="accent">{t('auth.register.yourTeam')}</Label>
+            <Mono
+              style={{
+                fontSize: 10,
+                color: colors.textMute,
+                marginTop: 4,
+                marginBottom: 10,
+                display: 'block',
+              }}
+            >
+              {t('auth.register.teamNote')}
+            </Mono>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+              <div>
+                <Label>{t('auth.register.teamName')}</Label>
+                <TextField
+                  fullWidth
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  error={!!formErrors.teamName}
+                  helperText={formErrors.teamName}
+                  size="small"
+                  sx={{ mt: 0.5 }}
+                  placeholder={t('auth.register.teamNamePlaceholder')}
+                />
+              </div>
+              <div>
+                <Label>{t('auth.register.category')}</Label>
+                <TextField
+                  fullWidth
+                  select
+                  value={teamCategory}
+                  onChange={(e) => setTeamCategory(e.target.value as Category)}
+                  size="small"
+                  sx={{ mt: 0.5 }}
+                >
+                  <MenuItem value="CAR">{t('auth.register.categoryCar')}</MenuItem>
+                  <MenuItem value="MOTORCYCLE">{t('auth.register.categoryBike')}</MenuItem>
+                </TextField>
+              </div>
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={isLoading}
             style={{
               width: '100%',
               padding: '12px 16px',
+              marginTop: 22,
               background: isLoading ? colors.surface3 : colors.accent,
               color: isLoading ? colors.textMute : colors.bg,
               border: `1px solid ${colors.accent}`,
@@ -239,7 +323,7 @@ const Login: React.FC = () => {
             {isLoading ? (
               <CircularProgress size={16} sx={{ color: colors.textMute }} />
             ) : (
-              <>{t('auth.login.submit')}</>
+              <>{t('auth.register.submit')}</>
             )}
           </button>
 
@@ -249,16 +333,20 @@ const Login: React.FC = () => {
               fontSize: 11,
               color: colors.textDim,
               textAlign: 'center',
-              marginTop: 18,
+              marginTop: 16,
               letterSpacing: '0.4px',
             }}
           >
-            {t('auth.login.noAccount')}{' '}
+            {t('auth.register.haveAccount')}{' '}
             <Link
-              to="/register"
-              style={{ color: colors.accent, textDecoration: 'none', fontWeight: 600 }}
+              to="/login"
+              style={{
+                color: colors.accent,
+                textDecoration: 'none',
+                fontWeight: 600,
+              }}
             >
-              {t('auth.login.createAccount')}
+              {t('auth.register.signIn')}
             </Link>
           </Mono>
         </form>
@@ -267,4 +355,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;

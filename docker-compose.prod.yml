@@ -1,0 +1,97 @@
+# docker-compose para producción (VPS / Docker Swarm / single-node deploy).
+# Para PaaS tipo Railway/Fly.io, despliega cada servicio por separado
+# usando su Dockerfile y configura las env vars en la plataforma.
+#
+# Uso:
+#   cp backend/.env.example .env       # rellena valores reales
+#   docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lapsight_db}
+      POSTGRES_USER: ${POSTGRES_USER:-lapsight_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lapsight-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lapsight_user} -d ${POSTGRES_DB:-lapsight_db}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  python-analytics:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - lapsight-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-lapsight_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-lapsight_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_SEED_DEMO_DATA: ${APP_SEED_DEMO_DATA:-false}
+      APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@lapsight.app}
+      APP_SEED_ADMIN_PASSWORD: ${APP_SEED_ADMIN_PASSWORD}
+      PYTHON_ANALYTICS_URL: http://python-analytics:8000
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m -Xms256m}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      python-analytics:
+        condition: service_healthy
+    networks:
+      - lapsight-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # En este compose, frontend y backend están detrás del mismo Nginx (en el contenedor
+        # del frontend), así que el bundle llama a /api y Nginx proxypassea al backend.
+        VITE_API_URL: /api
+    restart: unless-stopped
+    ports:
+      # Mantén este 3000 si vas a meter un reverse proxy/TLS por encima (Caddy, Traefik, Nginx
+      # del host). Si quieres exponer directo en :80, cambia a "80:3000".
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - lapsight-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  lapsight-network:
+    driver: bridge

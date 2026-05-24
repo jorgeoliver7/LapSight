@@ -9,3 +9,5 @@ export { ToolButton } from './ToolButton';
 export { SectorTile } from './SectorTile';
 export { MiniStat } from './MiniStat';
 export { BigStat } from './BigStat';
+export { StatusTag, type StatusTone } from './StatusTag';
+export { LanguageSwitch } from './LanguageSwitch';

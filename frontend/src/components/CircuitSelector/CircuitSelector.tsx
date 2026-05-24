@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Autocomplete, TextField, Box, Typography, Chip, Popper, Paper } from '@mui/material';
+import { Autocomplete, TextField, Box, Typography, Popper } from '@mui/material';
 import { Circuit } from '../../data/circuits';
 import { useAllCircuits } from '../../data/useAllCircuits';
 import CircuitMiniMap from '../CircuitMiniMap/CircuitMiniMap';
+import { colors, fonts } from '../../theme/tokens';
+import { Mono } from '../apex';
 
 interface Props {
   value: string;
@@ -116,20 +118,28 @@ const CircuitSelector: React.FC<Props> = ({
                   {option.name}
                 </Typography>
               </Box>
-              <Box display="flex" alignItems="center" gap={0.5} flexShrink={0}>
+              <Box display="flex" alignItems="center" gap={0.75} flexShrink={0}>
                 {option.length_km && (
-                  <Typography component="span" variant="caption" color="textSecondary" fontFamily="monospace">
+                  <Mono style={{ fontSize: 11, color: colors.textMute }}>
                     {option.length_km.toFixed(3)} km
-                  </Typography>
+                  </Mono>
                 )}
                 {option.realData && (
-                  <Chip
-                    label="GPS"
-                    size="small"
-                    color="success"
-                    variant="outlined"
-                    sx={{ height: 18, fontSize: '0.65rem', '& .MuiChip-label': { px: 0.5 } }}
-                  />
+                  <span
+                    style={{
+                      fontFamily: fonts.mono,
+                      fontSize: 9,
+                      fontWeight: 600,
+                      letterSpacing: 0.6,
+                      textTransform: 'uppercase',
+                      color: colors.accent,
+                      border: `1px solid ${colors.accent}`,
+                      padding: '1px 5px',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    GPS
+                  </span>
                 )}
               </Box>
             </Box>
@@ -157,17 +167,46 @@ const CircuitSelector: React.FC<Props> = ({
         sx={{ zIndex: 1500, pointerEvents: 'none' }}
       >
         {hovered && (
-          <Paper elevation={6} sx={{ p: 1.5, maxWidth: 220 }}>
-            <Typography variant="caption" fontWeight={600} display="block" mb={0.5}>
+          <div
+            style={{
+              padding: 12,
+              maxWidth: 220,
+              background: colors.surface2,
+              border: `1px solid ${colors.borderHi}`,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: 12,
+                fontWeight: 600,
+                color: colors.text,
+                marginBottom: 6,
+              }}
+            >
               {hovered.name}
-            </Typography>
-            <CircuitMiniMap circuit={hovered} size={160} stroke="#d32f2f" strokeWidth={2.5} showStart />
+            </div>
+            <CircuitMiniMap
+              circuit={hovered}
+              size={160}
+              stroke={colors.accent}
+              strokeWidth={2}
+              showStart
+            />
             {hovered.length_km && (
-              <Typography variant="caption" color="textSecondary" display="block" mt={0.5} textAlign="center">
+              <Mono
+                style={{
+                  fontSize: 10,
+                  color: colors.textMute,
+                  marginTop: 6,
+                  textAlign: 'center',
+                  display: 'block',
+                }}
+              >
                 {hovered.length_km.toFixed(3)} km
-              </Typography>
+              </Mono>
             )}
-          </Paper>
+          </div>
         )}
       </Popper>
     </>

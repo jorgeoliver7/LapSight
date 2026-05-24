@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Typography,
   Button,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -11,7 +9,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -26,7 +23,9 @@ import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/ico
 import { teamsApi, TeamRequest } from '../../api/teams';
 import { Team, VehicleCategory, UserRole } from '../../types';
 import { useAuthStore } from '../../store/authStore';
-import { PageHeader } from '../../components/apex';
+import { PageHeader, Mono, StatusTag } from '../../components/apex';
+import { colors, fonts } from '../../theme/tokens';
+import { useTranslation } from 'react-i18next';
 
 const emptyForm: TeamRequest = {
   name: '',
@@ -39,6 +38,7 @@ const emptyForm: TeamRequest = {
 };
 
 const Teams: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const isManager = user?.role === UserRole.MANAGER;
 
@@ -57,7 +57,7 @@ const Teams: React.FC = () => {
       setTeams(data);
       setError(null);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Error cargando equipos');
+      setError(e?.response?.data?.message || t('teams.msg.loadError'));
     } finally {
       setLoading(false);
     }
@@ -91,110 +91,151 @@ const Teams: React.FC = () => {
     try {
       if (editingId) {
         await teamsApi.update(editingId, form);
-        setSnack({ msg: 'Equipo actualizado', severity: 'success' });
+        setSnack({ msg: t('teams.msg.updated'), severity: 'success' });
       } else {
         await teamsApi.create(form);
-        setSnack({ msg: 'Equipo creado', severity: 'success' });
+        setSnack({ msg: t('teams.msg.created'), severity: 'success' });
       }
       setDialogOpen(false);
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al guardar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('teams.msg.saveError'), severity: 'error' });
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Desactivar este equipo?')) return;
+    if (!window.confirm(t('teams.msg.deleteConfirm'))) return;
     try {
       await teamsApi.remove(id);
-      setSnack({ msg: 'Equipo desactivado', severity: 'success' });
+      setSnack({ msg: t('teams.msg.deleted'), severity: 'success' });
       load();
     } catch (e: any) {
-      setSnack({ msg: e?.response?.data?.message || 'Error al eliminar', severity: 'error' });
+      setSnack({ msg: e?.response?.data?.message || t('teams.msg.deleteError'), severity: 'error' });
     }
   };
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <PageHeader
-        eyebrow="OPERATIVO · EQUIPOS"
-        title="Equipos"
-        subtitle="Gestiona los equipos de racing"
+        eyebrow={t('teams.eyebrow')}
+        title={t('teams.title')}
+        subtitle={t('teams.subtitle', { count: teams.length })}
         actions={
           isManager && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-              Nuevo equipo
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreate}
+              sx={{
+                bgcolor: colors.accent,
+                color: colors.bg,
+                fontFamily: fonts.mono,
+                fontSize: 11,
+                letterSpacing: '1.2px',
+                px: 2,
+                '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+              }}
+            >
+              {t('teams.new')}
             </Button>
           )
         }
       />
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ borderRadius: 0 }}>
           {error}
         </Alert>
       )}
 
-      <Paper>
+      <Box sx={{ border: `1px solid ${colors.border}`, background: colors.surface }}>
         {loading ? (
           <Box p={4} textAlign="center">
-            <CircularProgress />
+            <CircularProgress sx={{ color: colors.accent }} />
           </Box>
         ) : (
           <TableContainer>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Categoría</TableCell>
-                  <TableCell>Ubicación</TableCell>
-                  <TableCell align="right">Miembros</TableCell>
-                  <TableCell align="right">Vehículos</TableCell>
-                  <TableCell>Estado</TableCell>
-                  {isManager && <TableCell align="right">Acciones</TableCell>}
+                  <TableCell>{t('teams.col.name')}</TableCell>
+                  <TableCell>{t('teams.col.category')}</TableCell>
+                  <TableCell>{t('teams.col.location')}</TableCell>
+                  <TableCell align="right">{t('teams.col.members')}</TableCell>
+                  <TableCell align="right">{t('teams.col.vehicles')}</TableCell>
+                  <TableCell>{t('teams.col.status')}</TableCell>
+                  {isManager && <TableCell align="right">{t('common.actions')}</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {teams.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isManager ? 7 : 6} align="center" sx={{ py: 4 }}>
-                      <Typography color="textSecondary">No hay equipos todavía</Typography>
+                    <TableCell
+                      colSpan={isManager ? 7 : 6}
+                      align="center"
+                      sx={{ py: 5, color: colors.textMute, fontFamily: fonts.mono, fontSize: 12 }}
+                    >
+                      {t('teams.empty')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   teams.map((team) => (
-                    <TableRow key={team.id} hover>
+                    <TableRow key={team.id} hover sx={{ '&:hover': { backgroundColor: colors.surface2 } }}>
                       <TableCell>
-                        <Typography fontWeight={500}>{team.name}</Typography>
+                        <span style={{ color: colors.text, fontWeight: 600, fontSize: 13 }}>
+                          {team.name}
+                        </span>
                         {team.description && (
-                          <Typography variant="caption" color="textSecondary">
+                          <Mono
+                            style={{
+                              fontSize: 10,
+                              color: colors.textMute,
+                              marginTop: 2,
+                              display: 'block',
+                            }}
+                          >
                             {team.description}
-                          </Typography>
+                          </Mono>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={team.primaryCategory === VehicleCategory.CAR ? 'Coches' : 'Motos'}
-                          size="small"
-                          color={team.primaryCategory === VehicleCategory.CAR ? 'primary' : 'secondary'}
-                        />
+                        <StatusTag
+                          tone={team.primaryCategory === VehicleCategory.CAR ? 'accent' : 'purple'}
+                          dot={false}
+                        >
+                          {team.primaryCategory === VehicleCategory.CAR ? t('teams.category.CAR') : t('teams.category.MOTORCYCLE')}
+                        </StatusTag>
                       </TableCell>
-                      <TableCell>{team.headquartersLocation || '—'}</TableCell>
-                      <TableCell align="right">{team.membersCount}</TableCell>
-                      <TableCell align="right">{team.vehiclesCount}</TableCell>
                       <TableCell>
-                        <Chip
-                          label={team.active ? 'Activo' : 'Inactivo'}
-                          size="small"
-                          color={team.active ? 'success' : 'default'}
-                        />
+                        <span style={{ color: team.headquartersLocation ? colors.text : colors.textMute, fontSize: 12 }}>
+                          {team.headquartersLocation || '—'}
+                        </span>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {team.membersCount}
+                        </Mono>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Mono style={{ color: colors.text, fontSize: 12, fontWeight: 600 }}>
+                          {team.vehiclesCount}
+                        </Mono>
+                      </TableCell>
+                      <TableCell>
+                        <StatusTag tone={team.active ? 'green' : 'mute'}>
+                          {team.active ? t('common.active') : t('common.inactive')}
+                        </StatusTag>
                       </TableCell>
                       {isManager && (
                         <TableCell align="right">
                           <IconButton size="small" onClick={() => openEdit(team)}>
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => handleDelete(team.id)}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(team.id)}
+                            sx={{ color: colors.textMute, '&:hover': { color: colors.red } }}
+                          >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </TableCell>
@@ -206,21 +247,31 @@ const Teams: React.FC = () => {
             </Table>
           </TableContainer>
         )}
-      </Paper>
+      </Box>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingId ? 'Editar equipo' : 'Nuevo equipo'}</DialogTitle>
+        <DialogTitle
+          sx={{
+            fontFamily: fonts.mono,
+            fontSize: 13,
+            letterSpacing: '1.4px',
+            textTransform: 'uppercase',
+            color: colors.textDim,
+          }}
+        >
+          {editingId ? t('teams.edit') : t('teams.create')}
+        </DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} pt={1}>
             <TextField
-              label="Nombre"
+              label={t('teams.form.name')}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
               fullWidth
             />
             <TextField
-              label="Descripción"
+              label={t('teams.form.description')}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               fullWidth
@@ -228,46 +279,59 @@ const Teams: React.FC = () => {
               rows={2}
             />
             <TextField
-              label="Categoría principal"
+              label={t('teams.form.category')}
               value={form.primaryCategory}
               onChange={(e) => setForm({ ...form, primaryCategory: e.target.value as VehicleCategory })}
               select
               fullWidth
             >
-              <MenuItem value={VehicleCategory.CAR}>Coches</MenuItem>
-              <MenuItem value={VehicleCategory.MOTORCYCLE}>Motos</MenuItem>
+              <MenuItem value={VehicleCategory.CAR}>{t('teams.category.CAR')}</MenuItem>
+              <MenuItem value={VehicleCategory.MOTORCYCLE}>{t('teams.category.MOTORCYCLE')}</MenuItem>
             </TextField>
             <TextField
-              label="Ubicación"
+              label={t('teams.form.location')}
               value={form.headquartersLocation}
               onChange={(e) => setForm({ ...form, headquartersLocation: e.target.value })}
               fullWidth
             />
             <TextField
-              label="Email de contacto"
+              label={t('teams.form.email')}
               type="email"
               value={form.contactEmail}
               onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
               fullWidth
             />
             <TextField
-              label="Teléfono"
+              label={t('teams.form.phone')}
               value={form.contactPhone}
               onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               fullWidth
             />
             <TextField
-              label="URL del logo"
+              label={t('teams.form.logoUrl')}
               value={form.logoUrl}
               onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
               fullWidth
             />
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={handleSave} disabled={!form.name}>
-            Guardar
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDialogOpen(false)} sx={{ color: colors.textDim }}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={!form.name}
+            sx={{
+              bgcolor: colors.accent,
+              color: colors.bg,
+              fontFamily: fonts.mono,
+              letterSpacing: '1.2px',
+              '&:hover': { bgcolor: colors.accent, opacity: 0.85 },
+            }}
+          >
+            {t('common.save').toUpperCase()}
           </Button>
         </DialogActions>
       </Dialog>
@@ -278,7 +342,11 @@ const Teams: React.FC = () => {
         onClose={() => setSnack(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        {snack ? <Alert severity={snack.severity}>{snack.msg}</Alert> : undefined}
+        {snack ? (
+          <Alert severity={snack.severity} sx={{ borderRadius: 0 }}>
+            {snack.msg}
+          </Alert>
+        ) : undefined}
       </Snackbar>
     </Box>
   );

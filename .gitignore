@@ -248,5 +248,7 @@ application*.log
 # Runtime logs
 /backend/logs/
 
-# Claude Code per-machine settings (local tool permissions, paths, etc.)
+# Editor / AI assistant per-machine settings
 .claude/
+.cursor/
+.aider*

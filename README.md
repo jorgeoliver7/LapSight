@@ -1,364 +1,260 @@
 # LapSight 🏁
 
-> **See every lap.**
+> **See every lap.** Pit wall analytics and 360° management for motorsport teams.
 
-Plataforma de **análisis de telemetría y estadística** para equipos de motorsport.
-Importa datos de las herramientas que ya usas (AiM, MoTeC, RaceChrono, iRacing,
-MyLaps, VBox, RaceLogic, Race Technology) y los analiza de forma cruzada entre
-sesiones, pilotos y circuitos con tests estadísticos formales.
+[English](README.md) · [Español](README.es.md)
 
-## ✨ Lo que hace bien
+Telemetry analysis platform — import data from the tools you already use (AiM,
+MoTeC, RaceChrono, iRacing, MyLaps, VBox…), compare drivers lap by lap with
+formal statistical tests, and manage teams, vehicles and calendar from a single
+screen.
 
-### Análisis de telemetría (core)
-- **Importadores multi-fuente**: AiM, MoTeC, RaceChrono, iRacing, MyLaps, VBox /
-  Circuit Tools, Race Technology DL2/DL3, Apex Pro, Harry's LapTimer y CSV genérico
-- **Métricas por sesión**: mejor vuelta, vuelta teórica, gap por sector,
-  degradación lineal (R²), outliers automáticos
-- **Consistencia formal**: coeficiente de variación, IQR, hot-lap window,
-  pace-windows (1/2/5% del best), sector más variable, consistency score 0-100
-- **Detección de stints**: clustering automático por compound o por pace (KMeans 1D)
-- **Comparativa multi-piloto / multi-sesión**: hasta 4 sesiones lado a lado
-- **Anomalías**: Isolation Forest sobre tiempos por vuelta
-- **Track maps reales**: 38 circuitos con coordenadas GPS reales (F1 + MotoGP +
-  variantes) y sectores coloreados por rendimiento
-- **Insights automáticos**: explicaciones en lenguaje natural sobre cada sesión
-- **Reports PDF**: descarga de informe completo por sesión
+Portfolio project — custom design system (**Apex / Pit Wall × Cyan**), full
+stack (Spring Boot · FastAPI · React + TS), production-ready deployment, and
+self-register flow so anyone can try it with their own team.
 
-### Contexto operativo (necesario para el análisis)
-- Equipos, pilotos, vehículos y eventos (CRUDs ligeros)
-- Calendario de eventos
-- Galería de circuitos con récords personales, notas técnicas y comparador
-- Autenticación JWT con roles
+<br/>
 
-## Categorías de vehículos soportadas
+## 🚀 Demo
 
-### Coches
-- **Fórmula**: F1, F2, F3, F4, Formula Ford
-- **GT/Resistencia**: GT3, GT4, LMP, Prototype
-- **Turismos**: TCR, WTCC, Supercars
-- **Rally**: WRC, R5, Historic Rally
-- **Monoplazas**: IndyCar, Formula E
-- **Drift/Autocross**: Drift Pro, Time Attack
+| Account | Access |
+|---|---|
+| **Try as guest** | Click "→ Try the demo" on the landing — automatic login |
+| **Create your own account** | "Create account" → each sign-up generates an isolated team |
+| **Manual (demo admin)** | `admin@lapsight.app` / `admin123` |
 
-### Motos
-- **Circuito**: MotoGP, Moto2, Moto3, Superbike, Supersport
-- **Endurance**: EWC, Bol d'Or, 24h
-- **Motocross**: MXGP, MX2, EMX
-- **Enduro**: EnduroGP, ISDE
-- **Trial**: TrialGP, Trial2
-- **Velocidad**: Naked, Sport, Classic
+> If deployed publicly with `APP_SEED_DEMO_DATA=true`, the "Try the demo"
+> button signs you in to a fictional F1 team with realistic sessions.
 
-## 🛠️ Tecnologías
+<br/>
 
-### Backend
-- **Java 17** con **Spring Boot 3.2**
-- **Spring Security** para autenticación y autorización
-- **Spring Data JPA** para persistencia
-- **PostgreSQL** como base de datos
-- **Flyway** para migraciones de base de datos
-- **Maven** para gestión de dependencias
+## ✨ Capabilities
 
-### Frontend
-- **React 18** con **TypeScript**
-- **Material-UI (MUI)** para componentes de interfaz
-- **Zustand** para gestión de estado
-- **React Router** para navegación
-- **Axios** para comunicación con API
-- **date-fns** para manejo de fechas
+| Pillar | What it does |
+|---|---|
+| **Advanced analytics** | Lap distributions, statistical tests, per-driver consistency, multi-session comparison, automatic insights in natural language |
+| **Real telemetry** | Importers for AiM, MoTeC, RaceChrono, iRacing, MyLaps, VBox, Race Technology, Apex Pro, Harry's LapTimer, generic CSV |
+| **Real GPS circuits** | 38 layouts with GPS coordinates from OpenStreetMap, mini-maps, sector colouring, circuit comparator |
+| **360° operations** | Teams · drivers (with FIA license) · vehicles (hours/km/maintenance) · events with budget vs actual · calendar |
+| **Reports** | PDF export per session |
 
-### DevOps
-- **Docker** y **Docker Compose** para containerización
-- **GitHub Actions** para CI/CD
-- **Nginx** para servir el frontend en producción
-- **Integraciones**: Apple Calendar, Google Calendar
+<br/>
 
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-
-- Docker y Docker Compose
-- Java 17+ (para desarrollo local)
-- Node.js 18+ (para desarrollo local)
-- Maven 3.8+ (para desarrollo local)
-
-### Instalación con Docker
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd lapsight
-   ```
-
-2. **Ejecutar con Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **Acceder a la aplicación**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8080
-   - Adminer (DB Admin): http://localhost:8081
-
-### Desarrollo Local
-
-#### Backend
-
-1. **Configurar base de datos PostgreSQL**
-   ```bash
-   docker run --name lapsight-postgres \
-     -e POSTGRES_DB=lapsight_db \
-     -e POSTGRES_USER=lapsight_user \
-     -e POSTGRES_PASSWORD=lapsight_pass \
-     -p 5432:5432 -d postgres:15
-   ```
-
-2. **Ejecutar backend**
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-
-#### Frontend
-
-1. **Instalar dependencias**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-2. **Ejecutar en modo desarrollo**
-   ```bash
-   npm start
-   ```
-
-## 📁 Estructura del Proyecto
+## 🛠️ Stack
 
 ```
-lapsight/
-├── backend/                    # Aplicación Spring Boot
-│   ├── src/main/java/
-│   │   └── com/lapsight/
-│   │       ├── config/         # Configuraciones
-│   │       ├── controller/     # Controladores REST
-│   │       ├── entity/         # Entidades JPA
-│   │       ├── enums/          # Enumeraciones
-│   │       ├── repository/     # Repositorios
-│   │       ├── service/        # Servicios de negocio
-│   │       └── dto/            # Data Transfer Objects
-│   ├── src/main/resources/
-│   │   ├── db/migration/       # Scripts Flyway
-│   │   └── application*.yml    # Configuraciones
-│   └── Dockerfile
-├── frontend/                   # Aplicación React
-│   ├── public/
-│   ├── src/
-│   │   ├── components/         # Componentes React
-│   │   ├── pages/              # Páginas principales
-│   │   ├── store/              # Estado global (Zustand)
-│   │   ├── types/              # Tipos TypeScript
-│   │   └── utils/              # Utilidades
-│   ├── Dockerfile
-│   └── nginx.conf
-├── docker-compose.yml          # Orquestación de servicios
-├── .github/workflows/          # CI/CD con GitHub Actions
-└── README.md
+backend/             Spring Boot 3.2 + Java 17 + JPA + Flyway + JWT
+python/              FastAPI · pandas · numpy · scipy · sklearn · Plotly
+frontend/            React 18 + TS + Vite + MUI + Zustand + react-big-calendar
+docker/postgres/     init.sql
+docker-compose.yml   Local dev (4 services)
+docker-compose.prod.yml   Production deploy (VPS / Swarm)
 ```
 
-## 🔧 Configuración
+Custom **Apex** design system (`frontend/src/components/apex/`,
+`frontend/src/theme/tokens.ts`): `borderRadius: 0`, surface stepping instead of
+shadows, IBM Plex Mono with tabular-nums for numerics, cyan as the accent.
 
-### Variables de Entorno
+Internationalisation via `react-i18next` — English by default, Spanish toggle
+in the header. Locale files at `frontend/src/i18n/locales/`.
 
-#### Backend
-```env
-SPRING_PROFILES_ACTIVE=docker
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lapsight_db
-SPRING_DATASOURCE_USERNAME=lapsight_user
-SPRING_DATASOURCE_PASSWORD=lapsight_pass
-JWT_SECRET=your-jwt-secret-key
-```
+<br/>
 
-#### Frontend
-```env
-REACT_APP_API_URL=http://localhost:8080
-REACT_APP_ENVIRONMENT=development
-```
+## ⚡ Local quickstart (5 minutes)
 
-## 🗃️ Base de Datos
+Requirements: **Docker Desktop** + **Node 20** + **npm**.
 
-### Esquema Principal
-
-- **teams**: Información de equipos
-- **users**: Usuarios del sistema
-- **vehicles**: Vehículos del equipo
-- **events**: Eventos y carreras
-- **maintenance_records**: Registros de mantenimiento
-- **event_participants**: Relación muchos a muchos entre eventos y usuarios
-- **event_vehicles**: Relación muchos a muchos entre eventos y vehículos
-
-### Migraciones
-
-Las migraciones se ejecutan automáticamente con Flyway al iniciar la aplicación.
-
-## 🔐 Autenticación
-
-El sistema utiliza JWT (JSON Web Tokens) para autenticación:
-
-- **Roles disponibles**: ADMIN, TEAM_MANAGER, MECHANIC, DRIVER, VIEWER
-- **Endpoints protegidos**: Mayoría de endpoints requieren autenticación
-- **Autorización**: Basada en roles para diferentes funcionalidades
-
-## 📊 API Endpoints
-
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `POST /api/auth/logout` - Cerrar sesión
-- `GET /api/auth/me` - Obtener usuario actual
-
-### Equipos
-- `GET /api/teams` - Listar equipos
-- `POST /api/teams` - Crear equipo
-- `GET /api/teams/{id}` - Obtener equipo
-- `PUT /api/teams/{id}` - Actualizar equipo
-
-### Usuarios
-- `GET /api/users` - Listar usuarios
-- `POST /api/users` - Crear usuario
-- `GET /api/users/{id}` - Obtener usuario
-- `PUT /api/users/{id}` - Actualizar usuario
-
-### Vehículos
-- `GET /api/vehicles` - Listar vehículos
-- `POST /api/vehicles` - Crear vehículo
-- `GET /api/vehicles/{id}` - Obtener vehículo
-- `PUT /api/vehicles/{id}` - Actualizar vehículo
-
-### Eventos
-- `GET /api/events` - Listar eventos
-- `POST /api/events` - Crear evento
-- `GET /api/events/{id}` - Obtener evento
-- `PUT /api/events/{id}` - Actualizar evento
-
-## 🧪 Testing
-
-### Backend
 ```bash
-cd backend
-mvn test
-```
+# 1) Backend stack (postgres + python-analytics + Spring Boot)
+docker compose up -d postgres python-analytics backend
 
-### Frontend
-```bash
+# 2) Frontend with hot-reload
 cd frontend
-npm test
+npm install
+npm run dev
 ```
 
-### Cobertura
-```bash
-# Backend
-mvn test jacoco:report
+- Frontend → http://localhost:3000
+- Backend → http://localhost:8082 (mapped to the container's 8080)
+- Adminer (optional) → `docker compose --profile dev up adminer` → http://localhost:8081
 
-# Frontend
-npm test -- --coverage
-```
+Seed credentials: `admin@lapsight.app / admin123`.
 
-## 🚀 Despliegue
+### Alternatives
 
-### Producción con Docker
+- **Backend with `mvn spring-boot:run`** → port 8080. Set
+  `VITE_API_PROXY_TARGET=http://localhost:8080` in `frontend/.env.local`.
+- **Everything in Docker** → `docker compose up -d` (no service args). The
+  frontend Nginx serves on `:3000`, no HMR.
 
-1. **Construir imágenes**
-   ```bash
-   docker-compose -f docker-compose.prod.yml build
-   ```
+### Login troubleshooting
 
-2. **Desplegar**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
+| Symptom | Diagnosis |
+|---|---|
+| No error detail | Backend not running or proxy on wrong port. `netstat -ano \| findstr :8082` |
+| 404 with `Server: Apache` | XAMPP/WAMP listening on :8080 is hijacking the proxy. Stop Apache or stick to the default 8082 proxy target. |
+| Flyway errors on startup | Postgres volume out of sync. `docker compose down -v && docker compose up -d` |
 
-### CI/CD
+<br/>
 
-El proyecto incluye GitHub Actions para:
-- Ejecutar tests automáticamente
-- Construir y publicar imágenes Docker
-- Escaneo de seguridad con Trivy
-- Despliegue automático a staging/producción
+## ☁️ Production deployment
 
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
-
-## 👥 Autores
-
-- **Tu Nombre** - *Desarrollo inicial* - [TuGitHub](https://github.com/tuusuario)
-
-## 🙏 Agradecimientos
-
-- Spring Boot community
-- React community
-- Material-UI team
-- Todos los contribuidores del proyecto
-
----
-
-**¿Necesitas ayuda?** Abre un [issue](https://github.com/jorgeoliver7/LapSight/issues) o contacta al equipo de desarrollo.
-
-## Instalación rápida
+### Option A — VPS with `docker-compose.prod.yml` (recommended)
 
 ```bash
-# Clonar y arrancar con Docker
-git clone <repo>
-cd lapsight
-docker-compose up -d
+# On your VPS (DigitalOcean, Hetzner, etc.)
+git clone https://github.com/jorgeoliver7/LapSight.git
+cd LapSight
 
-# La app estará en http://localhost:3000
-# API en http://localhost:8080
+# Copy and fill the .env (DO NOT commit this file)
+cp backend/.env.example .env
+nano .env  # generate JWT_SECRET with `openssl rand -base64 48`
+
+# Start
+docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+
+# Logs
+docker compose -f docker-compose.prod.yml logs -f backend
 ```
 
-## Roadmap
+Put a reverse proxy with TLS in front of it (Caddy is the simplest):
 
-El foco de la app es el **análisis de telemetría**. Los siguientes puntos están
-priorizados sobre el resto:
+```caddyfile
+lapsight.yourdomain.com {
+    reverse_proxy localhost:3000
+}
+```
 
-### Hecho
-- Importadores AiM, MoTeC, RaceChrono, iRacing, MyLaps, VBox, Race Technology,
-  Apex Pro, Harry's LapTimer
-- Stint detection por compound y por pace (KMeans 1D)
-- Degradación lineal + polinómica con R²
-- Anomalías por Isolation Forest
-- Insights automáticos por sesión
-- Consistencia (CV, IQR, hot-lap window, pace-windows, sector más variable)
-- Comparativa multi-sesión hasta 4 vías
-- Track maps GPS reales (38 circuitos + variantes)
-- Galería de circuitos con récords personales y notas técnicas
-- Reports PDF por sesión
+### Option B — PaaS (Railway, Fly.io, Render)
 
-### Próximos pasos prioritarios
-- **Predicción de tiempos** condicionada por circuito + condiciones + compound
-- **Degradación por stint individual** (no sólo lineal global)
-- **Comparativa de compounds** (delta esperado Soft vs Medium en condiciones similares)
-- **Heatmap de telemetría posicional** (cuando los importadores tengan GPS denso)
-- **Más importadores nativos**: AiM SmartyCam .xrk, MoTeC .ld
+Each service deploys independently using its own Dockerfile.
 
-### Fuera de scope (postergado indefinidamente)
-Estas funcionalidades aparecieron en versiones tempranas del roadmap pero no
-encajan con el foco actual. Cualquier equipo las cubre mejor con herramientas
-generalistas (Excel, Notion, Airtable):
+**Railway** (most straightforward):
 
-- ~~Inventario de piezas con QR~~
-- ~~Viajes y logística~~
-- ~~Sponsors y contratos~~
-- ~~Finanzas / presupuestos detallados~~ (sólo budget agregado por evento)
+1. Create a project, connect your GitHub repo
+2. Add the services:
+   - **postgres** (Railway managed service, free tier available)
+   - **python-analytics** → Root: `python/`
+   - **backend** → Root: `backend/`
+   - **frontend** → Root: `frontend/`, build arg `VITE_API_URL=https://api.yourdomain.com/api`
+3. Environment variables for `backend` (see `backend/.env.example`):
+   ```
+   SPRING_PROFILES_ACTIVE=prod
+   SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<db>   # Railway gives you host/port
+   SPRING_DATASOURCE_USERNAME=...
+   SPRING_DATASOURCE_PASSWORD=...
+   JWT_SECRET=<openssl rand -base64 48>
+   APP_CORS_ALLOWED_ORIGINS=https://<your-frontend>.railway.app
+   PYTHON_ANALYTICS_URL=http://python-analytics.railway.internal:8000
+   APP_SEED_DEMO_DATA=true   # if you want the demo account to have data
+   APP_SEED_ADMIN_PASSWORD=<something-secure>
+   ```
+4. The backend reads Railway's auto-injected `PORT` — already wired in `application-prod.yml`.
 
-Si necesitas alguna de estas, hay productos especializados que las hacen mejor.
+**Fly.io** works similarly: one `fly.toml` per service.
 
-## Licencia
+<br/>
 
-MIT License
+## 🛡️ Security
+
+- JWT HS384 with 48-byte secret (configurable via `JWT_SECRET`)
+- Rate limiting on `/auth/login` and `/auth/register` (10 req/min/IP by default,
+  tunable via `APP_RATE_LIMIT_AUTH_MAX` and `APP_RATE_LIMIT_AUTH_WINDOW_SEC`)
+- CORS configurable per domain (`APP_CORS_ALLOWED_ORIGINS`)
+- Self-register creates an isolated team per user — no cross-account access
+- BCrypt cost-10 password hashing
+- Actuator endpoints restricted to `health,info` in prod profile
+
+**What's NOT included** (it's a portfolio, not a SaaS):
+- Email-based password reset
+- Email verification
+- 2FA
+- CSRF (not needed with JWT bearer tokens)
+- Privacy policy / cookie consent (add before exposing publicly in the EU)
+
+<br/>
+
+## 🏗️ Architecture
+
+```
+                          ┌─────────────┐
+                          │   Browser   │
+                          └──────┬──────┘
+                                 │ HTTPS
+                          ┌──────▼──────┐
+                          │   Nginx     │  (static files + /api proxy)
+                          │   :3000     │
+                          └──────┬──────┘
+                                 │ /api/*
+                          ┌──────▼──────┐
+                          │ Spring Boot │  (JWT auth · JPA · Flyway)
+                          │   :8080     │
+                          └──┬──────────┘
+                             │       │
+                ┌────────────▼┐    ┌─▼───────────────┐
+                │  Postgres   │    │ FastAPI         │
+                │             │    │ (pandas, sklearn)│
+                └─────────────┘    └─────────────────┘
+```
+
+Internal communication on Docker network (`lapsight-network`).
+The Python microservice is never exposed externally — only the backend consumes it.
+
+<br/>
+
+## 📂 Project structure
+
+```
+backend/
+  src/main/java/com/lapsight/
+    config/             # DataInitializer, DemoSeedService
+    controller/         # REST endpoints
+    dto/                # Request/Response objects
+    model/              # JPA entities
+    repository/         # Spring Data
+    security/           # JWT + rate limit + Security config
+    service/            # Business logic
+  src/main/resources/
+    application.yml, application-docker.yml, application-prod.yml
+    db/migration/       # Flyway V1__ V2__ V3__ V4__
+
+python/
+  app/
+    main.py             # FastAPI app
+    analytics/          # statistical core
+    visualizations/     # Plotly
+
+frontend/
+  src/
+    pages/              # Landing, Auth, Dashboard, Analytics, Circuits, …
+    components/apex/    # Design system primitives
+    api/                # Axios clients
+    store/              # Zustand
+    theme/              # tokens.ts + muiTheme.ts
+    i18n/               # locales/en.json + locales/es.json + index.ts
+```
+
+<br/>
+
+## 📝 Notable design decisions
+
+- **Custom design system (Apex)**: tokens in `frontend/src/theme/tokens.ts`, MUI
+  override in `muiTheme.ts`, primitives in `components/apex/`. Hard rules:
+  `borderRadius: 0` (except circles), no box-shadows, surface stepping
+  (`bg → surface → surface2 → surface3`), tabular-nums mandatory on numerics.
+- **Separate Python microservice**: pandas/sklearn aren't ergonomic in Java and
+  the scientific ecosystem lives in Python. Spring Boot consumes it over REST.
+- **JWT stateless over sessions**: simplifies multi-instance deployment and
+  eliminates the need for sticky sessions.
+- **Vite + proxy in dev**: HMR without rebuilding the container.
+- **Self-register with isolated team**: each user creates their own team on
+  sign-up and is its MANAGER — no real data is shared between accounts
+  (except the demo team if `APP_SEED_DEMO_DATA=true`).
+- **i18n with English default**: the UI ships in English with a Spanish toggle
+  in the header. Locale strings live in `frontend/src/i18n/locales/`.
+
+<br/>
+
+## 📜 License
+
+[MIT](LICENSE) — feel free to fork and use for whatever you want.
