@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Button,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
+  const { t } = useTranslation();
   const updateLap = (index: number, patch: Partial<ManualLap>) => {
     const next = laps.map((lap, i) => (i === index ? { ...lap, ...patch } : lap));
     onChange(next);
@@ -64,8 +66,7 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
           lineHeight: 1.5,
         }}
       >
-        Times in <code style={{ color: colors.accent }}>1:23.456</code> or{' '}
-        <code style={{ color: colors.accent }}>83.456</code> format. Sectors optional.
+        {t('analytics.manualLaps.helper', { format1: '1:23.456', format2: '83.456' })}
       </Mono>
 
       <TableContainer component={Paper} variant="outlined">
@@ -73,12 +74,12 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ width: 50 }}>#</TableCell>
-              <TableCell sx={{ minWidth: 110 }}>Time *</TableCell>
+              <TableCell sx={{ minWidth: 110 }}>{t('analytics.manualLaps.col.time')}</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S1</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S2</TableCell>
               <TableCell sx={{ minWidth: 90 }}>S3</TableCell>
-              <TableCell sx={{ width: 70 }}>Valid</TableCell>
-              <TableCell sx={{ minWidth: 100 }}>Tire</TableCell>
+              <TableCell sx={{ width: 70 }}>{t('analytics.manualLaps.col.valid')}</TableCell>
+              <TableCell sx={{ minWidth: 100 }}>{t('analytics.manualLaps.col.tire')}</TableCell>
               <TableCell sx={{ width: 50 }}></TableCell>
             </TableRow>
           </TableHead>
@@ -87,7 +88,7 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Mono style={{ color: colors.textMute, fontSize: 11, letterSpacing: '0.4px' }}>
-                    Click "Add lap" to start
+                    {t('analytics.manualLaps.empty')}
                   </Mono>
                 </TableCell>
               </TableRow>
@@ -177,9 +178,9 @@ const ManualLapsEditor: React.FC<Props> = ({ laps, onChange }) => {
       </TableContainer>
 
       <Box mt={1} display="flex" justifyContent="space-between" alignItems="center">
-        <Label>{laps.length} {laps.length === 1 ? 'lap' : 'laps'}</Label>
+        <Label>{t('analytics.manualLaps.lap', { count: laps.length })}</Label>
         <Button startIcon={<AddIcon />} onClick={addLap} size="small">
-          Add lap
+          {t('analytics.manualLaps.addLap')}
         </Button>
       </Box>
     </Box>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { vehiclesApi } from '../../api/vehicles';
 import { usersApi } from '../../api/users';
 import { eventsApi } from '../../api/events';
@@ -21,6 +22,7 @@ const ANALYTICS_RECENT_LIMIT = 15;
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -216,7 +218,7 @@ const Dashboard: React.FC = () => {
         }}
       >
         <div>
-          <Label size="micro">TEAM · OVERVIEW</Label>
+          <Label size="micro">{t('dashboard.eyebrow')}</Label>
           <div
             style={{
               fontFamily: fonts.sans,
@@ -227,7 +229,7 @@ const Dashboard: React.FC = () => {
               marginTop: 4,
             }}
           >
-            Dashboard
+            {t('dashboard.title')}
           </div>
           <Mono
             style={{
@@ -237,11 +239,14 @@ const Dashboard: React.FC = () => {
               letterSpacing: '0.4px',
             }}
           >
-            Latest {ANALYTICS_RECENT_LIMIT} sessions · {analyticsLoading ? 'loading analytics…' : 'up to date'}
+            {t('dashboard.subtitle', {
+              count: ANALYTICS_RECENT_LIMIT,
+              state: analyticsLoading ? t('dashboard.stateLoading') : t('dashboard.stateUpToDate'),
+            })}
           </Mono>
         </div>
-        <ToolButton onClick={() => setRefreshTick((t) => t + 1)} disabled={loading}>
-          ↻ Refresh
+        <ToolButton onClick={() => setRefreshTick((x) => x + 1)} disabled={loading}>
+          {t('dashboard.refresh')}
         </ToolButton>
       </div>
 
@@ -254,19 +259,19 @@ const Dashboard: React.FC = () => {
             gap: 0,
           }}
         >
-          <KpiCell label="Sessions" value={loading ? '—' : kpis.sessions} />
-          <KpiCell label="Laps recorded" value={loading ? '—' : kpis.totalLaps} />
+          <KpiCell label={t('dashboard.kpis.sessions')} value={loading ? '—' : kpis.sessions} />
+          <KpiCell label={t('dashboard.kpis.lapsRecorded')} value={loading ? '—' : kpis.totalLaps} />
           <KpiCell
-            label="Valid"
+            label={t('dashboard.kpis.valid')}
             value={kpis.validLaps}
-            sub={`of ${kpis.totalCandidate} total`}
+            sub={t('dashboard.kpis.ofTotal', { count: kpis.totalCandidate })}
           />
-          <KpiCell label="Drivers" value={loading ? '—' : kpis.drivers} />
-          <KpiCell label="Vehicles" value={loading ? '—' : kpis.vehicles} />
+          <KpiCell label={t('dashboard.kpis.drivers')} value={loading ? '—' : kpis.drivers} />
+          <KpiCell label={t('dashboard.kpis.vehicles')} value={loading ? '—' : kpis.vehicles} />
           <KpiCell
-            label="Total km"
+            label={t('dashboard.kpis.totalKm')}
             value={kpis.totalKm.toFixed(0)}
-            sub="estimated"
+            sub={t('dashboard.kpis.estimated')}
             last
           />
         </div>
@@ -319,7 +324,7 @@ const Dashboard: React.FC = () => {
               }}
             />
             <div>
-              <Label>Best lap · recent dataset</Label>
+              <Label>{t('dashboard.hero.label')}</Label>
               <Mono
                 style={{
                   fontSize: 36,
@@ -347,7 +352,7 @@ const Dashboard: React.FC = () => {
               </Mono>
             </div>
             <ToolButton onClick={() => navigate('/analytics')} variant="accent">
-              Open analytics →
+              {t('dashboard.hero.openAnalytics')}
             </ToolButton>
           </div>
         </Panel>
@@ -363,27 +368,27 @@ const Dashboard: React.FC = () => {
       >
         {/* Best per circuit */}
         <Panel
-          title="Best lap · per circuit"
+          title={t('dashboard.bestPerCircuit.title')}
           right={
             <Mono style={{ color: colors.textMute }}>
-              {bestByCircuit.length} circuit{bestByCircuit.length === 1 ? '' : 's'}
+              {t('dashboard.bestPerCircuit.circuits', { count: bestByCircuit.length })}
             </Mono>
           }
           padding={0}
         >
           {loading ? (
-            <EmptyState text="Loading…" />
+            <EmptyState text={t('dashboard.empty.loading')} />
           ) : bestByCircuit.length === 0 ? (
-            <EmptyState text="No data yet." />
+            <EmptyState text={t('dashboard.empty.noDataYet')} />
           ) : (
             <DenseTable
               columns={[
-                { key: 'circuit', label: 'Circuit', align: 'left', grow: 1 },
-                { key: 'sessions', label: 'Ses', align: 'right' },
-                { key: 'laps', label: 'Laps', align: 'right' },
-                { key: 'best', label: 'Best', align: 'right', mono: true },
-                { key: 'theor', label: 'Theor.', align: 'right', mono: true, dim: true },
-                { key: 'delta', label: 'Δ', align: 'right', mono: true, tone: 'yellow' },
+                { key: 'circuit', label: t('dashboard.bestPerCircuit.col.circuit'), align: 'left', grow: 1 },
+                { key: 'sessions', label: t('dashboard.bestPerCircuit.col.sessions'), align: 'right' },
+                { key: 'laps', label: t('dashboard.bestPerCircuit.col.laps'), align: 'right' },
+                { key: 'best', label: t('dashboard.bestPerCircuit.col.best'), align: 'right', mono: true },
+                { key: 'theor', label: t('dashboard.bestPerCircuit.col.theor'), align: 'right', mono: true, dim: true },
+                { key: 'delta', label: t('dashboard.bestPerCircuit.col.delta'), align: 'right', mono: true, tone: 'yellow' },
               ]}
               rows={bestByCircuit.slice(0, 10).map((row) => {
                 const delta =
@@ -408,23 +413,23 @@ const Dashboard: React.FC = () => {
 
         {/* Drivers leaderboard */}
         <Panel
-          title="Leaderboard · drivers"
-          right={<Mono style={{ color: colors.textMute }}>by best lap</Mono>}
+          title={t('dashboard.leaderboard.title')}
+          right={<Mono style={{ color: colors.textMute }}>{t('dashboard.leaderboard.byBestLap')}</Mono>}
           padding={0}
         >
           {loading ? (
-            <EmptyState text="Loading…" />
+            <EmptyState text={t('dashboard.empty.loading')} />
           ) : driversLeaderboard.length === 0 ? (
-            <EmptyState text="No data." />
+            <EmptyState text={t('dashboard.empty.noData')} />
           ) : (
             <DenseTable
               columns={[
                 { key: 'pos', label: '#', align: 'left', mono: true, width: 28 },
-                { key: 'name', label: 'Driver', align: 'left', grow: 1 },
-                { key: 'sessions', label: 'Ses', align: 'right' },
-                { key: 'laps', label: 'Laps', align: 'right' },
-                { key: 'best', label: 'Best', align: 'right', mono: true },
-                { key: 'cv', label: 'CV', align: 'right', mono: true, dim: true },
+                { key: 'name', label: t('dashboard.leaderboard.col.driver'), align: 'left', grow: 1 },
+                { key: 'sessions', label: t('dashboard.leaderboard.col.sessions'), align: 'right' },
+                { key: 'laps', label: t('dashboard.leaderboard.col.laps'), align: 'right' },
+                { key: 'best', label: t('dashboard.leaderboard.col.best'), align: 'right', mono: true },
+                { key: 'cv', label: t('dashboard.leaderboard.col.cv'), align: 'right', mono: true, dim: true },
               ]}
               rows={driversLeaderboard.map((d, i) => ({
                 key: d.name,
@@ -444,12 +449,12 @@ const Dashboard: React.FC = () => {
 
         {/* PB evolution */}
         <Panel
-          title="Best lap evolution"
-          right={<Mono style={{ color: colors.textMute }}>{pbEvolution.length} points</Mono>}
+          title={t('dashboard.pbEvolution.title')}
+          right={<Mono style={{ color: colors.textMute }}>{t('dashboard.pbEvolution.points', { count: pbEvolution.length })}</Mono>}
           padding={12}
         >
           {pbEvolution.length < 2 ? (
-            <EmptyState text="Need at least 2 sessions with analytics." />
+            <EmptyState text={t('dashboard.pbEvolution.needMore')} />
           ) : (
             <Plot
               data={
@@ -484,12 +489,12 @@ const Dashboard: React.FC = () => {
 
         {/* Per-circuit distribution */}
         <Panel
-          title="Distribution · per circuit"
-          right={<Mono style={{ color: colors.textMute }}>boxplot · valid laps</Mono>}
+          title={t('dashboard.distribution.title')}
+          right={<Mono style={{ color: colors.textMute }}>{t('dashboard.distribution.boxplot')}</Mono>}
           padding={12}
         >
           {lapTimesDist.length === 0 ? (
-            <EmptyState text="Not enough data for boxplots." />
+            <EmptyState text={t('dashboard.distribution.notEnough')} />
           ) : (
             <Plot
               data={
@@ -527,7 +532,7 @@ const Dashboard: React.FC = () => {
 
       {/* Recent sessions */}
       <Panel
-        title="Recent sessions"
+        title={t('dashboard.recent.title')}
         right={
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {upcomingEvents.length > 0 && (
@@ -539,7 +544,7 @@ const Dashboard: React.FC = () => {
                 }}
                 onClick={() => navigate('/calendar')}
               >
-                {upcomingEvents.length} upcoming event{upcomingEvents.length === 1 ? '' : 's'} →
+                {t('dashboard.recent.upcoming', { count: upcomingEvents.length })}
               </Mono>
             )}
             <Mono
@@ -550,27 +555,27 @@ const Dashboard: React.FC = () => {
               }}
               onClick={() => navigate('/analytics')}
             >
-              Go to analytics →
+              {t('dashboard.recent.goAnalytics')}
             </Mono>
           </div>
         }
         padding={0}
       >
         {loading ? (
-          <EmptyState text="Loading…" />
+          <EmptyState text={t('dashboard.empty.loading')} />
         ) : (
           <DenseTable
             columns={[
-              { key: 'name', label: 'Session', align: 'left', grow: 2 },
-              { key: 'date', label: 'Date', align: 'left', mono: true },
-              { key: 'circuit', label: 'Circuit', align: 'left', grow: 1 },
-              { key: 'driver', label: 'Driver', align: 'left' },
-              { key: 'vehicle', label: 'Vehicle', align: 'left' },
-              { key: 'laps', label: 'Laps', align: 'right' },
-              { key: 'best', label: 'Best', align: 'right', mono: true },
-              { key: 'median', label: 'Median', align: 'right', mono: true, dim: true },
-              { key: 'cv', label: 'CV', align: 'right', mono: true },
-              { key: 'cond', label: 'Cond.', align: 'right', mono: true, dim: true },
+              { key: 'name', label: t('dashboard.recent.col.session'), align: 'left', grow: 2 },
+              { key: 'date', label: t('dashboard.recent.col.date'), align: 'left', mono: true },
+              { key: 'circuit', label: t('dashboard.recent.col.circuit'), align: 'left', grow: 1 },
+              { key: 'driver', label: t('dashboard.recent.col.driver'), align: 'left' },
+              { key: 'vehicle', label: t('dashboard.recent.col.vehicle'), align: 'left' },
+              { key: 'laps', label: t('dashboard.recent.col.laps'), align: 'right' },
+              { key: 'best', label: t('dashboard.recent.col.best'), align: 'right', mono: true },
+              { key: 'median', label: t('dashboard.recent.col.median'), align: 'right', mono: true, dim: true },
+              { key: 'cv', label: t('dashboard.recent.col.cv'), align: 'right', mono: true },
+              { key: 'cond', label: t('dashboard.recent.col.cond'), align: 'right', mono: true, dim: true },
             ]}
             rows={recentWithAnalytics.map(({ session, analytics }) => {
               const cv =

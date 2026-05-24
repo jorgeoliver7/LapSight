@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography,
   Chip, Stack, Divider, TextField, IconButton, Tab, Tabs, CircularProgress,
@@ -30,6 +31,7 @@ interface SessionRecord {
 }
 
 const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustomDeleted }) => {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'info' | 'records' | 'events' | 'notes'>('info');
   const [sessionsAtCircuit, setSessionsAtCircuit] = useState<SessionRecord[]>([]);
   const [eventsAtCircuit, setEventsAtCircuit] = useState<Event[]>([]);
@@ -128,14 +130,14 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
   const handleSaveNote = () => {
     saveCircuitNote(circuit.name, note);
     setNoteDirty(false);
-    setSnackbar({ msg: 'Notes saved', severity: 'success' });
+    setSnackbar({ msg: t('circuits.detail.notesSaved'), severity: 'success' });
   };
 
   const handleDeleteCustom = () => {
     if (!isCustom) return;
-    if (!confirm(`Delete custom circuit "${circuit.name}"?`)) return;
+    if (!confirm(t('circuits.detail.deleteConfirm', { name: circuit.name }))) return;
     deleteCustomCircuit(circuit.name);
-    setSnackbar({ msg: 'Circuit deleted', severity: 'success' });
+    setSnackbar({ msg: t('circuits.detail.deleted'), severity: 'success' });
     onCustomDeleted?.();
     onClose();
   };
@@ -151,7 +153,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
             )}
           </Box>
           {isCustom && (
-            <Tooltip title="Delete custom circuit">
+            <Tooltip title={t('circuits.detail.deleteCustom')}>
               <IconButton size="small" onClick={handleDeleteCustom} color="error">
                 <DeleteIcon fontSize="small" />
               </IconButton>
@@ -171,36 +173,36 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
               <Stack spacing={1.5}>
                 <Box display="flex" gap={1} flexWrap="wrap">
                   {circuit.realData ? (
-                    <Chip label="Real GPS" size="small" color="success" variant="outlined" />
+                    <Chip label={t('circuits.detail.chip.realGps')} size="small" color="success" variant="outlined" />
                   ) : (
-                    <Chip label="Stylized" size="small" variant="outlined" />
+                    <Chip label={t('circuits.detail.chip.stylized')} size="small" variant="outlined" />
                   )}
-                  {isCustom && <Chip label="Custom" size="small" color="info" variant="outlined" />}
+                  {isCustom && <Chip label={t('circuits.detail.chip.custom')} size="small" color="info" variant="outlined" />}
                   {extras.categories?.map((c) => (
                     <Chip key={c} label={c} size="small" variant="outlined" />
                   ))}
                 </Box>
                 <Divider />
-                <DataRow label="Length" value={circuit.length_km ? `${circuit.length_km.toFixed(3)} km` : '—'} />
-                <DataRow label="Turns" value={extras.turns?.toString() ?? '—'} />
+                <DataRow label={t('circuits.detail.field.length')} value={circuit.length_km ? `${circuit.length_km.toFixed(3)} km` : '—'} />
+                <DataRow label={t('circuits.detail.field.turns')} value={extras.turns?.toString() ?? '—'} />
                 <DataRow
-                  label="Direction"
+                  label={t('circuits.detail.field.direction')}
                   value={
-                    computedDirection === 'CW' ? '↻ Clockwise' :
-                    computedDirection === 'CCW' ? '↺ Counter-clockwise' : '—'
+                    computedDirection === 'CW' ? t('circuits.detail.direction.cw') :
+                    computedDirection === 'CCW' ? t('circuits.detail.direction.ccw') : '—'
                   }
                 />
                 <DataRow
-                  label="Longest straight"
+                  label={t('circuits.detail.field.longestStraight')}
                   value={longestStraightKm ? `${longestStraightKm.toFixed(3)} km` : '—'}
                 />
-                <DataRow label="Opened" value={extras.opened?.toString() ?? '—'} />
-                <DataRow label="Altitude" value={extras.altitudeM ? `${extras.altitudeM} m` : '—'} />
+                <DataRow label={t('circuits.detail.field.opened')} value={extras.opened?.toString() ?? '—'} />
+                <DataRow label={t('circuits.detail.field.altitude')} value={extras.altitudeM ? `${extras.altitudeM} m` : '—'} />
                 {extras.lapRecord && (
                   <Box display="flex" alignItems="center" gap={1} mt={1}>
                     <TrophyIcon fontSize="small" color="warning" />
                     <Typography variant="caption" fontFamily="monospace">
-                      Lap record: {extras.lapRecord}
+                      {t('circuits.detail.field.lapRecord')}: {extras.lapRecord}
                     </Typography>
                   </Box>
                 )}
@@ -216,21 +218,21 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
           </Box>
 
           <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tab value="info" label="Summary" />
-            <Tab value="records" label={`Records (${sessionsAtCircuit.length})`} />
-            <Tab value="events" label={`Events (${eventsAtCircuit.length})`} />
-            <Tab value="notes" label="Technical notes" />
+            <Tab value="info" label={t('circuits.detail.tabs.summary')} />
+            <Tab value="records" label={t('circuits.detail.tabs.records', { count: sessionsAtCircuit.length })} />
+            <Tab value="events" label={t('circuits.detail.tabs.events', { count: eventsAtCircuit.length })} />
+            <Tab value="notes" label={t('circuits.detail.tabs.notes')} />
           </Tabs>
 
           <Box pt={2}>
             {tab === 'info' && (
               <Box>
                 <Typography variant="body2" gutterBottom>
-                  You have <strong>{sessionsAtCircuit.length}</strong> session{sessionsAtCircuit.length === 1 ? '' : 's'} at this circuit
-                  {totalKm > 0 && <> · ~<strong>{totalKm.toFixed(0)} km</strong> covered</>}
+                  {t('circuits.detail.summary.sessionsAt', { count: sessionsAtCircuit.length })}
+                  {totalKm > 0 && <> · {t('circuits.detail.summary.kmCovered', { km: totalKm.toFixed(0) })}</>}
                 </Typography>
                 <Typography variant="body2">
-                  Planned or past events: <strong>{eventsAtCircuit.length}</strong>
+                  {t('circuits.detail.summary.eventsPlanned', { count: eventsAtCircuit.length })}
                 </Typography>
               </Box>
             )}
@@ -240,7 +242,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                 {loading && <CircularProgress size={24} />}
                 {!loading && sessionsAtCircuit.length === 0 && (
                   <Typography variant="body2" color="textSecondary">
-                    No sessions registered at this circuit yet.
+                    {t('circuits.detail.records.noSessions')}
                   </Typography>
                 )}
                 {sortedRecords.length > 0 && (
@@ -248,11 +250,11 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                     <TableHead>
                       <TableRow>
                         <TableCell>#</TableCell>
-                        <TableCell>Session</TableCell>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Driver</TableCell>
-                        <TableCell>Vehicle</TableCell>
-                        <TableCell align="right">Best lap</TableCell>
+                        <TableCell>{t('circuits.detail.records.col.session')}</TableCell>
+                        <TableCell>{t('circuits.detail.records.col.date')}</TableCell>
+                        <TableCell>{t('circuits.detail.records.col.driver')}</TableCell>
+                        <TableCell>{t('circuits.detail.records.col.vehicle')}</TableCell>
+                        <TableCell align="right">{t('circuits.detail.records.col.bestLap')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -260,7 +262,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                         <TableRow key={r.session.id}>
                           <TableCell>
                             {i === 0 && r.bestLapMs != null ? (
-                              <Tooltip title="Your best lap at this circuit">
+                              <Tooltip title={t('circuits.detail.records.trophyHint')}>
                                 <TrophyIcon fontSize="small" color="warning" />
                               </Tooltip>
                             ) : (
@@ -287,17 +289,17 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                 {loading && <CircularProgress size={24} />}
                 {!loading && eventsAtCircuit.length === 0 && (
                   <Typography variant="body2" color="textSecondary">
-                    No events planned at this circuit.
+                    {t('circuits.detail.events.noEvents')}
                   </Typography>
                 )}
                 {eventsAtCircuit.length > 0 && (
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Event</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Start date</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell>{t('circuits.detail.events.col.event')}</TableCell>
+                        <TableCell>{t('circuits.detail.events.col.type')}</TableCell>
+                        <TableCell>{t('circuits.detail.events.col.startDate')}</TableCell>
+                        <TableCell>{t('circuits.detail.events.col.status')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -318,13 +320,13 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
             {tab === 'notes' && (
               <Box>
                 <Typography variant="caption" color="textSecondary" display="block" mb={1}>
-                  Notes saved locally in this browser. Useful for setup changes, tyre pressures, braking points, etc.
+                  {t('circuits.detail.notes.helper')}
                 </Typography>
                 <TextField
                   multiline
                   fullWidth
                   minRows={6}
-                  placeholder="e.g. 4th gear main straight, 3rd gear turn 1, front pressure 1.8 bar..."
+                  placeholder={t('circuits.detail.notes.placeholder')}
                   value={note}
                   onChange={(e) => { setNote(e.target.value); setNoteDirty(true); }}
                 />
@@ -336,7 +338,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
                     disabled={!noteDirty}
                     size="small"
                   >
-                    Save
+                    {t('common.save')}
                   </Button>
                 </Box>
               </Box>
@@ -345,7 +347,7 @@ const CircuitDetailDialog: React.FC<Props> = ({ circuit, open, onClose, onCustom
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
 

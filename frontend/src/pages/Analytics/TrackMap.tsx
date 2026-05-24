@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MenuItem, TextField } from '@mui/material';
 import Plot from 'react-plotly.js';
 import { SessionAnalytics, LapAnalytics } from '../../types';
@@ -40,6 +41,7 @@ const SYNTHETIC: Circuit = {
 };
 
 const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
+  const { t } = useTranslation();
   const validLaps = analytics.perLap.filter((l) => l.valid);
   const [selectedLapNumber, setSelectedLapNumber] = useState<number>(
     analytics.bestLapNumber ?? validLaps[0]?.lapNumber ?? 1,
@@ -123,7 +125,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     y: [path[0][1]],
     type: 'scatter' as const,
     mode: 'markers' as const,
-    name: 'Finish line',
+    name: t('analytics.trackMap.finishLine'),
     marker: { color: colors.text, size: 12, symbol: 'diamond', line: { color: colors.bg, width: 2 } },
     hoverinfo: 'name' as const,
   };
@@ -133,7 +135,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     y: [path[s1End][1], path[s2End][1]],
     type: 'scatter' as const,
     mode: 'markers' as const,
-    name: 'Sector change',
+    name: t('analytics.trackMap.sectorChange'),
     marker: { color: colors.accent, size: 10, symbol: 'line-ns', line: { width: 3, color: colors.accent } },
     hoverinfo: 'name' as const,
   };
@@ -142,7 +144,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
     <Panel
       title={
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          Track map · {isReal ? circuit.name : 'generic'}
+          {t('analytics.trackMap.titlePrefix')} {isReal ? circuit.name : t('analytics.trackMap.generic')}
           {circuit.length_km && (
             <Mono style={{ color: colors.textMute, fontSize: 10, letterSpacing: '0.4px' }}>
               · {circuit.length_km} km
@@ -161,7 +163,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
                 marginLeft: 4,
               }}
             >
-              real GPS
+              {t('analytics.trackMap.realGps')}
             </Mono>
           )}
         </span>
@@ -170,7 +172,7 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
         <TextField
           select
           size="small"
-          label="Lap"
+          label={t('analytics.trackMap.lapSelect')}
           value={selectedLapNumber}
           onChange={(e) => setSelectedLapNumber(Number(e.target.value))}
           sx={{ minWidth: 200 }}
@@ -203,8 +205,8 @@ const TrackMap: React.FC<Props> = ({ analytics, circuitName }) => {
           }}
         >
           {isReal
-            ? 'Approximate layout. Sectors colored by the selected lap: green better than P50, yellow between P50–P75, red worse than P75.'
-            : 'Unrecognized circuit — generic layout. Sectors are colored the same way.'}
+            ? t('analytics.trackMap.helperReal')
+            : t('analytics.trackMap.helperGeneric')}
         </Mono>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {([1, 2, 3] as const).map((s) => {

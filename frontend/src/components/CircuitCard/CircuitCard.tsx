@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Circuit } from '../../data/circuits';
 import { getCircuitExtras } from '../../data/circuitMeta';
 import CircuitMiniMap from '../CircuitMiniMap/CircuitMiniMap';
@@ -38,6 +39,7 @@ const CircuitCard: React.FC<Props> = ({
   personalBestMs,
   sessionsCount,
 }) => {
+  const { t } = useTranslation();
   const extras = getCircuitExtras(circuit.name);
   const [hover, setHover] = useState(false);
 
@@ -114,7 +116,7 @@ const CircuitCard: React.FC<Props> = ({
               }}
             >
               {circuit.length_km.toFixed(3)} km
-              {extras.turns ? ` · ${extras.turns} turns` : ''}
+              {extras.turns ? ` · ${t('circuits.card.turns', { count: extras.turns })}` : ''}
               {extras.direction ? ` · ${extras.direction === 'CW' ? '↻' : '↺'}` : ''}
             </Mono>
           )}
@@ -190,7 +192,7 @@ const CircuitCard: React.FC<Props> = ({
         }}
       >
         <Pill active={!!circuit.realData}>
-          {circuit.realData ? 'Real GPS' : 'Stylized'}
+          {circuit.realData ? t('circuits.card.realGps') : t('circuits.card.stylized')}
         </Pill>
         {sessionsCount != null && sessionsCount > 0 && (
           <div style={{ textAlign: 'right' }}>
@@ -204,7 +206,7 @@ const CircuitCard: React.FC<Props> = ({
                 lineHeight: 1,
               }}
             >
-              {sessionsCount} session{sessionsCount === 1 ? '' : 's'}
+              {t('circuits.card.sessions', { count: sessionsCount })}
             </Mono>
             {personalBestMs != null && (
               <Mono

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SessionAnalytics } from '../../types';
 import { formatLapTime } from '../../api/sessions';
 import { colors, fonts } from '../../theme/tokens';
@@ -131,19 +132,20 @@ function scoreColor(score: number): string {
   return colors.red;
 }
 
-function scoreLabel(score: number): string {
-  if (score >= 80) return 'Excellent';
-  if (score >= 60) return 'Good';
-  if (score >= 40) return 'Average';
-  return 'Needs work';
+function scoreLabel(t: (key: string) => string, score: number): string {
+  if (score >= 80) return t('analytics.consistency.score.excellent');
+  if (score >= 60) return t('analytics.consistency.score.good');
+  if (score >= 40) return t('analytics.consistency.score.average');
+  return t('analytics.consistency.score.needsWork');
 }
 
 const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
+  const { t } = useTranslation();
   const m = useMemo(() => computeMetrics(analytics), [analytics]);
 
   if (m.cv == null || m.consistencyScore == null) {
     return (
-      <Panel title="Consistency" padding={16}>
+      <Panel title={t('analytics.consistency.title')} padding={16}>
         <Mono
           style={{
             color: colors.textMute,
@@ -151,7 +153,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             letterSpacing: '0.4px',
           }}
         >
-          At least 2 valid laps are needed to calculate consistency.
+          {t('analytics.consistency.needMore')}
         </Mono>
       </Panel>
     );
@@ -163,7 +165,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
 
   return (
     <Panel
-      title="Consistency"
+      title={t('analytics.consistency.title')}
       right={
         <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
           <Mono
@@ -176,7 +178,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
           >
             {sc}
           </Mono>
-          <Mono style={{ color: colors.textMute }}>/ 100 · {scoreLabel(sc).toUpperCase()}</Mono>
+          <Mono style={{ color: colors.textMute }}>/ 100 · {scoreLabel(t, sc).toUpperCase()}</Mono>
         </span>
       }
       padding={0}
@@ -212,38 +214,38 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
         }}
       >
         <KCell
-          label="CV (variance)"
+          label={t('analytics.consistency.cv')}
           value={`${cvPct}%`}
-          sub="stdev / mean · pro <0.5%"
+          sub={t('analytics.consistency.cvSub')}
         />
         <KCell
-          label="IQR (P25–P75)"
+          label={t('analytics.consistency.iqr')}
           value={`±${m.iqrMs != null ? (m.iqrMs / 2 / 1000).toFixed(2) : '—'}s`}
-          sub="central 50% of laps"
+          sub={t('analytics.consistency.iqrSub')}
         />
         <KCell
-          label="Hot lap window"
+          label={t('analytics.consistency.hotLap')}
           value={
             m.hotLapWindow ? formatLapTime(m.hotLapWindow.avgMs) : '—'
           }
           sub={
-            m.hotLapWindow ? `avg of 3 from L${m.hotLapWindow.startLap}` : 'no data'
+            m.hotLapWindow ? t('analytics.consistency.hotLapSub', { start: m.hotLapWindow.startLap }) : t('analytics.consistency.hotLapNoData')
           }
           tone={m.hotLapWindow ? 'accent' : 'text'}
         />
         <KCell
-          label="% near best"
+          label={t('analytics.consistency.nearBest')}
           value={
             <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
               <span>{m.paceWindow1pct.toFixed(0)}%</span>
               <Mono
                 style={{ fontSize: 10, color: colors.textMute, letterSpacing: '0.4px' }}
               >
-                @1%
+                {t('analytics.consistency.atOnePct')}
               </Mono>
             </span>
           }
-          sub={`2%: ${m.paceWindow2pct.toFixed(0)}% · 5%: ${m.paceWindow5pct.toFixed(0)}%`}
+          sub={t('analytics.consistency.nearBestSub', { p2: m.paceWindow2pct.toFixed(0), p5: m.paceWindow5pct.toFixed(0) })}
           last
         />
       </div>
@@ -257,7 +259,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             background: colors.surface,
           }}
         >
-          <Label>Consistency by sector</Label>
+          <Label>{t('analytics.consistency.bySector')}</Label>
           <div
             style={{
               display: 'grid',
@@ -290,7 +292,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
                       gap: 6,
                     }}
                   >
-                    <Label tone="text">Sector {s.sector}</Label>
+                    <Label tone="text">{t('analytics.consistency.sector', { n: s.sector })}</Label>
                     {isWeakest && (
                       <Mono
                         style={{
@@ -303,7 +305,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
                           fontWeight: 600,
                         }}
                       >
-                        ⚠ LEAST CONSISTENT
+                        {t('analytics.consistency.leastConsistent')}
                       </Mono>
                     )}
                   </div>
@@ -318,7 +320,7 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
                     CV {(s.cv * 100).toFixed(2)}%
                   </Mono>
                   <Mono style={{ fontSize: 10, color: colors.textMute }}>
-                    Spread {(s.spreadMs / 1000).toFixed(3)}s
+                    {t('analytics.consistency.spread', { value: (s.spreadMs / 1000).toFixed(3) })}
                   </Mono>
                 </div>
               );
@@ -343,15 +345,14 @@ const ConsistencyPanel: React.FC<Props> = ({ analytics }) => {
             letterSpacing: '0.3px',
           }}
         >
-          Score = CV weighted over valid laps (without outliers).
+          {t('analytics.consistency.footer')}
           {m.weakestSector && m.sectorVariance.length > 1 && (
             <>
-              {' '}
-              Most variable sector:{' '}
+              {t('analytics.consistency.footerMostVariable')}
               <span style={{ color: colors.red, fontWeight: 600 }}>
                 S{m.weakestSector}
-              </span>{' '}
-              — practice that section.
+              </span>
+              {t('analytics.consistency.footerPractice')}
             </>
           )}
         </Mono>

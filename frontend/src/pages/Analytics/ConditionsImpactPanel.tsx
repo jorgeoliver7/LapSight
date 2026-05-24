@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CircularProgress } from '@mui/material';
 import Plot from 'react-plotly.js';
 import type { Session, SessionAnalytics } from '../../types';
@@ -22,13 +23,13 @@ interface DataPoint {
   session: Session;
 }
 
-const VAR_LABEL: Record<Variable, { label: string; unit: string }> = {
-  trackTemp: { label: 'Track temperature', unit: '°C' },
-  ambientTemp: { label: 'Air temperature', unit: '°C' },
-  humidity: { label: 'Relative humidity', unit: '%' },
-};
-
 const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
+  const { t } = useTranslation();
+  const VAR_LABEL: Record<Variable, { label: string; unit: string }> = {
+    trackTemp: { label: t('analytics.conditions.var.trackTempLabel'), unit: t('analytics.conditions.var.trackTempUnit') },
+    ambientTemp: { label: t('analytics.conditions.var.ambientTempLabel'), unit: t('analytics.conditions.var.ambientTempUnit') },
+    humidity: { label: t('analytics.conditions.var.humidityLabel'), unit: t('analytics.conditions.var.humidityUnit') },
+  };
   const [variable, setVariable] = useState<Variable>('trackTemp');
   const [analyticsCache, setAnalyticsCache] = useState<Record<number, SessionAnalytics>>({});
   const [loading, setLoading] = useState(false);
@@ -98,10 +99,10 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
 
   return (
     <Panel
-      title="Conditions impact"
+      title={t('analytics.conditions.title')}
       right={
         <Mono style={{ color: colors.textMute }}>
-          {currentCircuit ? `circuit · ${currentCircuit}` : '— no circuit —'}
+          {currentCircuit ? t('analytics.conditions.circuitOf', { name: currentCircuit }) : t('analytics.conditions.noCircuit')}
         </Mono>
       }
       padding={16}
@@ -116,8 +117,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
           display: 'block',
         }}
       >
-        Linear regression of your best lap against a conditions variable across all sessions
-        on the same circuit.
+        {t('analytics.conditions.helper')}
       </Mono>
 
       <div
@@ -129,13 +129,13 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
         }}
       >
         <Pill active={variable === 'trackTemp'} onClick={() => setVariable('trackTemp')}>
-          Track temp
+          {t('analytics.conditions.trackTemp')}
         </Pill>
         <Pill active={variable === 'ambientTemp'} onClick={() => setVariable('ambientTemp')}>
-          Air temp
+          {t('analytics.conditions.airTemp')}
         </Pill>
         <Pill active={variable === 'humidity'} onClick={() => setVariable('humidity')}>
-          Humidity
+          {t('analytics.conditions.humidity')}
         </Pill>
       </div>
 
@@ -157,9 +157,8 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
             lineHeight: 1.5,
           }}
         >
-          You need at least 3 sessions on this circuit with "
-          <span style={{ color: colors.text }}>{VAR_LABEL[variable].label}</span>" filled in to
-          run the regression. You have <Mono style={{ color: colors.text, fontWeight: 600 }}>{dataPoints.length}</Mono>.
+          {t('analytics.conditions.needMore', { var: VAR_LABEL[variable].label })}{' '}
+          <Mono style={{ color: colors.text, fontWeight: 600 }}>{dataPoints.length}</Mono>.
         </div>
       ) : (
         <>
@@ -171,7 +170,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                   y: dataPoints.map((p) => p.y / 1000),
                   type: 'scatter' as const,
                   mode: 'markers' as const,
-                  name: 'Sessions',
+                  name: t('analytics.conditions.sessions'),
                   marker: {
                     color: colors.accent,
                     size: 8,
@@ -193,7 +192,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         y: [fit.predict(minX) / 1000, fit.predict(maxX) / 1000],
                         type: 'scatter' as const,
                         mode: 'lines' as const,
-                        name: `Fit (R²=${fit.r2.toFixed(3)})`,
+                        name: t('analytics.conditions.fit', { r: fit.r2.toFixed(3) }),
                         line: { color: colors.purple, width: 2, dash: 'dash' as const },
                       },
                     ]
@@ -214,7 +213,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                 yaxis: {
                   ...(apexPlotlyLayout().yaxis as object),
                   title: {
-                    text: 'Best lap (s)',
+                    text: t('analytics.conditions.bestLapAxis'),
                     font: { family: fonts.mono, size: 10, color: colors.textMute },
                   },
                 },
@@ -235,7 +234,7 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>
-                    {['Metric', 'Value', 'Interpretation'].map((h, i) => (
+                    {[t('analytics.conditions.col.metric'), t('analytics.conditions.col.value'), t('analytics.conditions.col.interp')].map((h, i) => (
                       <th
                         key={h}
                         style={{
@@ -259,17 +258,18 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                 </thead>
                 <tbody>
                   <FitRow
-                    metric="Slope"
+                    metric={t('analytics.conditions.slope')}
                     value={
                       <Mono style={{ color: fit.slope > 0 ? colors.red : colors.green, fontWeight: 600 }}>
                         {fit.slope > 0 ? '+' : ''}
-                        {fit.slope.toFixed(1)} ms / {VAR_LABEL[variable].unit}
+                        {fit.slope.toFixed(1)} {t('analytics.conditions.msPer', { unit: VAR_LABEL[variable].unit })}
                       </Mono>
                     }
                     interp={
                       <>
-                        Each {VAR_LABEL[variable].unit === '°C' ? 'degree' : 'point'}{' '}
-                        {fit.slope > 0 ? 'adds' : 'removes'}{' '}
+                        {t('analytics.conditions.each')}{' '}
+                        {VAR_LABEL[variable].unit === '°C' ? t('analytics.conditions.degree') : t('analytics.conditions.point')}{' '}
+                        {fit.slope > 0 ? t('analytics.conditions.adds') : t('analytics.conditions.removes')}{' '}
                         <Mono
                           style={{
                             color: fit.slope > 0 ? colors.red : colors.green,
@@ -278,32 +278,32 @@ const ConditionsImpactPanel: React.FC<Props> = ({ analytics, sessions }) => {
                         >
                           {Math.abs(fit.slope).toFixed(0)} ms
                         </Mono>{' '}
-                        on your best lap.
+                        {t('analytics.conditions.msOnBest')}
                       </>
                     }
                   />
                   <FitRow
-                    metric="R²"
+                    metric={t('analytics.conditions.r2')}
                     value={<Mono>{fit.r2.toFixed(3)}</Mono>}
                     interp={
                       fit.r2 > 0.7
-                        ? 'strong correlation'
+                        ? t('analytics.conditions.r2Strong')
                         : fit.r2 > 0.4
-                          ? 'moderate correlation'
+                          ? t('analytics.conditions.r2Moderate')
                           : fit.r2 > 0.2
-                            ? 'weak correlation'
-                            : 'no clear correlation — many other factors'
+                            ? t('analytics.conditions.r2Weak')
+                            : t('analytics.conditions.r2None')
                     }
                   />
                   <FitRow
-                    metric="n sessions"
+                    metric={t('analytics.conditions.nSessions')}
                     value={<Mono>{fit.n}</Mono>}
                     interp={
                       fit.n < 5
-                        ? 'Small sample, limited conclusions.'
+                        ? t('analytics.conditions.nSmall')
                         : fit.n < 10
-                          ? 'Reasonable sample.'
-                          : 'Robust sample.'
+                          ? t('analytics.conditions.nReasonable')
+                          : t('analytics.conditions.nRobust')
                     }
                     last
                   />

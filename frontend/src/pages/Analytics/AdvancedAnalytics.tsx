@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CircularProgress } from '@mui/material';
 import Plot from 'react-plotly.js';
 import { sessionsApi, formatLapTime } from '../../api/sessions';
@@ -24,15 +25,15 @@ interface Props {
 
 type TabKey = 'distribution' | 'heatmap' | 'stints' | 'anomalies' | 'degradation';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'distribution', label: 'Distribution' },
-  { key: 'heatmap', label: 'Sector heatmap' },
-  { key: 'stints', label: 'Stints' },
-  { key: 'anomalies', label: 'Anomalies' },
-  { key: 'degradation', label: 'Degradation' },
-];
-
 const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
+  const { t } = useTranslation();
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'distribution', label: t('analytics.advanced.tabs.distribution') },
+    { key: 'heatmap', label: t('analytics.advanced.tabs.heatmap') },
+    { key: 'stints', label: t('analytics.advanced.tabs.stints') },
+    { key: 'anomalies', label: t('analytics.advanced.tabs.anomalies') },
+    { key: 'degradation', label: t('analytics.advanced.tabs.degradation') },
+  ];
   const [tab, setTab] = useState<TabKey>('distribution');
 
   const [stints, setStints] = useState<StintsAnalysis | null>(null);
@@ -67,7 +68,7 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
     } catch (e: any) {
       setError((s) => ({
         ...s,
-        [key]: e?.response?.data?.message || 'Analytics service unavailable',
+        [key]: e?.response?.data?.message || t('analytics.advanced.errorFallback'),
       }));
     } finally {
       setLoading((s) => ({ ...s, [key]: false }));
@@ -96,9 +97,9 @@ const AdvancedAnalytics: React.FC<Props> = ({ sessionId, base }) => {
 
   return (
     <Panel
-      title="Advanced analytics"
+      title={t('analytics.advanced.title')}
       right={
-        <Mono style={{ color: colors.textMute }}>pandas · sklearn · scipy</Mono>
+        <Mono style={{ color: colors.textMute }}>{t('analytics.advanced.subtitle')}</Mono>
       }
       padding={0}
     >
@@ -212,12 +213,13 @@ const InfoNote: React.FC<{
 /* ─── Distribution ────────────────────────────────────────────────────── */
 
 const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytics }) => {
+  const { t } = useTranslation();
   const validTimes = analytics.perLap
     .filter((l) => l.valid)
     .map((l) => l.lapTimeMs / 1000);
 
   if (validTimes.length === 0) {
-    return <InfoNote>No valid laps to show distribution.</InfoNote>;
+    return <InfoNote>{t('analytics.advanced.distribution.noValid')}</InfoNote>;
   }
 
   return (
@@ -234,7 +236,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             {
               y: validTimes,
               type: 'box' as const,
-              name: 'Time',
+              name: t('analytics.advanced.distribution.time'),
               boxpoints: 'all' as const,
               jitter: 0.4,
               pointpos: 0,
@@ -250,13 +252,13 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             height: 320,
             margin: { l: 50, r: 14, t: 30, b: 30 },
             title: {
-              text: 'Box plot',
+              text: t('analytics.advanced.distribution.boxPlot'),
               font: { family: fonts.mono, size: 11, color: colors.textDim },
             },
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Seconds',
+                text: t('analytics.advanced.distribution.seconds'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -272,7 +274,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             {
               x: validTimes,
               type: 'histogram' as const,
-              name: 'Laps',
+              name: t('analytics.advanced.distribution.laps'),
               marker: {
                 color: colors.accent,
                 opacity: 0.7,
@@ -287,20 +289,20 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
             height: 320,
             margin: { l: 50, r: 14, t: 30, b: 40 },
             title: {
-              text: 'Histogram',
+              text: t('analytics.advanced.distribution.histogram'),
               font: { family: fonts.mono, size: 11, color: colors.textDim },
             },
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Seconds',
+                text: t('analytics.advanced.distribution.seconds'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Frequency',
+                text: t('analytics.advanced.distribution.frequency'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -317,6 +319,7 @@ const DistributionPanel: React.FC<{ analytics: SessionAnalytics }> = ({ analytic
 /* ─── Heatmap ─────────────────────────────────────────────────────────── */
 
 const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
+  const { t } = useTranslation();
   const z = data.gapMs.map((row) => row.map((v) => (v == null ? null : v / 1000)));
   return (
     <div>
@@ -338,7 +341,7 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
               zmin: 0,
               colorbar: {
                 title: {
-                  text: 'Gap (s)',
+                  text: t('analytics.advanced.heatmap.gap'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 tickfont: { family: fonts.mono, size: 10, color: colors.textMute },
@@ -357,7 +360,7 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Lap',
+                text: t('analytics.advanced.heatmap.lap'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -382,8 +385,7 @@ const HeatmapPanel: React.FC<{ data: HeatmapAnalysis }> = ({ data }) => {
           display: 'block',
         }}
       >
-        Each cell shows how much you lose in that sector versus the best sector you achieved
-        in the whole session. Green = perfect lap for that sector.
+        {t('analytics.advanced.heatmap.note')}
       </Mono>
     </div>
   );
@@ -395,8 +397,9 @@ const StintsPanel: React.FC<{
   data: StintsAnalysis;
   base: SessionAnalytics;
 }> = ({ data, base }) => {
+  const { t } = useTranslation();
   if (data.nStints === 0) {
-    return <InfoNote>Session too short to detect stints.</InfoNote>;
+    return <InfoNote>{t('analytics.advanced.stints.tooShort')}</InfoNote>;
   }
 
   const stintColors = (idx: number) => apexPaletteSeries[idx % apexPaletteSeries.length];
@@ -409,7 +412,7 @@ const StintsPanel: React.FC<{
       y: stintLaps.map((l) => l.lapTimeMs / 1000),
       type: 'scatter' as const,
       mode: 'lines+markers' as const,
-      name: `Stint ${idx + 1}${stint.dominantCompound ? ` (${stint.dominantCompound})` : ''}`,
+      name: `${t('analytics.advanced.stints.stintName', { n: idx + 1 })}${stint.dominantCompound ? ` (${stint.dominantCompound})` : ''}`,
       line: { color, width: 2 },
       marker: {
         color,
@@ -422,9 +425,9 @@ const StintsPanel: React.FC<{
   return (
     <div>
       <InfoNote>
-        {data.nStints} stints detected — method:{' '}
+        {t('analytics.advanced.stints.detected', { n: data.nStints })}
         <strong style={{ color: colors.accent }}>
-          {data.method === 'compound-based' ? 'by compound' : 'KMeans 1D on lap_time'}
+          {data.method === 'compound-based' ? t('analytics.advanced.stints.methodCompound') : t('analytics.advanced.stints.methodKmeans')}
         </strong>
         .
       </InfoNote>
@@ -437,7 +440,7 @@ const StintsPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Lap',
+                text: t('analytics.advanced.stints.lap'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -445,7 +448,7 @@ const StintsPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Seconds',
+                text: t('analytics.advanced.stints.seconds'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -472,7 +475,7 @@ const StintsPanel: React.FC<{
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              {['Stint', 'Compound', 'Laps', 'Best', 'Average', 'Degradation'].map((h, i) => (
+              {[t('analytics.advanced.stints.col.stint'), t('analytics.advanced.stints.col.compound'), t('analytics.advanced.stints.col.laps'), t('analytics.advanced.stints.col.best'), t('analytics.advanced.stints.col.average'), t('analytics.advanced.stints.col.degradation')].map((h, i) => (
                 <th
                   key={h}
                   style={{
@@ -521,7 +524,7 @@ const StintsPanel: React.FC<{
                         }}
                       />
                       <Mono style={{ color: colors.text, fontWeight: 600 }}>
-                        Stint {idx + 1}
+                        {t('analytics.advanced.stints.stintName', { n: idx + 1 })}
                       </Mono>
                     </span>
                   </TD>
@@ -560,6 +563,7 @@ const AnomaliesPanel: React.FC<{
   data: AnomaliesAnalysis;
   base: SessionAnalytics;
 }> = ({ data, base }) => {
+  const { t } = useTranslation();
   const scoresByLap = new Map(data.anomalies.map((a) => [a.lapNumber, a.anomalyScore]));
   const anomalyLaps = data.anomalies.filter((a) => a.isAnomaly).map((a) => a.lapNumber);
 
@@ -573,11 +577,11 @@ const AnomaliesPanel: React.FC<{
   return (
     <div>
       <InfoNote tone={data.nAnomalies > 0 ? 'warn' : 'good'}>
-        IsolationForest detected{' '}
+        {t('analytics.advanced.anomalies.isoForest')}{' '}
         <Mono style={{ fontWeight: 700, color: data.nAnomalies > 0 ? colors.orange : colors.green }}>
           {data.nAnomalies}
         </Mono>{' '}
-        anomalous laps out of {base.validLaps} valid.
+        {t('analytics.advanced.anomalies.detected', { n: base.validLaps })}
       </InfoNote>
       <Plot
         data={
@@ -587,7 +591,7 @@ const AnomaliesPanel: React.FC<{
               y: normalLaps.map((l) => l.lapTimeMs / 1000),
               type: 'scatter' as const,
               mode: 'markers' as const,
-              name: 'Normal',
+              name: t('analytics.advanced.anomalies.normal'),
               marker: {
                 color: colors.accent,
                 size: 8,
@@ -602,7 +606,7 @@ const AnomaliesPanel: React.FC<{
               y: anomalousLaps.map((l) => l.lapTimeMs / 1000),
               type: 'scatter' as const,
               mode: 'markers' as const,
-              name: 'Anomaly',
+              name: t('analytics.advanced.anomalies.anomaly'),
               marker: {
                 color: colors.orange,
                 size: 14,
@@ -622,7 +626,7 @@ const AnomaliesPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Lap',
+                text: t('analytics.advanced.anomalies.lap'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -630,7 +634,7 @@ const AnomaliesPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Seconds',
+                text: t('analytics.advanced.anomalies.seconds'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },
@@ -656,6 +660,7 @@ const DegradationPanel: React.FC<{
   data: DegradationAnalysis;
   base: SessionAnalytics;
 }> = ({ data, base }) => {
+  const { t } = useTranslation();
   const validLaps = base.perLap.filter((l) => l.valid);
   const lapNumbers = validLaps.map((l) => l.lapNumber);
   const times = validLaps.map((l) => l.lapTimeMs / 1000);
@@ -678,15 +683,15 @@ const DegradationPanel: React.FC<{
   return (
     <div>
       <InfoNote>
-        Linear fit R² ={' '}
+        {t('analytics.advanced.degradation.linearFit')}{' '}
         <Mono style={{ color: colors.text, fontWeight: 600 }}>
           {data.linear.rSquared.toFixed(3)}
         </Mono>{' '}
-        · polynomial degree {data.polynomial.degree} R² ={' '}
+        · {t('analytics.advanced.degradation.polyDegree', { d: data.polynomial.degree })}{' '}
         <Mono style={{ color: colors.text, fontWeight: 600 }}>
           {data.polynomial.rSquared.toFixed(3)}
         </Mono>{' '}
-        · chosen:{' '}
+        · {t('analytics.advanced.degradation.chosen')}{' '}
         <Mono
           style={{
             color: colors.accent,
@@ -706,7 +711,7 @@ const DegradationPanel: React.FC<{
               y: times,
               type: 'scatter' as const,
               mode: 'markers' as const,
-              name: 'Valid laps',
+              name: t('analytics.advanced.degradation.validLaps'),
               marker: {
                 color: colors.text,
                 size: 7,
@@ -718,7 +723,7 @@ const DegradationPanel: React.FC<{
               y: linearY,
               type: 'scatter' as const,
               mode: 'lines' as const,
-              name: `Lineal (R² ${data.linear.rSquared.toFixed(2)})`,
+              name: t('analytics.advanced.degradation.linear', { r: data.linear.rSquared.toFixed(2) }),
               line: { color: colors.accent, width: 2, dash: 'dot' as const },
             },
             {
@@ -726,7 +731,7 @@ const DegradationPanel: React.FC<{
               y: polyY,
               type: 'scatter' as const,
               mode: 'lines' as const,
-              name: `Polynomial d${data.polynomial.degree} (R² ${data.polynomial.rSquared.toFixed(2)})`,
+              name: t('analytics.advanced.degradation.polynomial', { d: data.polynomial.degree, r: data.polynomial.rSquared.toFixed(2) }),
               line: { color: colors.purple, width: 2.5 },
             },
           ] as never
@@ -738,7 +743,7 @@ const DegradationPanel: React.FC<{
             xaxis: {
               ...(apexPlotlyLayout().xaxis as object),
               title: {
-                text: 'Lap',
+                text: t('analytics.advanced.degradation.lap'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
               dtick: 1,
@@ -746,7 +751,7 @@ const DegradationPanel: React.FC<{
             yaxis: {
               ...(apexPlotlyLayout().yaxis as object),
               title: {
-                text: 'Seconds',
+                text: t('analytics.advanced.degradation.seconds'),
                 font: { family: fonts.mono, size: 10, color: colors.textMute },
               },
             },

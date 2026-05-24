@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import Plot from 'react-plotly.js';
 import { SessionAnalytics } from '../../types';
 import { formatGap, formatLapTime } from '../../api/sessions';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
+  const { t } = useTranslation();
   const allLapNumbers = useMemo(() => {
     const set = new Set<number>();
     analytics.forEach((a) => a.perLap.forEach((l) => set.add(l.lapNumber)));
@@ -91,7 +93,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             flexWrap: 'wrap',
           }}
         >
-          <Label>COMPARED SESSIONS</Label>
+          <Label>{t('analytics.multi.comparedSessions')}</Label>
           {analytics.map((a, idx) => (
             <div
               key={a.sessionId}
@@ -149,7 +151,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               }}
             >
               <div style={{ minWidth: 0 }}>
-                <Label size="micro">BEST LAP</Label>
+                <Label size="micro">{t('analytics.multi.bestLap')}</Label>
                 <Mono
                   style={{
                     fontSize: 24,
@@ -172,7 +174,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                       display: 'block',
                     }}
                   >
-                    {formatGap(gapToRef)} vs best
+                    {t('analytics.multi.gapVsBest', { gap: formatGap(gapToRef) })}
                   </Mono>
                 )}
               </div>
@@ -185,18 +187,18 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                   borderTop: `1px solid ${colors.border}`,
                 }}
               >
-                <KRow label="Average" value={formatLapTime(a.averageMs)} />
-                <KRow label="Median" value={formatLapTime(a.medianMs)} />
+                <KRow label={t('analytics.multi.average')} value={formatLapTime(a.averageMs)} />
+                <KRow label={t('analytics.multi.median')} value={formatLapTime(a.medianMs)} />
                 <KRow
-                  label="σ"
+                  label={t('analytics.multi.sigma')}
                   value={a.stdDevMs != null ? `±${(a.stdDevMs / 1000).toFixed(3)}s` : '—'}
                 />
                 <KRow
-                  label="Theoretical"
+                  label={t('analytics.multi.theoretical')}
                   value={formatLapTime(a.theoreticalBestLapMs)}
                 />
                 <KRow
-                  label="Valid"
+                  label={t('analytics.multi.valid')}
                   value={`${a.validLaps}/${a.totalLaps}`}
                 />
               </div>
@@ -207,8 +209,8 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
 
       {/* Line overlay */}
       <Panel
-        title="Lap times · overlay"
-        right={<Mono style={{ color: colors.textMute }}>all sessions</Mono>}
+        title={t('analytics.multi.lapTimesOverlay')}
+        right={<Mono style={{ color: colors.textMute }}>{t('analytics.multi.allSessions')}</Mono>}
         padding={12}
       >
         <Plot
@@ -220,7 +222,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               xaxis: {
                 ...(apexPlotlyLayout().xaxis as object),
                 title: {
-                  text: 'Lap',
+                  text: t('analytics.multi.lap'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 dtick: 1,
@@ -228,7 +230,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Seconds',
+                  text: t('analytics.multi.seconds'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 tickformat: '.2f',
@@ -249,7 +251,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
       </Panel>
 
       {/* Violin plot */}
-      <Panel title="Distributions · violin" padding={12}>
+      <Panel title={t('analytics.multi.distributionsViolin')} padding={12}>
         <Mono
           style={{
             fontSize: 11,
@@ -260,8 +262,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             lineHeight: 1.5,
           }}
         >
-          Each "violin" is the probability density of lap times. Inner box = quartiles.
-          Wide, symmetric peak = concentrated pace (consistent).
+          {t('analytics.multi.violinHelper')}
         </Mono>
         <Plot
           data={violinData as never}
@@ -272,7 +273,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Seconds',
+                  text: t('analytics.multi.seconds'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 tickformat: '.2f',
@@ -287,7 +288,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
       </Panel>
 
       {/* Comparison table */}
-      <Panel title="Comparison table" padding={0}>
+      <Panel title={t('analytics.multi.comparisonTable')} padding={0}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -306,7 +307,7 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
                     borderBottom: `1px solid ${colors.borderHi}`,
                   }}
                 >
-                  Metric
+                  {t('analytics.multi.col.metric')}
                 </th>
                 {analytics.map((a, idx) => (
                   <th
@@ -332,43 +333,43 @@ const MultiSessionComparison: React.FC<Props> = ({ analytics }) => {
             </thead>
             <tbody>
               <ComparisonRow
-                label="Best lap"
+                label={t('analytics.multi.row.bestLap')}
                 values={analytics.map((a) => a.bestLapMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Average"
+                label={t('analytics.multi.row.average')}
                 values={analytics.map((a) => a.averageMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Median"
+                label={t('analytics.multi.row.median')}
                 values={analytics.map((a) => a.medianMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Consistency (σ)"
+                label={t('analytics.multi.row.consistency')}
                 values={analytics.map((a) => a.stdDevMs)}
                 format={(n) => (n != null ? `±${(n / 1000).toFixed(3)}s` : '—')}
                 lowerIsBetter
               />
               <ComparisonRow
-                label="Theoretical best"
+                label={t('analytics.multi.row.theoretical')}
                 values={analytics.map((a) => a.theoreticalBestLapMs)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Best S1"
+                label={t('analytics.multi.row.bestS1')}
                 values={analytics.map((a) => a.bestSector1Ms)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Best S2"
+                label={t('analytics.multi.row.bestS2')}
                 values={analytics.map((a) => a.bestSector2Ms)}
                 format={formatLapTime}
               />
               <ComparisonRow
-                label="Best S3"
+                label={t('analytics.multi.row.bestS3')}
                 values={analytics.map((a) => a.bestSector3Ms)}
                 format={formatLapTime}
                 last

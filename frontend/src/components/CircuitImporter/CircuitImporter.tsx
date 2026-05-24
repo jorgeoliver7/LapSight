@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, TextField,
   Typography, Alert, Stack,
@@ -16,6 +17,7 @@ interface Props {
 }
 
 const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
   const [lengthKm, setLengthKm] = useState('');
@@ -44,11 +46,11 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
     if (!text.trim()) return;
     const parsed = parseGeoJson(text);
     if (!parsed) {
-      setError('No se pudo extraer un LineString del GeoJSON. Acepta FeatureCollection / Feature / LineString.');
+      setError(t('circuits.importer.errors.parse'));
       return;
     }
     if (parsed.coords.length < 3) {
-      setError('El trazado debe tener al menos 3 puntos.');
+      setError(t('circuits.importer.errors.tooFew'));
       return;
     }
     const finalName = nm.trim() || parsed.name || 'Circuito custom';
@@ -76,24 +78,23 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Import circuit from GeoJSON</DialogTitle>
+      <DialogTitle>{t('circuits.importer.title')}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2}>
           <Typography variant="body2" color="textSecondary">
-            Upload a GeoJSON file with a LineString (coordinates [lng, lat]).
-            It will be stored locally in your browser.
+            {t('circuits.importer.intro')}
           </Typography>
 
           <Box display="flex" gap={2} flexWrap="wrap">
             <TextField
-              label="Name"
+              label={t('circuits.importer.name')}
               value={name}
               onChange={(e) => { setName(e.target.value); if (geoText) tryParse(geoText, e.target.value, country, lengthKm); }}
               size="small"
               sx={{ flex: 2, minWidth: 200 }}
             />
             <TextField
-              label="Country (ISO)"
+              label={t('circuits.importer.country')}
               value={country}
               onChange={(e) => { setCountry(e.target.value); if (geoText) tryParse(geoText, name, e.target.value, lengthKm); }}
               size="small"
@@ -102,7 +103,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
               sx={{ width: 100 }}
             />
             <TextField
-              label="Length (km)"
+              label={t('circuits.importer.lengthKm')}
               value={lengthKm}
               onChange={(e) => { setLengthKm(e.target.value); if (geoText) tryParse(geoText, name, country, e.target.value); }}
               size="small"
@@ -117,7 +118,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
             component="label"
             startIcon={<UploadIcon />}
           >
-            Select .geojson file
+            {t('circuits.importer.selectFile')}
             <input
               type="file"
               hidden
@@ -130,7 +131,7 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
           </Button>
 
           <TextField
-            label="Or paste the JSON here"
+            label={t('circuits.importer.pasteJson')}
             multiline
             fullWidth
             minRows={4}
@@ -148,10 +149,10 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
               <Box>
                 <Typography variant="subtitle2" sx={{ color: colors.text }}>{preview.name}</Typography>
                 <Typography variant="caption" sx={{ color: colors.textDim, display: 'block', fontFamily: 'monospace' }}>
-                  {preview.country || '—'} · {preview.length_km ? `${preview.length_km.toFixed(3)} km` : 'no length'}
+                  {preview.country || '—'} · {preview.length_km ? `${preview.length_km.toFixed(3)} km` : t('circuits.importer.noLength')}
                 </Typography>
                 <Typography variant="caption" sx={{ color: colors.textMute, display: 'block', fontFamily: 'monospace' }}>
-                  {preview.path.length} points
+                  {t('circuits.importer.points', { count: preview.path.length })}
                 </Typography>
               </Box>
             </Box>
@@ -159,9 +160,9 @@ const CircuitImporter: React.FC<Props> = ({ open, onClose, onImported }) => {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose}>{t('circuits.importer.cancel')}</Button>
         <Button variant="contained" onClick={handleImport} disabled={!preview}>
-          Import
+          {t('circuits.importer.import')}
         </Button>
       </DialogActions>
     </Dialog>

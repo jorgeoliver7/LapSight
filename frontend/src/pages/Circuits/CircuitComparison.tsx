@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box } from '@mui/material';
 import { Circuit } from '../../data/circuits';
 import { getCircuitExtras } from '../../data/circuitMeta';
@@ -25,6 +26,7 @@ const COLOR_A = colors.accent;
 const COLOR_B = colors.purple;
 
 const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose }) => {
+  const { t } = useTranslation();
   if (!circuitA || !circuitB) return null;
 
   const extA = getCircuitExtras(circuitA.name);
@@ -53,15 +55,15 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
     v == null ? '—' : `${v.toFixed(3)}${unit}`;
 
   const rows: RowData[] = [
-    { label: 'Country', a: circuitA.country || '—', b: circuitB.country || '—' },
+    { label: t('circuits.compareDialog.rows.country'), a: circuitA.country || '—', b: circuitB.country || '—' },
     {
-      label: 'Length',
+      label: t('circuits.compareDialog.rows.length'),
       a: lenA ? `${lenA.toFixed(3)} km` : '—',
       b: lenB ? `${lenB.toFixed(3)} km` : '—',
       winner: lenA && lenB ? (lenA > lenB ? 'a' : lenA < lenB ? 'b' : null) : null,
     },
     {
-      label: 'Turns',
+      label: t('circuits.compareDialog.rows.turns'),
       a: extA.turns?.toString() ?? '—',
       b: extB.turns?.toString() ?? '—',
       winner:
@@ -70,12 +72,12 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           : null,
     },
     {
-      label: 'Direction',
-      a: dirA === 'CW' ? '↻ Clockwise' : '↺ Counter-clockwise',
-      b: dirB === 'CW' ? '↻ Clockwise' : '↺ Counter-clockwise',
+      label: t('circuits.compareDialog.rows.direction'),
+      a: dirA === 'CW' ? t('circuits.detail.direction.cw') : t('circuits.detail.direction.ccw'),
+      b: dirB === 'CW' ? t('circuits.detail.direction.cw') : t('circuits.detail.direction.ccw'),
     },
     {
-      label: 'Longest straight',
+      label: t('circuits.compareDialog.rows.longestStraight'),
       a: fmt(longestStraightKmA, ' km'),
       b: fmt(longestStraightKmB, ' km'),
       winner:
@@ -84,7 +86,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           : null,
     },
     {
-      label: 'Altitude',
+      label: t('circuits.compareDialog.rows.altitude'),
       a: extA.altitudeM ? `${extA.altitudeM} m` : '—',
       b: extB.altitudeM ? `${extB.altitudeM} m` : '—',
       winner:
@@ -92,13 +94,13 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           ? extA.altitudeM > extB.altitudeM ? 'a' : extA.altitudeM < extB.altitudeM ? 'b' : null
           : null,
     },
-    { label: 'Opened', a: extA.opened?.toString() ?? '—', b: extB.opened?.toString() ?? '—' },
+    { label: t('circuits.compareDialog.rows.opened'), a: extA.opened?.toString() ?? '—', b: extB.opened?.toString() ?? '—' },
     {
-      label: 'Categories',
+      label: t('circuits.compareDialog.rows.categories'),
       a: extA.categories?.join(', ') ?? '—',
       b: extB.categories?.join(', ') ?? '—',
     },
-    { label: 'Lap record', a: extA.lapRecord ?? '—', b: extB.lapRecord ?? '—' },
+    { label: t('circuits.compareDialog.rows.lapRecord'), a: extA.lapRecord ?? '—', b: extB.lapRecord ?? '—' },
   ];
 
   return (
@@ -113,7 +115,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
           borderBottom: `1px solid ${colors.border}`,
         }}
       >
-        Circuit comparator
+        {t('circuits.compareDialog.title')}
       </DialogTitle>
       <DialogContent>
         <Box display="flex" gap={2} flexDirection={{ xs: 'column', md: 'row' }} mt={2} mb={3}>
@@ -133,7 +135,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
               }}
             >
               <Label tone="dim" style={{ color, marginBottom: 6 }}>
-                CIRCUIT · {lbl}
+                {t('circuits.compareDialog.circuit', { label: lbl })}
               </Label>
               <div style={{ color: colors.text, fontWeight: 600, fontSize: 15, marginBottom: 8 }}>
                 {c.country || '🏁'} {c.name}
@@ -154,7 +156,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
             }}
           >
             <div style={{ padding: '8px 14px' }}>
-              <Label>Metric</Label>
+              <Label>{t('circuits.compareDialog.metric')}</Label>
             </div>
             <div style={{ padding: '8px 14px', borderLeft: `1px solid ${colors.border}` }}>
               <Label style={{ color: COLOR_A }}>A · {circuitA.name}</Label>
@@ -247,7 +249,7 @@ const CircuitComparison: React.FC<Props> = ({ circuitA, circuitB, open, onClose 
       </DialogContent>
       <DialogActions sx={{ p: 2, borderTop: `1px solid ${colors.border}` }}>
         <Button onClick={onClose} sx={{ color: colors.textDim, fontFamily: fonts.mono, letterSpacing: '1.2px' }}>
-          CLOSE
+          {t('circuits.compareDialog.close')}
         </Button>
       </DialogActions>
     </Dialog>

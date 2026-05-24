@@ -264,6 +264,62 @@ export const TRACK_CONDITION_LABELS: Record<TrackCondition, string> = {
   [TrackCondition.DAMP]: 'Damp',
 };
 
+// i18n approach: keep the static *_LABELS records as English defaults (so they
+// continue to work for code paths that don't have access to the `t` function),
+// and add helper functions that translate via react-i18next when a `t` is
+// available. Pages should prefer the helpers; everything else still works.
+//
+// Usage: import { useTranslation } from 'react-i18next';
+//   const { t } = useTranslation();
+//   getSessionTypeLabel(t, session.sessionType);
+type TFn = (key: string, options?: Record<string, unknown>) => string;
+
+export function getVehicleTypeLabel(t: TFn, value: VehicleType | string | null | undefined): string {
+  if (value == null) return '—';
+  const translated = t(`enums.vehicleType.${value}`);
+  // If i18n returns the key itself (missing translation), fall back to static map
+  if (translated === `enums.vehicleType.${value}`) {
+    return VEHICLE_TYPE_LABELS[value as VehicleType] ?? String(value);
+  }
+  return translated;
+}
+
+export function getSessionTypeLabel(t: TFn, value: SessionType | string | null | undefined): string {
+  if (value == null) return '—';
+  const translated = t(`enums.sessionType.${value}`);
+  if (translated === `enums.sessionType.${value}`) {
+    return SESSION_TYPE_LABELS[value as SessionType] ?? String(value);
+  }
+  return translated;
+}
+
+export function getEventTypeLabel(t: TFn, value: EventType | string | null | undefined): string {
+  if (value == null) return '—';
+  const translated = t(`enums.eventType.${value}`);
+  if (translated === `enums.eventType.${value}`) {
+    return EVENT_TYPE_LABELS[value as EventType] ?? String(value);
+  }
+  return translated;
+}
+
+export function getEventStatusLabel(t: TFn, value: EventStatus | string | null | undefined): string {
+  if (value == null) return '—';
+  const translated = t(`enums.eventStatus.${value}`);
+  if (translated === `enums.eventStatus.${value}`) {
+    return EVENT_STATUS_LABELS[value as EventStatus] ?? String(value);
+  }
+  return translated;
+}
+
+export function getTrackConditionLabel(t: TFn, value: TrackCondition | string | null | undefined): string {
+  if (value == null) return '—';
+  const translated = t(`enums.trackCondition.${value}`);
+  if (translated === `enums.trackCondition.${value}`) {
+    return TRACK_CONDITION_LABELS[value as TrackCondition] ?? String(value);
+  }
+  return translated;
+}
+
 export enum TireCompound {
   SOFT = 'SOFT',
   MEDIUM = 'MEDIUM',

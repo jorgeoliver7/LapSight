@@ -368,6 +368,627 @@
       "lengthAsc": "− Short",
       "turnsDesc": "+ Turns"
     },
-    "imported": "Circuit \"{{name}}\" imported"
+    "imported": "Circuit \"{{name}}\" imported",
+    "card": {
+      "turns": "{{count}} turns",
+      "realGps": "Real GPS",
+      "stylized": "Stylized",
+      "sessions_one": "{{count}} session",
+      "sessions_other": "{{count}} sessions"
+    },
+    "detail": {
+      "deleteCustom": "Delete custom circuit",
+      "deleteConfirm": "Delete custom circuit \"{{name}}\"?",
+      "deleted": "Circuit deleted",
+      "notesSaved": "Notes saved",
+      "chip": {
+        "realGps": "Real GPS",
+        "stylized": "Stylized",
+        "custom": "Custom"
+      },
+      "field": {
+        "length": "Length",
+        "turns": "Turns",
+        "direction": "Direction",
+        "longestStraight": "Longest straight",
+        "opened": "Opened",
+        "altitude": "Altitude",
+        "lapRecord": "Lap record"
+      },
+      "direction": {
+        "cw": "↻ Clockwise",
+        "ccw": "↺ Counter-clockwise"
+      },
+      "tabs": {
+        "summary": "Summary",
+        "records": "Records ({{count}})",
+        "events": "Events ({{count}})",
+        "notes": "Technical notes"
+      },
+      "summary": {
+        "sessionsAt_one": "You have {{count}} session at this circuit",
+        "sessionsAt_other": "You have {{count}} sessions at this circuit",
+        "kmCovered": "~{{km}} km covered",
+        "eventsPlanned": "Planned or past events: {{count}}"
+      },
+      "records": {
+        "noSessions": "No sessions registered at this circuit yet.",
+        "col": {
+          "session": "Session",
+          "date": "Date",
+          "driver": "Driver",
+          "vehicle": "Vehicle",
+          "bestLap": "Best lap"
+        },
+        "trophyHint": "Your best lap at this circuit"
+      },
+      "events": {
+        "noEvents": "No events planned at this circuit.",
+        "col": {
+          "event": "Event",
+          "type": "Type",
+          "startDate": "Start date",
+          "status": "Status"
+        }
+      },
+      "notes": {
+        "helper": "Notes saved locally in this browser. Useful for setup changes, tyre pressures, braking points, etc.",
+        "placeholder": "e.g. 4th gear main straight, 3rd gear turn 1, front pressure 1.8 bar..."
+      }
+    },
+    "compareDialog": {
+      "title": "Circuit comparator",
+      "metric": "Metric",
+      "close": "CLOSE",
+      "circuit": "CIRCUIT · {{label}}",
+      "rows": {
+        "country": "Country",
+        "length": "Length",
+        "turns": "Turns",
+        "direction": "Direction",
+        "longestStraight": "Longest straight",
+        "altitude": "Altitude",
+        "opened": "Opened",
+        "categories": "Categories",
+        "lapRecord": "Lap record"
+      }
+    },
+    "importer": {
+      "title": "Import circuit from GeoJSON",
+      "intro": "Upload a GeoJSON file with a LineString (coordinates [lng, lat]). It will be stored locally in your browser.",
+      "name": "Name",
+      "country": "Country (ISO)",
+      "lengthKm": "Length (km)",
+      "selectFile": "Select .geojson file",
+      "pasteJson": "Or paste the JSON here",
+      "import": "Import",
+      "cancel": "Cancel",
+      "points": "{{count}} points",
+      "noLength": "no length",
+      "errors": {
+        "parse": "Could not extract a LineString from the GeoJSON. Accepts FeatureCollection / Feature / LineString.",
+        "tooFew": "The track must have at least 3 points."
+      }
+    },
+    "selector": {
+      "label": "Circuit",
+      "placeholder": "Search or type a circuit...",
+      "regions": {
+        "spain": "🇪🇸 Spain",
+        "europe": "🇪🇺 Europe",
+        "asia": "🌏 Asia",
+        "middleEast": "🕌 Middle East",
+        "americas": "🌎 Americas",
+        "oceania": "🇦🇺 Oceania",
+        "other": "🏁 Other"
+      }
+    }
+  },
+  "dashboard": {
+    "eyebrow": "TEAM · OVERVIEW",
+    "title": "Dashboard",
+    "subtitle": "Latest {{count}} sessions · {{state}}",
+    "stateLoading": "loading analytics…",
+    "stateUpToDate": "up to date",
+    "refresh": "↻ Refresh",
+    "kpis": {
+      "sessions": "Sessions",
+      "lapsRecorded": "Laps recorded",
+      "valid": "Valid",
+      "ofTotal": "of {{count}} total",
+      "drivers": "Drivers",
+      "vehicles": "Vehicles",
+      "totalKm": "Total km",
+      "estimated": "estimated"
+    },
+    "hero": {
+      "label": "Best lap · recent dataset",
+      "openAnalytics": "Open analytics →"
+    },
+    "bestPerCircuit": {
+      "title": "Best lap · per circuit",
+      "circuits_one": "{{count}} circuit",
+      "circuits_other": "{{count}} circuits",
+      "col": {
+        "circuit": "Circuit",
+        "sessions": "Ses",
+        "laps": "Laps",
+        "best": "Best",
+        "theor": "Theor.",
+        "delta": "Δ"
+      }
+    },
+    "leaderboard": {
+      "title": "Leaderboard · drivers",
+      "byBestLap": "by best lap",
+      "col": {
+        "driver": "Driver",
+        "sessions": "Ses",
+        "laps": "Laps",
+        "best": "Best",
+        "cv": "CV"
+      }
+    },
+    "pbEvolution": {
+      "title": "Best lap evolution",
+      "points": "{{count}} points",
+      "needMore": "Need at least 2 sessions with analytics."
+    },
+    "distribution": {
+      "title": "Distribution · per circuit",
+      "boxplot": "boxplot · valid laps",
+      "notEnough": "Not enough data for boxplots."
+    },
+    "recent": {
+      "title": "Recent sessions",
+      "upcoming_one": "{{count}} upcoming event →",
+      "upcoming_other": "{{count}} upcoming events →",
+      "goAnalytics": "Go to analytics →",
+      "col": {
+        "session": "Session",
+        "date": "Date",
+        "circuit": "Circuit",
+        "driver": "Driver",
+        "vehicle": "Vehicle",
+        "laps": "Laps",
+        "best": "Best",
+        "median": "Median",
+        "cv": "CV",
+        "cond": "Cond."
+      }
+    },
+    "empty": {
+      "loading": "Loading…",
+      "noDataYet": "No data yet.",
+      "noData": "No data."
+    }
+  },
+  "analytics": {
+    "eyebrow": "TELEMETRY · SESSION ANALYSIS",
+    "title": "Session analytics",
+    "subtitle": "Upload CSV with lap times · {{count}} sessions on record",
+    "uploadSession": "+ Upload session",
+    "sidebar": {
+      "title": "Sessions",
+      "empty": "Upload a CSV to get started.",
+      "loading": "Loading…",
+      "laps": "{{count}} laps"
+    },
+    "select": {
+      "title": "Select a session to view its analytics"
+    },
+    "compare": {
+      "label": "COMPARE WITH",
+      "additional": "Additional sessions (max 3)",
+      "singleView": "— Single view —",
+      "comparedClear": "{{count}} compared · clear ×",
+      "pdf": "⤓ PDF"
+    },
+    "dialog": {
+      "title": "New session",
+      "sessionName": "Session name",
+      "dateTime": "Date and time",
+      "type": "Type",
+      "trackCondition": "Track condition",
+      "vehicle": "Vehicle",
+      "driver": "Driver",
+      "notes": "Notes",
+      "ambient": "Ambient conditions",
+      "trackTemp": "Track temp (°C)",
+      "airTemp": "Air temp (°C)",
+      "humidity": "Humidity (%)",
+      "wind": "Wind (km/h)",
+      "setupNotes": "Setup notes",
+      "setupPlaceholder": "e.g. Press F 1.8/R 1.7 | Gear 12/41 | Wing -3 | Bias +2",
+      "setupHelper": "Free form. Useful to compare setups across sessions.",
+      "tabCsv": "Upload CSV",
+      "tabManual": "Add manually",
+      "selectCsv": "Select CSV file",
+      "columnsHelp": "Columns: lap, time, s1, s2, s3, valid, compound, fuel, notes.",
+      "template": "⤓ template",
+      "cancel": "Cancel",
+      "uploadAnalyze": "Upload and analyze",
+      "createSession": "Create session"
+    },
+    "msg": {
+      "loadErrorSessions": "Error loading sessions",
+      "loadErrorAnalytics": "Error loading analytics",
+      "selectCsv": "Select a CSV file",
+      "addOneLap": "Add at least one lap",
+      "lapNoTime": "Lap {{n}} has no time",
+      "created": "Session \"{{name}}\" created ({{laps}} laps)",
+      "saveError": "Error saving the session",
+      "downloadTemplateError": "Could not download the template",
+      "deleteConfirm": "Delete this session and all its laps?",
+      "deleted": "Session deleted",
+      "deleteError": "Error deleting",
+      "loadErrorCompare": "Error loading sessions to compare",
+      "pdfError": "Could not generate the PDF"
+    },
+    "detail": {
+      "session": "SESSION",
+      "bestLapLabel": "BEST LAP",
+      "lap": "LAP {{n}}",
+      "average": "Average",
+      "medianSub": "median {{value}}",
+      "stdev": "Stdev",
+      "consistency": "consistency",
+      "degradation": "Degradation",
+      "rSquared": "R² {{value}}",
+      "laps": "Laps",
+      "lapsValid": "{{count}} valid",
+      "invalid": "Invalid",
+      "outliers": "Outliers",
+      "lapTimes": "Lap times",
+      "points": "{{count}} points",
+      "lapAxis": "Lap",
+      "secondsAxis": "Seconds",
+      "best": "Best",
+      "median": "Median",
+      "outlier": "Outlier",
+      "time": "Time",
+      "optimalSectors": "Optimal sectors",
+      "sector": "Sector {{n}}",
+      "theoreticalBest": "Theoretical best",
+      "leavingOnTable": "Leaving {{value}}s on the table",
+      "perfectLap": "Perfect lap!",
+      "summary": "Summary",
+      "totalLaps": "Total laps",
+      "validLaps": "Valid laps",
+      "invalidLaps": "Invalid laps",
+      "outliersDetected": "Outliers detected",
+      "worstValidLap": "Worst valid lap",
+      "lapDetail": "Lap detail",
+      "lapsTotal": "{{count}} laps",
+      "col": {
+        "time": "Time",
+        "gap": "Gap",
+        "s1": "S1",
+        "s2": "S2",
+        "s3": "S3",
+        "status": "Status"
+      },
+      "tag": {
+        "invalid": "INVALID",
+        "outlier": "OUTLIER"
+      }
+    },
+    "advanced": {
+      "title": "Advanced analytics",
+      "subtitle": "pandas · sklearn · scipy",
+      "tabs": {
+        "distribution": "Distribution",
+        "heatmap": "Sector heatmap",
+        "stints": "Stints",
+        "anomalies": "Anomalies",
+        "degradation": "Degradation"
+      },
+      "errorFallback": "Analytics service unavailable",
+      "distribution": {
+        "noValid": "No valid laps to show distribution.",
+        "boxPlot": "Box plot",
+        "histogram": "Histogram",
+        "seconds": "Seconds",
+        "frequency": "Frequency",
+        "laps": "Laps",
+        "time": "Time"
+      },
+      "heatmap": {
+        "gap": "Gap (s)",
+        "lap": "Lap",
+        "note": "Each cell shows how much you lose in that sector versus the best sector you achieved in the whole session. Green = perfect lap for that sector."
+      },
+      "stints": {
+        "tooShort": "Session too short to detect stints.",
+        "detected": "{{n}} stints detected — method: ",
+        "methodCompound": "by compound",
+        "methodKmeans": "KMeans 1D on lap_time",
+        "stintName": "Stint {{n}}",
+        "lap": "Lap",
+        "seconds": "Seconds",
+        "col": {
+          "stint": "Stint",
+          "compound": "Compound",
+          "laps": "Laps",
+          "best": "Best",
+          "average": "Average",
+          "degradation": "Degradation"
+        }
+      },
+      "anomalies": {
+        "detected": "anomalous laps out of {{n}} valid.",
+        "isoForest": "IsolationForest detected",
+        "lap": "Lap",
+        "seconds": "Seconds",
+        "normal": "Normal",
+        "anomaly": "Anomaly"
+      },
+      "degradation": {
+        "linearFit": "Linear fit R² =",
+        "polyDegree": "polynomial degree {{d}} R² =",
+        "chosen": "chosen:",
+        "validLaps": "Valid laps",
+        "linear": "Linear (R² {{r}})",
+        "polynomial": "Polynomial d{{d}} (R² {{r}})",
+        "lap": "Lap",
+        "seconds": "Seconds"
+      }
+    },
+    "consistency": {
+      "title": "Consistency",
+      "needMore": "At least 2 valid laps are needed to calculate consistency.",
+      "score": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "average": "Average",
+        "needsWork": "Needs work"
+      },
+      "cv": "CV (variance)",
+      "cvSub": "stdev / mean · pro <0.5%",
+      "iqr": "IQR (P25–P75)",
+      "iqrSub": "central 50% of laps",
+      "hotLap": "Hot lap window",
+      "hotLapSub": "avg of 3 from L{{start}}",
+      "hotLapNoData": "no data",
+      "nearBest": "% near best",
+      "nearBestSub": "2%: {{p2}}% · 5%: {{p5}}%",
+      "atOnePct": "@1%",
+      "bySector": "Consistency by sector",
+      "sector": "Sector {{n}}",
+      "leastConsistent": "⚠ LEAST CONSISTENT",
+      "spread": "Spread {{value}}s",
+      "footer": "Score = CV weighted over valid laps (without outliers).",
+      "footerMostVariable": " Most variable sector: ",
+      "footerPractice": " — practice that section."
+    },
+    "tests": {
+      "title": "Statistical tests",
+      "subtitle": "Welch · MWU · Cohen's d",
+      "helper": "Compare this session against another. Is the time difference significant, or just noise?",
+      "compareWith": "Compare with session",
+      "selectSession": "— Select a session —",
+      "meanA": "Mean A",
+      "meanB": "Mean B",
+      "diff": "Δ (A − B)",
+      "nAnB": "n A · n B",
+      "col": {
+        "test": "Test",
+        "statistic": "Statistic",
+        "pValue": "p-value",
+        "interp": "Interpretation"
+      },
+      "welch": "Welch's t-test",
+      "welchSub": "assumes approximately normal distribution",
+      "mwu": "Mann-Whitney U",
+      "mwuSub": "non-parametric, robust to outliers",
+      "cohen": "Cohen's d",
+      "cohenSub": "effect size",
+      "effectSuffix": "effect",
+      "verdictSig": "The difference is",
+      "verdictSigStrong": "statistically significant",
+      "verdictSigAt5": "at 5%. On average, A is",
+      "faster": "faster",
+      "slower": "slower",
+      "by": "by",
+      "effectParen": "({{label}} effect).",
+      "verdictNotSig": "The difference is",
+      "verdictNotSigStrong": "not significant",
+      "verdictNotSigDetail": "at 5% — it could be explained by natural lap-to-lap variability. You would need more data to confirm.",
+      "loadError": "Could not load the selected session."
+    },
+    "distributions": {
+      "title": "Distributions · lap times",
+      "subtitle": "histogram · KDE · median",
+      "helper": "Compare the shape of the distributions, not just the average.",
+      "overlay": "Overlay sessions (max 5)",
+      "lapTimeAxis": "Lap time (s)",
+      "density": "Density",
+      "needMore": "At least 2 valid laps are needed to show the distribution.",
+      "lapsMed": "{{laps}} laps · med {{med}}s · IQR {{iqr}}s"
+    },
+    "conditions": {
+      "title": "Conditions impact",
+      "circuitOf": "circuit · {{name}}",
+      "noCircuit": "— no circuit —",
+      "helper": "Linear regression of your best lap against a conditions variable across all sessions on the same circuit.",
+      "trackTemp": "Track temp",
+      "airTemp": "Air temp",
+      "humidity": "Humidity",
+      "needMore": "You need at least 3 sessions on this circuit with \"{{var}}\" filled in to run the regression. You have",
+      "var": {
+        "trackTempLabel": "Track temperature",
+        "trackTempUnit": "°C",
+        "ambientTempLabel": "Air temperature",
+        "ambientTempUnit": "°C",
+        "humidityLabel": "Relative humidity",
+        "humidityUnit": "%"
+      },
+      "col": {
+        "metric": "Metric",
+        "value": "Value",
+        "interp": "Interpretation"
+      },
+      "slope": "Slope",
+      "msPer": "ms / {{unit}}",
+      "each": "Each",
+      "degree": "degree",
+      "point": "point",
+      "adds": "adds",
+      "removes": "removes",
+      "msOnBest": "ms on your best lap.",
+      "r2": "R²",
+      "r2Strong": "strong correlation",
+      "r2Moderate": "moderate correlation",
+      "r2Weak": "weak correlation",
+      "r2None": "no clear correlation — many other factors",
+      "nSessions": "n sessions",
+      "nSmall": "Small sample, limited conclusions.",
+      "nReasonable": "Reasonable sample.",
+      "nRobust": "Robust sample.",
+      "bestLapAxis": "Best lap (s)",
+      "sessions": "Sessions",
+      "fit": "Fit (R²={{r}})"
+    },
+    "insights": {
+      "title": "Automatic findings",
+      "count_one": "{{count}} insight",
+      "count_other": "{{count}} insights",
+      "helper": "Generated by statistical analysis: theoretical best, degradation, consistency, outliers, stint comparisons and weak sectors.",
+      "error": "Could not generate insights"
+    },
+    "manualLaps": {
+      "helper": "Times in {{format1}} or {{format2}} format. Sectors optional.",
+      "col": {
+        "time": "Time *",
+        "valid": "Valid",
+        "tire": "Tire"
+      },
+      "empty": "Click \"Add lap\" to start",
+      "lap_one": "{{count}} lap",
+      "lap_other": "{{count}} laps",
+      "addLap": "Add lap"
+    },
+    "multi": {
+      "comparedSessions": "COMPARED SESSIONS",
+      "bestLap": "BEST LAP",
+      "gapVsBest": "{{gap}} vs best",
+      "average": "Average",
+      "median": "Median",
+      "sigma": "σ",
+      "theoretical": "Theoretical",
+      "valid": "Valid",
+      "lapTimesOverlay": "Lap times · overlay",
+      "allSessions": "all sessions",
+      "lap": "Lap",
+      "seconds": "Seconds",
+      "distributionsViolin": "Distributions · violin",
+      "violinHelper": "Each \"violin\" is the probability density of lap times. Inner box = quartiles. Wide, symmetric peak = concentrated pace (consistent).",
+      "comparisonTable": "Comparison table",
+      "col": {
+        "metric": "Metric"
+      },
+      "row": {
+        "bestLap": "Best lap",
+        "average": "Average",
+        "median": "Median",
+        "consistency": "Consistency (σ)",
+        "theoretical": "Theoretical best",
+        "bestS1": "Best S1",
+        "bestS2": "Best S2",
+        "bestS3": "Best S3"
+      }
+    },
+    "trackMap": {
+      "genericName": "Generic layout",
+      "titlePrefix": "Track map ·",
+      "generic": "generic",
+      "realGps": "real GPS",
+      "lapSelect": "Lap",
+      "helperReal": "Approximate layout. Sectors colored by the selected lap: green better than P50, yellow between P50–P75, red worse than P75.",
+      "helperGeneric": "Unrecognized circuit — generic layout. Sectors are colored the same way.",
+      "finishLine": "Finish line",
+      "sectorChange": "Sector change"
+    }
+  },
+  "enums": {
+    "vehicleType": {
+      "FORMULA_1": "Formula 1",
+      "FORMULA_2": "Formula 2",
+      "FORMULA_3": "Formula 3",
+      "FORMULA_4": "Formula 4",
+      "FORMULA_FORD": "Formula Ford",
+      "GT3": "GT3",
+      "GT4": "GT4",
+      "LMP": "LMP",
+      "PROTOTYPE": "Prototype",
+      "TCR": "TCR",
+      "WTCC": "WTCC",
+      "SUPERCARS": "Supercars",
+      "WRC": "WRC",
+      "R5": "R5",
+      "HISTORIC_RALLY": "Historic Rally",
+      "INDYCAR": "IndyCar",
+      "FORMULA_E": "Formula E",
+      "DRIFT_PRO": "Drift Pro",
+      "TIME_ATTACK": "Time Attack",
+      "MOTOGP": "MotoGP",
+      "MOTO2": "Moto2",
+      "MOTO3": "Moto3",
+      "SUPERBIKE": "Superbike",
+      "SUPERSPORT": "Supersport",
+      "EWC": "EWC",
+      "BOL_DOR": "Bol d'Or",
+      "ENDURANCE_24H": "24h Endurance",
+      "MXGP": "MXGP",
+      "MX2": "MX2",
+      "EMX": "EMX",
+      "ENDUROGP": "EnduroGP",
+      "ISDE": "ISDE",
+      "TRIALGP": "TrialGP",
+      "TRIAL2": "Trial2",
+      "NAKED": "Naked",
+      "SPORT": "Sport",
+      "CLASSIC": "Classic"
+    },
+    "sessionType": {
+      "PRACTICE": "Practice",
+      "QUALIFYING": "Qualifying",
+      "RACE": "Race",
+      "TEST": "Test",
+      "SHAKEDOWN": "Shakedown",
+      "TIME_ATTACK": "Time Attack"
+    },
+    "eventType": {
+      "RACE": "Race",
+      "TEST": "Test",
+      "PRACTICE": "Practice",
+      "QUALIFYING": "Qualifying",
+      "TRAINING": "Training",
+      "TRAVEL": "Travel",
+      "MEETING": "Meeting",
+      "MAINTENANCE": "Maintenance",
+      "PRESENTATION": "Presentation",
+      "MEDIA": "Media",
+      "SPONSOR_EVENT": "Sponsor event",
+      "SHAKEDOWN": "Shakedown",
+      "TRACKDAY": "Track day",
+      "OTHER": "Other"
+    },
+    "eventStatus": {
+      "PLANNED": "Planned",
+      "CONFIRMED": "Confirmed",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "POSTPONED": "Postponed",
+      "WEATHER_DELAY": "Weather delay",
+      "TECHNICAL_ISSUE": "Technical issue"
+    },
+    "trackCondition": {
+      "DRY": "Dry",
+      "WET": "Wet",
+      "MIXED": "Mixed",
+      "DAMP": "Damp"
+    }
   }
 }

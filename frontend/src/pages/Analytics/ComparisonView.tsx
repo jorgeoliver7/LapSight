@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -86,6 +87,7 @@ const StatRow: React.FC<RowProps> = ({ label, va, vb, format = formatLapTime, in
 };
 
 const ComparisonView: React.FC<Props> = ({ a, b }) => {
+  const { t } = useTranslation();
   // Datos del gráfico: vueltas indexadas por lapNumber, con valor de A y B
   const allLapNumbers = Array.from(
     new Set([...a.perLap.map((l) => l.lapNumber), ...b.perLap.map((l) => l.lapNumber)])
@@ -142,7 +144,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                KPIs side by side
+                {t('analytics.multi.comparisonTable')}
               </Typography>
               <TableContainer>
                 <Table size="small">
@@ -159,23 +161,23 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    <StatRow label="Best lap" va={a.bestLapMs} vb={b.bestLapMs} />
-                    <StatRow label="Average" va={a.averageMs} vb={b.averageMs} />
-                    <StatRow label="Median" va={a.medianMs} vb={b.medianMs} />
+                    <StatRow label={t('analytics.multi.row.bestLap')} va={a.bestLapMs} vb={b.bestLapMs} />
+                    <StatRow label={t('analytics.multi.row.average')} va={a.averageMs} vb={b.averageMs} />
+                    <StatRow label={t('analytics.multi.row.median')} va={a.medianMs} vb={b.medianMs} />
                     <StatRow
-                      label="Consistency (σ)"
+                      label={t('analytics.multi.row.consistency')}
                       va={a.stdDevMs}
                       vb={b.stdDevMs}
                       format={(n) => (n != null ? `±${(n / 1000).toFixed(3)}s` : '—')}
                     />
                     <StatRow
-                      label="Theoretical best"
+                      label={t('analytics.multi.row.theoretical')}
                       va={a.theoreticalBestLapMs}
                       vb={b.theoreticalBestLapMs}
                     />
-                    <StatRow label="Best S1" va={a.bestSector1Ms} vb={b.bestSector1Ms} />
-                    <StatRow label="Best S2" va={a.bestSector2Ms} vb={b.bestSector2Ms} />
-                    <StatRow label="Best S3" va={a.bestSector3Ms} vb={b.bestSector3Ms} />
+                    <StatRow label={t('analytics.multi.row.bestS1')} va={a.bestSector1Ms} vb={b.bestSector1Ms} />
+                    <StatRow label={t('analytics.multi.row.bestS2')} va={a.bestSector2Ms} vb={b.bestSector2Ms} />
+                    <StatRow label={t('analytics.multi.row.bestS3')} va={a.bestSector3Ms} vb={b.bestSector3Ms} />
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -187,39 +189,36 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                Summary
+                {t('analytics.detail.summary')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={1.5}>
                 <Box>
                   <Typography variant="caption" color="textSecondary">
-                    Best lap delta
+                    {t('analytics.multi.row.bestLap')}
                   </Typography>
                   <Typography variant="h5" fontWeight={700} fontFamily="monospace">
                     {bestGap != null ? formatGap(bestGap) : '—'}
                   </Typography>
                   <Typography variant="caption" color="textSecondary">
-                    {bestGap != null && bestGap < 0 ? `${a.sessionName} is faster` : bestGap != null && bestGap > 0 ? `${b.sessionName} is faster` : 'Tie'}
+                    {bestGap != null && bestGap < 0 ? `${a.sessionName} ${t('analytics.tests.faster')}` : bestGap != null && bestGap > 0 ? `${b.sessionName} ${t('analytics.tests.faster')}` : '='}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="textSecondary">
-                    Theoretical best delta
+                    {t('analytics.multi.row.theoretical')}
                   </Typography>
                   <Typography variant="h5" fontWeight={700} fontFamily="monospace">
                     {theoreticalGap != null ? formatGap(theoreticalGap) : '—'}
                   </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Raw potential summing best sectors
-                  </Typography>
                 </Box>
                 <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
                   <Chip
-                    label={`A: ${a.validLaps}/${a.totalLaps} valid`}
+                    label={`A: ${a.validLaps}/${a.totalLaps} ${t('analytics.multi.valid').toLowerCase()}`}
                     size="small"
                     sx={{ bgcolor: COLOR_A, color: 'white' }}
                   />
                   <Chip
-                    label={`B: ${b.validLaps}/${b.totalLaps} valid`}
+                    label={`B: ${b.validLaps}/${b.totalLaps} ${t('analytics.multi.valid').toLowerCase()}`}
                     size="small"
                     sx={{ bgcolor: COLOR_B, color: 'white' }}
                   />
@@ -233,20 +232,20 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
       <Card>
         <CardContent>
           <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Lap times (overlay)
+            {t('analytics.multi.lapTimesOverlay')}
           </Typography>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="lapNumber" label={{ value: 'Lap', position: 'insideBottom', offset: -5 }} />
+              <XAxis dataKey="lapNumber" label={{ value: t('analytics.multi.lap'), position: 'insideBottom', offset: -5 }} />
               <YAxis
                 tickFormatter={(v) => v.toFixed(2)}
-                label={{ value: 'Seconds', angle: -90, position: 'insideLeft' }}
+                label={{ value: t('analytics.multi.seconds'), angle: -90, position: 'insideLeft' }}
                 domain={['auto', 'auto']}
               />
               <RTooltip
                 formatter={(v: any) => (typeof v === 'number' ? `${v.toFixed(3)} s` : '—')}
-                labelFormatter={(l) => `Lap ${l}`}
+                labelFormatter={(l) => `${t('analytics.multi.lap')} ${l}`}
               />
               <Legend />
               <Line
@@ -275,7 +274,7 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
       <Card>
         <CardContent>
           <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            Gap per lap
+            {t('analytics.detail.col.gap')}
           </Typography>
           <TableContainer>
             <Table size="small">
@@ -283,12 +282,12 @@ const ComparisonView: React.FC<Props> = ({ a, b }) => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell align="right" sx={{ color: COLOR_A }}>
-                    Time A
+                    {t('analytics.detail.col.time')} A
                   </TableCell>
                   <TableCell align="right" sx={{ color: COLOR_B }}>
-                    Time B
+                    {t('analytics.detail.col.time')} B
                   </TableCell>
-                  <TableCell align="right">Gap (A − B)</TableCell>
+                  <TableCell align="right">{t('analytics.detail.col.gap')} (A − B)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

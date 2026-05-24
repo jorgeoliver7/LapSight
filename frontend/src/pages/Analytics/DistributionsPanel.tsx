@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FormControl,
   Select,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
+  const { t } = useTranslation();
   const [overlayIds, setOverlayIds] = useState<number[]>([]);
   const [overlayAnalytics, setOverlayAnalytics] = useState<SessionAnalytics[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,8 +83,8 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
 
   return (
     <Panel
-      title="Distributions · lap times"
-      right={<Mono style={{ color: colors.textMute }}>histogram · KDE · median</Mono>}
+      title={t('analytics.distributions.title')}
+      right={<Mono style={{ color: colors.textMute }}>{t('analytics.distributions.subtitle')}</Mono>}
       padding={16}
     >
       <Mono
@@ -95,16 +97,16 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
           display: 'block',
         }}
       >
-        Compare the <em>shape</em> of the distributions, not just the average.
+        {t('analytics.distributions.helper')}
       </Mono>
 
       <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-        <InputLabel>Overlay sessions (max 5)</InputLabel>
+        <InputLabel>{t('analytics.distributions.overlay')}</InputLabel>
         <Select
           multiple
           value={overlayIds}
           onChange={(e) => setOverlayIds((e.target.value as number[]).slice(0, 5))}
-          input={<OutlinedInput label="Overlay sessions (max 5)" />}
+          input={<OutlinedInput label={t('analytics.distributions.overlay')} />}
           renderValue={(selected) => (
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {(selected as number[]).map((id) => {
@@ -175,7 +177,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
               xaxis: {
                 ...(apexPlotlyLayout().xaxis as object),
                 title: {
-                  text: 'Lap time (s)',
+                  text: t('analytics.distributions.lapTimeAxis'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
                 range: [xRange.min, xRange.max],
@@ -183,7 +185,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
               yaxis: {
                 ...(apexPlotlyLayout().yaxis as object),
                 title: {
-                  text: 'Density',
+                  text: t('analytics.distributions.density'),
                   font: { family: fonts.mono, size: 10, color: colors.textMute },
                 },
               },
@@ -201,7 +203,7 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
             letterSpacing: '0.4px',
           }}
         >
-          At least 2 valid laps are needed to show the distribution.
+          {t('analytics.distributions.needMore')}
         </Mono>
       )}
 
@@ -249,8 +251,11 @@ const DistributionsPanel: React.FC<Props> = ({ analytics, sessions }) => {
                 }}
               >
                 <span style={{ color: colors.textDim, marginRight: 6 }}>{d.name}</span>
-                {d.times.length} laps · med {percentile(d.times, 0.5).toFixed(3)}s · IQR{' '}
-                {(percentile(d.times, 0.75) - percentile(d.times, 0.25)).toFixed(3)}s
+                {t('analytics.distributions.lapsMed', {
+                  laps: d.times.length,
+                  med: percentile(d.times, 0.5).toFixed(3),
+                  iqr: (percentile(d.times, 0.75) - percentile(d.times, 0.25)).toFixed(3),
+                })}
               </Mono>
             </div>
           ))}

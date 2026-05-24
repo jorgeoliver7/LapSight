@@ -368,6 +368,627 @@
       "lengthAsc": "− Corto",
       "turnsDesc": "+ Curvas"
     },
-    "imported": "Circuito \"{{name}}\" importado"
+    "imported": "Circuito \"{{name}}\" importado",
+    "card": {
+      "turns": "{{count}} curvas",
+      "realGps": "GPS real",
+      "stylized": "Estilizado",
+      "sessions_one": "{{count}} sesión",
+      "sessions_other": "{{count}} sesiones"
+    },
+    "detail": {
+      "deleteCustom": "Eliminar circuito personalizado",
+      "deleteConfirm": "¿Eliminar circuito personalizado \"{{name}}\"?",
+      "deleted": "Circuito eliminado",
+      "notesSaved": "Notas guardadas",
+      "chip": {
+        "realGps": "GPS real",
+        "stylized": "Estilizado",
+        "custom": "Personalizado"
+      },
+      "field": {
+        "length": "Longitud",
+        "turns": "Curvas",
+        "direction": "Sentido",
+        "longestStraight": "Recta más larga",
+        "opened": "Inaugurado",
+        "altitude": "Altitud",
+        "lapRecord": "Récord"
+      },
+      "direction": {
+        "cw": "↻ Horario",
+        "ccw": "↺ Antihorario"
+      },
+      "tabs": {
+        "summary": "Resumen",
+        "records": "Récords ({{count}})",
+        "events": "Eventos ({{count}})",
+        "notes": "Notas técnicas"
+      },
+      "summary": {
+        "sessionsAt_one": "Tienes {{count}} sesión en este circuito",
+        "sessionsAt_other": "Tienes {{count}} sesiones en este circuito",
+        "kmCovered": "~{{km}} km recorridos",
+        "eventsPlanned": "Eventos planificados o pasados: {{count}}"
+      },
+      "records": {
+        "noSessions": "Aún no hay sesiones registradas en este circuito.",
+        "col": {
+          "session": "Sesión",
+          "date": "Fecha",
+          "driver": "Piloto",
+          "vehicle": "Vehículo",
+          "bestLap": "Mejor vuelta"
+        },
+        "trophyHint": "Tu mejor vuelta en este circuito"
+      },
+      "events": {
+        "noEvents": "No hay eventos planificados en este circuito.",
+        "col": {
+          "event": "Evento",
+          "type": "Tipo",
+          "startDate": "Fecha inicio",
+          "status": "Estado"
+        }
+      },
+      "notes": {
+        "helper": "Notas guardadas localmente en este navegador. Útiles para cambios de setup, presiones, puntos de frenada, etc.",
+        "placeholder": "ej. 4ª en recta principal, 3ª en curva 1, presión delantera 1.8 bar..."
+      }
+    },
+    "compareDialog": {
+      "title": "Comparador de circuitos",
+      "metric": "Métrica",
+      "close": "CERRAR",
+      "circuit": "CIRCUITO · {{label}}",
+      "rows": {
+        "country": "País",
+        "length": "Longitud",
+        "turns": "Curvas",
+        "direction": "Sentido",
+        "longestStraight": "Recta más larga",
+        "altitude": "Altitud",
+        "opened": "Inaugurado",
+        "categories": "Categorías",
+        "lapRecord": "Récord"
+      }
+    },
+    "importer": {
+      "title": "Importar circuito desde GeoJSON",
+      "intro": "Sube un archivo GeoJSON con un LineString (coordenadas [lng, lat]). Se guardará localmente en tu navegador.",
+      "name": "Nombre",
+      "country": "País (ISO)",
+      "lengthKm": "Longitud (km)",
+      "selectFile": "Seleccionar archivo .geojson",
+      "pasteJson": "O pega aquí el JSON",
+      "import": "Importar",
+      "cancel": "Cancelar",
+      "points": "{{count}} puntos",
+      "noLength": "sin longitud",
+      "errors": {
+        "parse": "No se pudo extraer un LineString del GeoJSON. Acepta FeatureCollection / Feature / LineString.",
+        "tooFew": "El trazado debe tener al menos 3 puntos."
+      }
+    },
+    "selector": {
+      "label": "Circuito",
+      "placeholder": "Buscar o escribir circuito...",
+      "regions": {
+        "spain": "🇪🇸 España",
+        "europe": "🇪🇺 Europa",
+        "asia": "🌏 Asia",
+        "middleEast": "🕌 Oriente Medio",
+        "americas": "🌎 Américas",
+        "oceania": "🇦🇺 Oceanía",
+        "other": "🏁 Otros"
+      }
+    }
+  },
+  "dashboard": {
+    "eyebrow": "EQUIPO · OVERVIEW",
+    "title": "Dashboard",
+    "subtitle": "Últimas {{count}} sesiones · {{state}}",
+    "stateLoading": "cargando analytics…",
+    "stateUpToDate": "actualizado",
+    "refresh": "↻ Refrescar",
+    "kpis": {
+      "sessions": "Sesiones",
+      "lapsRecorded": "Vueltas registradas",
+      "valid": "Válidas",
+      "ofTotal": "de {{count}} totales",
+      "drivers": "Pilotos",
+      "vehicles": "Vehículos",
+      "totalKm": "Km totales",
+      "estimated": "estimados"
+    },
+    "hero": {
+      "label": "Mejor vuelta · dataset reciente",
+      "openAnalytics": "Abrir análisis →"
+    },
+    "bestPerCircuit": {
+      "title": "Mejor vuelta · por circuito",
+      "circuits_one": "{{count}} circuito",
+      "circuits_other": "{{count}} circuitos",
+      "col": {
+        "circuit": "Circuito",
+        "sessions": "Ses",
+        "laps": "Vueltas",
+        "best": "Mejor",
+        "theor": "Theor.",
+        "delta": "Δ"
+      }
+    },
+    "leaderboard": {
+      "title": "Leaderboard · pilotos",
+      "byBestLap": "por mejor vuelta",
+      "col": {
+        "driver": "Piloto",
+        "sessions": "Ses",
+        "laps": "Vueltas",
+        "best": "Mejor",
+        "cv": "CV"
+      }
+    },
+    "pbEvolution": {
+      "title": "Evolución best lap",
+      "points": "{{count}} puntos",
+      "needMore": "Mínimo 2 sesiones con analytics."
+    },
+    "distribution": {
+      "title": "Distribución · por circuito",
+      "boxplot": "boxplot · vueltas válidas",
+      "notEnough": "Sin datos suficientes para boxplots."
+    },
+    "recent": {
+      "title": "Sesiones recientes",
+      "upcoming_one": "{{count}} evento próximo →",
+      "upcoming_other": "{{count}} eventos próximos →",
+      "goAnalytics": "Ir a análisis →",
+      "col": {
+        "session": "Sesión",
+        "date": "Fecha",
+        "circuit": "Circuito",
+        "driver": "Piloto",
+        "vehicle": "Vehículo",
+        "laps": "Vueltas",
+        "best": "Mejor",
+        "median": "Mediana",
+        "cv": "CV",
+        "cond": "Cond."
+      }
+    },
+    "empty": {
+      "loading": "Cargando…",
+      "noDataYet": "Sin datos todavía.",
+      "noData": "Sin datos."
+    }
+  },
+  "analytics": {
+    "eyebrow": "TELEMETRÍA · ANÁLISIS DE SESIÓN",
+    "title": "Análisis de sesión",
+    "subtitle": "Sube CSV con tiempos por vuelta · {{count}} sesiones registradas",
+    "uploadSession": "+ Subir sesión",
+    "sidebar": {
+      "title": "Sesiones",
+      "empty": "Sube un CSV para empezar.",
+      "loading": "Cargando…",
+      "laps": "{{count}} vueltas"
+    },
+    "select": {
+      "title": "Selecciona una sesión para ver su análisis"
+    },
+    "compare": {
+      "label": "COMPARAR CON",
+      "additional": "Sesiones adicionales (máx 3)",
+      "singleView": "— Vista individual —",
+      "comparedClear": "{{count}} comparadas · limpiar ×",
+      "pdf": "⤓ PDF"
+    },
+    "dialog": {
+      "title": "Nueva sesión",
+      "sessionName": "Nombre de la sesión",
+      "dateTime": "Fecha y hora",
+      "type": "Tipo",
+      "trackCondition": "Condición de pista",
+      "vehicle": "Vehículo",
+      "driver": "Piloto",
+      "notes": "Notas",
+      "ambient": "Condiciones ambientales",
+      "trackTemp": "Temp. pista (°C)",
+      "airTemp": "Temp. aire (°C)",
+      "humidity": "Humedad (%)",
+      "wind": "Viento (km/h)",
+      "setupNotes": "Notas de setup",
+      "setupPlaceholder": "ej. Pres F 1.8/T 1.7 | Relación 12/41 | Ala -3 | Bias +2",
+      "setupHelper": "Texto libre. Útil para comparar setups entre sesiones.",
+      "tabCsv": "Subir CSV",
+      "tabManual": "Añadir manual",
+      "selectCsv": "Seleccionar archivo CSV",
+      "columnsHelp": "Columnas: lap, time, s1, s2, s3, valid, compound, fuel, notes.",
+      "template": "⤓ plantilla",
+      "cancel": "Cancelar",
+      "uploadAnalyze": "Subir y analizar",
+      "createSession": "Crear sesión"
+    },
+    "msg": {
+      "loadErrorSessions": "Error cargando sesiones",
+      "loadErrorAnalytics": "Error cargando analytics",
+      "selectCsv": "Selecciona un archivo CSV",
+      "addOneLap": "Añade al menos una vuelta",
+      "lapNoTime": "La vuelta {{n}} no tiene tiempo",
+      "created": "Sesión \"{{name}}\" creada ({{laps}} vueltas)",
+      "saveError": "Error guardando la sesión",
+      "downloadTemplateError": "No se pudo descargar la plantilla",
+      "deleteConfirm": "¿Eliminar esta sesión y todas sus vueltas?",
+      "deleted": "Sesión eliminada",
+      "deleteError": "Error eliminando",
+      "loadErrorCompare": "Error cargando sesiones para comparar",
+      "pdfError": "No se pudo generar el PDF"
+    },
+    "detail": {
+      "session": "SESIÓN",
+      "bestLapLabel": "MEJOR VUELTA",
+      "lap": "VUELTA {{n}}",
+      "average": "Media",
+      "medianSub": "mediana {{value}}",
+      "stdev": "Stdev",
+      "consistency": "consistencia",
+      "degradation": "Degradación",
+      "rSquared": "R² {{value}}",
+      "laps": "Vueltas",
+      "lapsValid": "{{count}} válidas",
+      "invalid": "Inválidas",
+      "outliers": "Outliers",
+      "lapTimes": "Tiempos por vuelta",
+      "points": "{{count}} puntos",
+      "lapAxis": "Vuelta",
+      "secondsAxis": "Segundos",
+      "best": "Mejor",
+      "median": "Mediana",
+      "outlier": "Outlier",
+      "time": "Tiempo",
+      "optimalSectors": "Sectores óptimos",
+      "sector": "Sector {{n}}",
+      "theoreticalBest": "Mejor teórica",
+      "leavingOnTable": "Dejando {{value}}s sobre la mesa",
+      "perfectLap": "¡Vuelta perfecta!",
+      "summary": "Resumen",
+      "totalLaps": "Vueltas totales",
+      "validLaps": "Vueltas válidas",
+      "invalidLaps": "Vueltas inválidas",
+      "outliersDetected": "Outliers detectados",
+      "worstValidLap": "Peor vuelta válida",
+      "lapDetail": "Detalle por vuelta",
+      "lapsTotal": "{{count}} vueltas",
+      "col": {
+        "time": "Tiempo",
+        "gap": "Gap",
+        "s1": "S1",
+        "s2": "S2",
+        "s3": "S3",
+        "status": "Estado"
+      },
+      "tag": {
+        "invalid": "INVÁLIDA",
+        "outlier": "OUTLIER"
+      }
+    },
+    "advanced": {
+      "title": "Análisis avanzado",
+      "subtitle": "pandas · sklearn · scipy",
+      "tabs": {
+        "distribution": "Distribución",
+        "heatmap": "Heatmap por sector",
+        "stints": "Stints",
+        "anomalies": "Anomalías",
+        "degradation": "Degradación"
+      },
+      "errorFallback": "Servicio de analytics no disponible",
+      "distribution": {
+        "noValid": "No hay vueltas válidas para mostrar la distribución.",
+        "boxPlot": "Box plot",
+        "histogram": "Histograma",
+        "seconds": "Segundos",
+        "frequency": "Frecuencia",
+        "laps": "Vueltas",
+        "time": "Tiempo"
+      },
+      "heatmap": {
+        "gap": "Gap (s)",
+        "lap": "Vuelta",
+        "note": "Cada celda muestra cuánto pierdes en ese sector frente al mejor sector que conseguiste en toda la sesión. Verde = vuelta perfecta para ese sector."
+      },
+      "stints": {
+        "tooShort": "Sesión demasiado corta para detectar stints.",
+        "detected": "{{n}} stints detectados — método: ",
+        "methodCompound": "por compuesto",
+        "methodKmeans": "KMeans 1D sobre lap_time",
+        "stintName": "Stint {{n}}",
+        "lap": "Vuelta",
+        "seconds": "Segundos",
+        "col": {
+          "stint": "Stint",
+          "compound": "Compuesto",
+          "laps": "Vueltas",
+          "best": "Mejor",
+          "average": "Media",
+          "degradation": "Degradación"
+        }
+      },
+      "anomalies": {
+        "detected": "vueltas anómalas de {{n}} válidas.",
+        "isoForest": "IsolationForest detectó",
+        "lap": "Vuelta",
+        "seconds": "Segundos",
+        "normal": "Normal",
+        "anomaly": "Anomalía"
+      },
+      "degradation": {
+        "linearFit": "Ajuste lineal R² =",
+        "polyDegree": "polinómico grado {{d}} R² =",
+        "chosen": "elegido:",
+        "validLaps": "Vueltas válidas",
+        "linear": "Lineal (R² {{r}})",
+        "polynomial": "Polinómico d{{d}} (R² {{r}})",
+        "lap": "Vuelta",
+        "seconds": "Segundos"
+      }
+    },
+    "consistency": {
+      "title": "Consistencia",
+      "needMore": "Se necesitan al menos 2 vueltas válidas para calcular la consistencia.",
+      "score": {
+        "excellent": "Excelente",
+        "good": "Buena",
+        "average": "Media",
+        "needsWork": "Mejorable"
+      },
+      "cv": "CV (varianza)",
+      "cvSub": "stdev / media · pro <0.5%",
+      "iqr": "IQR (P25–P75)",
+      "iqrSub": "50% central de vueltas",
+      "hotLap": "Ventana hot lap",
+      "hotLapSub": "media de 3 desde L{{start}}",
+      "hotLapNoData": "sin datos",
+      "nearBest": "% cerca del mejor",
+      "nearBestSub": "2%: {{p2}}% · 5%: {{p5}}%",
+      "atOnePct": "@1%",
+      "bySector": "Consistencia por sector",
+      "sector": "Sector {{n}}",
+      "leastConsistent": "⚠ MENOS CONSISTENTE",
+      "spread": "Spread {{value}}s",
+      "footer": "Score = CV ponderado sobre vueltas válidas (sin outliers).",
+      "footerMostVariable": " Sector más variable: ",
+      "footerPractice": " — practica esa sección."
+    },
+    "tests": {
+      "title": "Tests estadísticos",
+      "subtitle": "Welch · MWU · Cohen's d",
+      "helper": "Compara esta sesión con otra. ¿Es la diferencia significativa o solo ruido?",
+      "compareWith": "Comparar con sesión",
+      "selectSession": "— Selecciona una sesión —",
+      "meanA": "Media A",
+      "meanB": "Media B",
+      "diff": "Δ (A − B)",
+      "nAnB": "n A · n B",
+      "col": {
+        "test": "Test",
+        "statistic": "Estadístico",
+        "pValue": "p-valor",
+        "interp": "Interpretación"
+      },
+      "welch": "t-test de Welch",
+      "welchSub": "asume distribución aproximadamente normal",
+      "mwu": "Mann-Whitney U",
+      "mwuSub": "no paramétrico, robusto a outliers",
+      "cohen": "Cohen's d",
+      "cohenSub": "tamaño del efecto",
+      "effectSuffix": "efecto",
+      "verdictSig": "La diferencia es",
+      "verdictSigStrong": "estadísticamente significativa",
+      "verdictSigAt5": "al 5%. En promedio, A es",
+      "faster": "más rápido",
+      "slower": "más lento",
+      "by": "por",
+      "effectParen": "(efecto {{label}}).",
+      "verdictNotSig": "La diferencia",
+      "verdictNotSigStrong": "no es significativa",
+      "verdictNotSigDetail": "al 5% — podría explicarse por la variabilidad natural entre vueltas. Necesitarías más datos para confirmar.",
+      "loadError": "No se pudo cargar la sesión seleccionada."
+    },
+    "distributions": {
+      "title": "Distribuciones · tiempos por vuelta",
+      "subtitle": "histograma · KDE · mediana",
+      "helper": "Compara la forma de las distribuciones, no solo la media.",
+      "overlay": "Superponer sesiones (máx 5)",
+      "lapTimeAxis": "Tiempo por vuelta (s)",
+      "density": "Densidad",
+      "needMore": "Se necesitan al menos 2 vueltas válidas para mostrar la distribución.",
+      "lapsMed": "{{laps}} vueltas · med {{med}}s · IQR {{iqr}}s"
+    },
+    "conditions": {
+      "title": "Impacto de condiciones",
+      "circuitOf": "circuito · {{name}}",
+      "noCircuit": "— sin circuito —",
+      "helper": "Regresión lineal de tu mejor vuelta frente a una variable de condiciones a través de todas las sesiones en el mismo circuito.",
+      "trackTemp": "Temp. pista",
+      "airTemp": "Temp. aire",
+      "humidity": "Humedad",
+      "needMore": "Necesitas al menos 3 sesiones en este circuito con \"{{var}}\" rellenado para ejecutar la regresión. Tienes",
+      "var": {
+        "trackTempLabel": "Temperatura de pista",
+        "trackTempUnit": "°C",
+        "ambientTempLabel": "Temperatura del aire",
+        "ambientTempUnit": "°C",
+        "humidityLabel": "Humedad relativa",
+        "humidityUnit": "%"
+      },
+      "col": {
+        "metric": "Métrica",
+        "value": "Valor",
+        "interp": "Interpretación"
+      },
+      "slope": "Pendiente",
+      "msPer": "ms / {{unit}}",
+      "each": "Cada",
+      "degree": "grado",
+      "point": "punto",
+      "adds": "añade",
+      "removes": "resta",
+      "msOnBest": "ms a tu mejor vuelta.",
+      "r2": "R²",
+      "r2Strong": "correlación fuerte",
+      "r2Moderate": "correlación moderada",
+      "r2Weak": "correlación débil",
+      "r2None": "sin correlación clara — muchos otros factores",
+      "nSessions": "n sesiones",
+      "nSmall": "Muestra pequeña, conclusiones limitadas.",
+      "nReasonable": "Muestra razonable.",
+      "nRobust": "Muestra robusta.",
+      "bestLapAxis": "Mejor vuelta (s)",
+      "sessions": "Sesiones",
+      "fit": "Fit (R²={{r}})"
+    },
+    "insights": {
+      "title": "Hallazgos automáticos",
+      "count_one": "{{count}} insight",
+      "count_other": "{{count}} insights",
+      "helper": "Generados por análisis estadístico: mejor teórica, degradación, consistencia, outliers, comparativas de stints y sectores débiles.",
+      "error": "No se pudieron generar los insights"
+    },
+    "manualLaps": {
+      "helper": "Tiempos en formato {{format1}} o {{format2}}. Sectores opcionales.",
+      "col": {
+        "time": "Tiempo *",
+        "valid": "Válida",
+        "tire": "Neumático"
+      },
+      "empty": "Pulsa \"Añadir vuelta\" para empezar",
+      "lap_one": "{{count}} vuelta",
+      "lap_other": "{{count}} vueltas",
+      "addLap": "Añadir vuelta"
+    },
+    "multi": {
+      "comparedSessions": "SESIONES COMPARADAS",
+      "bestLap": "MEJOR VUELTA",
+      "gapVsBest": "{{gap}} vs mejor",
+      "average": "Media",
+      "median": "Mediana",
+      "sigma": "σ",
+      "theoretical": "Teórica",
+      "valid": "Válidas",
+      "lapTimesOverlay": "Tiempos por vuelta · overlay",
+      "allSessions": "todas las sesiones",
+      "lap": "Vuelta",
+      "seconds": "Segundos",
+      "distributionsViolin": "Distribuciones · violín",
+      "violinHelper": "Cada \"violín\" es la densidad de probabilidad de los tiempos por vuelta. Caja interior = cuartiles. Pico ancho y simétrico = ritmo concentrado (consistente).",
+      "comparisonTable": "Tabla comparativa",
+      "col": {
+        "metric": "Métrica"
+      },
+      "row": {
+        "bestLap": "Mejor vuelta",
+        "average": "Media",
+        "median": "Mediana",
+        "consistency": "Consistencia (σ)",
+        "theoretical": "Mejor teórica",
+        "bestS1": "Mejor S1",
+        "bestS2": "Mejor S2",
+        "bestS3": "Mejor S3"
+      }
+    },
+    "trackMap": {
+      "genericName": "Trazado genérico",
+      "titlePrefix": "Mapa de pista ·",
+      "generic": "genérico",
+      "realGps": "GPS real",
+      "lapSelect": "Vuelta",
+      "helperReal": "Trazado aproximado. Sectores coloreados según la vuelta seleccionada: verde mejor que P50, amarillo entre P50–P75, rojo peor que P75.",
+      "helperGeneric": "Circuito no reconocido — trazado genérico. Los sectores se colorean igual.",
+      "finishLine": "Meta",
+      "sectorChange": "Cambio de sector"
+    }
+  },
+  "enums": {
+    "vehicleType": {
+      "FORMULA_1": "Fórmula 1",
+      "FORMULA_2": "Fórmula 2",
+      "FORMULA_3": "Fórmula 3",
+      "FORMULA_4": "Fórmula 4",
+      "FORMULA_FORD": "Fórmula Ford",
+      "GT3": "GT3",
+      "GT4": "GT4",
+      "LMP": "LMP",
+      "PROTOTYPE": "Prototipo",
+      "TCR": "TCR",
+      "WTCC": "WTCC",
+      "SUPERCARS": "Supercars",
+      "WRC": "WRC",
+      "R5": "R5",
+      "HISTORIC_RALLY": "Rally histórico",
+      "INDYCAR": "IndyCar",
+      "FORMULA_E": "Fórmula E",
+      "DRIFT_PRO": "Drift Pro",
+      "TIME_ATTACK": "Time Attack",
+      "MOTOGP": "MotoGP",
+      "MOTO2": "Moto2",
+      "MOTO3": "Moto3",
+      "SUPERBIKE": "Superbike",
+      "SUPERSPORT": "Supersport",
+      "EWC": "EWC",
+      "BOL_DOR": "Bol d'Or",
+      "ENDURANCE_24H": "24h Endurance",
+      "MXGP": "MXGP",
+      "MX2": "MX2",
+      "EMX": "EMX",
+      "ENDUROGP": "EnduroGP",
+      "ISDE": "ISDE",
+      "TRIALGP": "TrialGP",
+      "TRIAL2": "Trial2",
+      "NAKED": "Naked",
+      "SPORT": "Sport",
+      "CLASSIC": "Classic"
+    },
+    "sessionType": {
+      "PRACTICE": "Libres",
+      "QUALIFYING": "Clasificación",
+      "RACE": "Carrera",
+      "TEST": "Test",
+      "SHAKEDOWN": "Shakedown",
+      "TIME_ATTACK": "Time Attack"
+    },
+    "eventType": {
+      "RACE": "Carrera",
+      "TEST": "Test",
+      "PRACTICE": "Libres",
+      "QUALIFYING": "Clasificación",
+      "TRAINING": "Entrenamiento",
+      "TRAVEL": "Viaje",
+      "MEETING": "Reunión",
+      "MAINTENANCE": "Mantenimiento",
+      "PRESENTATION": "Presentación",
+      "MEDIA": "Medios",
+      "SPONSOR_EVENT": "Evento sponsor",
+      "SHAKEDOWN": "Shakedown",
+      "TRACKDAY": "Track day",
+      "OTHER": "Otro"
+    },
+    "eventStatus": {
+      "PLANNED": "Planificado",
+      "CONFIRMED": "Confirmado",
+      "IN_PROGRESS": "En curso",
+      "COMPLETED": "Completado",
+      "CANCELLED": "Cancelado",
+      "POSTPONED": "Pospuesto",
+      "WEATHER_DELAY": "Retraso por clima",
+      "TECHNICAL_ISSUE": "Problema técnico"
+    },
+    "trackCondition": {
+      "DRY": "Seco",
+      "WET": "Lluvia",
+      "MIXED": "Mixto",
+      "DAMP": "Húmedo"
+    }
   }
 }

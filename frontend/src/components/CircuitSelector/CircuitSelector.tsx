@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Autocomplete, TextField, Box, Typography, Popper } from '@mui/material';
 import { Circuit } from '../../data/circuits';
 import { useAllCircuits } from '../../data/useAllCircuits';
@@ -34,25 +35,26 @@ const REGION_ORDER: Record<string, number> = {
   AU: 6,
 };
 
-const REGION_LABELS: Record<number, string> = {
-  1: '🇪🇸 Spain',
-  2: '🇪🇺 Europe',
-  3: '🌏 Asia',
-  4: '🕌 Middle East',
-  5: '🌎 Americas',
-  6: '🇦🇺 Oceania',
-  99: '🏁 Other',
-};
-
 const CircuitSelector: React.FC<Props> = ({
   value,
   onChange,
-  label = 'Circuit',
+  label,
   required = false,
   fullWidth = false,
   size = 'medium',
   freeSolo = true,
 }) => {
+  const { t } = useTranslation();
+  const REGION_LABELS: Record<number, string> = {
+    1: t('circuits.selector.regions.spain'),
+    2: t('circuits.selector.regions.europe'),
+    3: t('circuits.selector.regions.asia'),
+    4: t('circuits.selector.regions.middleEast'),
+    5: t('circuits.selector.regions.americas'),
+    6: t('circuits.selector.regions.oceania'),
+    99: t('circuits.selector.regions.other'),
+  };
+  const effectiveLabel = label ?? t('circuits.selector.label');
   const { circuits } = useAllCircuits();
   const [hovered, setHovered] = useState<Circuit | null>(null);
   const [hoverAnchor, setHoverAnchor] = useState<HTMLElement | null>(null);
@@ -89,7 +91,7 @@ const CircuitSelector: React.FC<Props> = ({
         getOptionLabel={(option) => (typeof option === 'string' ? option : option.name)}
         groupBy={(option) => {
           const region = REGION_ORDER[option.country || ''] ?? 99;
-          return REGION_LABELS[region] || '🏁 Otros';
+          return REGION_LABELS[region] || REGION_LABELS[99];
         }}
         isOptionEqualToValue={(option, val) => {
           const valName = typeof val === 'string' ? val : (val as Circuit).name;
@@ -148,10 +150,10 @@ const CircuitSelector: React.FC<Props> = ({
         renderInput={(params) => (
           <TextField
             {...params}
-            label={label}
+            label={effectiveLabel}
             required={required}
             size={size}
-            placeholder="Search or type a circuit..."
+            placeholder={t('circuits.selector.placeholder')}
           />
         )}
         fullWidth={fullWidth}
