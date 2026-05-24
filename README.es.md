@@ -2,6 +2,17 @@
 
 > **See every lap.** Pit wall analytics y gestión 360 para equipos de motorsport.
 
+### 🌍 Demo en vivo · **[lapsight.onrender.com](https://lapsight.onrender.com)**
+
+[![Live](https://img.shields.io/badge/demo-live-3ec5d1?style=flat-square)](https://lapsight.onrender.com)
+[![License: MIT](https://img.shields.io/badge/license-MIT-9ca3ad?style=flat-square)](LICENSE)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6db33f?style=flat-square&logo=spring)
+![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=openjdk)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=flat-square&logo=fastapi)
+![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=flat-square&logo=postgresql)
+
 [English](README.md) · [Español](README.es.md)
 
 Plataforma de análisis de telemetría — importa datos de las herramientas que ya usas
@@ -14,17 +25,20 @@ fullstack (Spring Boot · FastAPI · React + TS), y deploy listo para producció
 
 <br/>
 
-## 🚀 Demo
+## 🚀 Pruébala
 
-| Cuenta | Acceso |
+[**→ Abrir el demo en vivo**](https://lapsight.onrender.com)
+
+| Ruta | Qué hace |
 |---|---|
-| **Probar como invitado** | Click en "→ Probar demo" en la landing — llama a `/api/auth/demo` |
-| **Crear tu propia cuenta** | "Crear cuenta" → cada registro genera un equipo aislado |
-| **Login manual** | Las credenciales que configures vía `APP_SEED_ADMIN_*` en env |
+| Click **"→ Probar demo"** en la landing | Login automático al equipo seed estilo F1 (Alonso, Sainz, 30+ sesiones) |
+| Click **"Crear cuenta"** | Regístrate con email + password y te creas tu propio equipo aislado |
+| Toggle de idioma | EN/ES arriba a la derecha en cada pantalla |
 
-> El botón demo solo funciona cuando `APP_SEED_DEMO_DATA=true` y el backend
-> tiene un admin seed provisionado. El password nunca viaja al frontend — el
-> backend firma directamente el JWT contra el usuario seed.
+> El deploy corre en Render free tier — el backend y el servicio de analytics
+> duermen tras 15 min sin tráfico, así que **la primera petición tras ese rato
+> tarda ~30-60s** mientras se despiertan. Después responde instantáneo. El
+> frontend es estático así que la landing siempre carga rápido.
 
 <br/>
 

@@ -2,6 +2,17 @@
 
 > **See every lap.** Pit wall analytics and 360° management for motorsport teams.
 
+### 🌍 Live demo · **[lapsight.onrender.com](https://lapsight.onrender.com)**
+
+[![Live](https://img.shields.io/badge/demo-live-3ec5d1?style=flat-square)](https://lapsight.onrender.com)
+[![License: MIT](https://img.shields.io/badge/license-MIT-9ca3ad?style=flat-square)](LICENSE)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-6db33f?style=flat-square&logo=spring)
+![Java](https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=openjdk)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=flat-square&logo=fastapi)
+![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=flat-square&logo=postgresql)
+
 [English](README.md) · [Español](README.es.md)
 
 Telemetry analysis platform — import data from the tools you already use (AiM,
@@ -15,17 +26,20 @@ self-register flow so anyone can try it with their own team.
 
 <br/>
 
-## 🚀 Demo
+## 🚀 Try it
 
-| Account | Access |
+[**→ Open the live demo**](https://lapsight.onrender.com)
+
+| Path | What it does |
 |---|---|
-| **Try as guest** | Click "→ Try the demo" on the landing — calls `/api/auth/demo` |
-| **Create your own account** | "Create account" → each sign-up generates an isolated team |
-| **Manual login** | Whatever you configured via `APP_SEED_ADMIN_*` env vars |
+| Click **"→ Try the demo"** on the landing | Auto-login to a seeded F1-style team (Alonso, Sainz, 30+ sessions) |
+| Click **"Create account"** | Sign up with email + password and get an isolated empty team you control |
+| Language toggle | EN/ES switch in the top-right of every screen |
 
-> The demo button is gated by `APP_SEED_DEMO_DATA=true` and only works when the
-> backend has provisioned a seed admin. The frontend never sees the password —
-> the backend signs the JWT directly from the env-provided seed account.
+> The deploy runs on Render free tier — backend and analytics services sleep
+> after 15 minutes of inactivity, so the **first request after idle takes
+> ~30–60s** to wake them up. After that it's instant. The frontend is a static
+> site so the landing always loads fast.
 
 <br/>
 
