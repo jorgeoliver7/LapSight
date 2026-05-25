@@ -5,6 +5,7 @@ import com.lapsight.dto.auth.AuthResponse;
 import com.lapsight.dto.auth.LoginRequest;
 import com.lapsight.dto.auth.RegisterRequest;
 import com.lapsight.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -33,33 +34,33 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         AuthResponse authResponse = authService.login(request);
         return ResponseEntity.ok()
-                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn()))
+                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn(), httpRequest.isSecure()))
                 .body(authResponse);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         AuthResponse authResponse = authService.register(request);
         return ResponseEntity.ok()
-                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn()))
+                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn(), httpRequest.isSecure()))
                 .body(authResponse);
     }
 
     @PostMapping("/demo")
-    public ResponseEntity<AuthResponse> demo() {
+    public ResponseEntity<AuthResponse> demo(HttpServletRequest httpRequest) {
         AuthResponse authResponse = authService.demoLogin();
         return ResponseEntity.ok()
-                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn()))
+                .headers(createAuthCookie(authResponse.getToken(), authResponse.getExpiresIn(), httpRequest.isSecure()))
                 .body(authResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(HttpServletRequest httpRequest) {
         return ResponseEntity.ok()
-                .headers(clearAuthCookie())
+                .headers(clearAuthCookie(httpRequest.isSecure()))
                 .build();
     }
 
@@ -68,11 +69,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.getCurrentUser(principal.getUsername()));
     }
 
-    private HttpHeaders createAuthCookie(String token, long expiresIn) {
+    private HttpHeaders createAuthCookie(String token, long expiresIn, boolean secure) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(secure)
                 .sameSite("Strict")
                 .path(COOKIE_PATH)
                 .maxAge(Duration.ofMillis(expiresIn))
@@ -80,11 +81,11 @@ public class AuthController {
         return headers;
     }
 
-    private HttpHeaders clearAuthCookie() {
+    private HttpHeaders clearAuthCookie(boolean secure) {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(secure)
                 .sameSite("Strict")
                 .path(COOKIE_PATH)
                 .maxAge(0)
