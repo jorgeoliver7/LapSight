@@ -32,5 +32,7 @@ export const authApi = {
 
   demo: () => apiClient.post<AuthResponse>('/auth/demo').then((r) => r.data),
 
+  logout: () => apiClient.post('/auth/logout').then((r) => r.data),
+
   me: () => apiClient.get<User>('/auth/me').then((r) => r.data),
 };

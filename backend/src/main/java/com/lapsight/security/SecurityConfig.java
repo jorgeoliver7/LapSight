@@ -51,20 +51,22 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .headers(headers -> headers
+                        .xssProtection(xss -> xss.headerValue("0"))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/login",
                                 "/auth/register",
                                 "/auth/demo",
+                                "/auth/logout",
                                 "/actuator/health",
-                                "/actuator/info",
-                                "/v3/api-docs/**",
-                                 "/swagger-ui.html"
+                                "/actuator/info"
                          ).permitAll()
                          .requestMatchers(matchers -> {
                             if (!environment.matchesProfiles("prod")) {
-                                matchers.requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll();
+                                matchers.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                             }
                             return;
                          }).anyRequest().authenticated()

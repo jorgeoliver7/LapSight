@@ -1,9 +1,9 @@
 # Configuración específica para Docker
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/lapsight_db
-    username: lapsight_user
-    password: lapsight_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/lapsight_db}
+    username: ${SPRING_DATASOURCE_USERNAME:lapsight_user}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2

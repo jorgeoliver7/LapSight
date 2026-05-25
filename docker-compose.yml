@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-lapsight_db}
       POSTGRES_USER: ${POSTGRES_USER:-lapsight_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lapsight_pass}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       # 5433 en el host para no chocar con Postgres locales del desarrollador.
       # Dentro de la red de Docker sigue siendo 5432.
@@ -48,8 +48,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-lapsight_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-lapsight_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-lapsight_pass}
-      JWT_SECRET: ${JWT_SECRET:-Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-3600000}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       APP_SEED_DEMO_DATA: ${APP_SEED_DEMO_DATA:-true}
       APP_SEED_ADMIN_EMAIL: ${APP_SEED_ADMIN_EMAIL:-admin@local.dev}

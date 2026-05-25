@@ -9,6 +9,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -24,9 +25,8 @@ spring:
 
   security:
     jwt:
-      # Debe ser base64 de al menos 32 bytes para HS256. Cambiar en producción vía env.
-      secret: ${JWT_SECRET:Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
-      expiration: ${JWT_EXPIRATION_MS:86400000} # 24 horas
+      secret: ${JWT_SECRET}
+      expiration: ${JWT_EXPIRATION_MS:3600000}
 
   servlet:
     multipart:
@@ -62,7 +62,7 @@ app:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
   seed:
     admin-email: ${APP_SEED_ADMIN_EMAIL:}
-    admin-password: ${APP_SEED_ADMIN_PASSWORD:change-me-via-env}
+    admin-password: ${APP_SEED_ADMIN_PASSWORD:}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
     demo-data: ${APP_SEED_DEMO_DATA:false}
   analytics:

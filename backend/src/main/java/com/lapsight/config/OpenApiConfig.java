@@ -38,8 +38,6 @@ public class OpenApiConfig {
                                 """)
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("Jorge Oliver")
-                                .email("jorge.acedo.oliver@gmail.com")
                                 .url("https://github.com/jorgeoliver7/LapSight"))
                         .license(new License().name("MIT")))
                 .addSecurityItem(new SecurityRequirement().addList(JWT_SCHEME))

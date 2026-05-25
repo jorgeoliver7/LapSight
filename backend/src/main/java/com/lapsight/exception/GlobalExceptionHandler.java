@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(baseBody(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Internal error: " + ex.getMessage()));
+                        "An unexpected error occurred. Please try again later."));
     }
 
     private Map<String, Object> baseBody(HttpStatus status, String message) {

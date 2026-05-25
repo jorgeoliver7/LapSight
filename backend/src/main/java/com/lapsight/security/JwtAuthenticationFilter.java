@@ -3,6 +3,7 @@ package com.lapsight.security;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -21,6 +22,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String HEADER = "Authorization";
     private static final String PREFIX = "Bearer ";
+    private static final String COOKIE_NAME = "rtm-token";
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -37,31 +39,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String header = request.getHeader(HEADER);
-        if (header == null || !header.startsWith(PREFIX)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        String token = extractToken(request);
 
-        String token = header.substring(PREFIX.length());
+        if (token != null) {
+            try {
+                String username = jwtService.extractUsername(token);
 
-        try {
-            String username = jwtService.extractUsername(token);
-
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtService.isTokenValid(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            } catch (JwtException ex) {
+                SecurityContextHolder.clearContext();
             }
-        } catch (JwtException ex) {
-            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader(HEADER);
+        if (header != null && header.startsWith(PREFIX)) {
+            return header.substring(PREFIX.length());
+        }
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (COOKIE_NAME.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
