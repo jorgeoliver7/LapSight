@@ -38,7 +38,9 @@ spring:
 
   security:
     jwt:
-      secret: ${JWT_SECRET}
+      # ⚠️ CAMBIA ESTO EN PRODUCCIÓN. Genera uno con: openssl rand -base64 48
+      # Y configúralo como variable de entorno JWT_SECRET en Render.
+      secret: ${JWT_SECRET:Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
 
 server:
   port: ${PORT:8080}
