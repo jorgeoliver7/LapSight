@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -52,7 +53,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .headers(headers -> headers
-                        .xssProtection(xss -> xss.headerValue("0"))
                         .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -64,12 +64,11 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info"
                          ).permitAll()
-                         .requestMatchers(matchers -> {
-                            if (!environment.matchesProfiles("prod")) {
-                                matchers.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
-                            }
-                            return;
-                         }).anyRequest().authenticated()
+                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                             .access((authentication, context) -> environment.matchesProfiles("prod")
+                                 ? new AuthorizationDecision(false)
+                                 : new AuthorizationDecision(true))
+                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
