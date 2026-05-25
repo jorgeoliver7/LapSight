@@ -9,7 +9,6 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
-    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -25,7 +24,8 @@ spring:
 
   security:
     jwt:
-      secret: ${JWT_SECRET}
+      # Default SOLO para desarrollo local. En producción debes setear JWT_SECRET.
+      secret: ${JWT_SECRET:Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdXNlLWEtbG9uZy1iYXNlNjQta2V5LXBsZWFzZQ==}
       expiration: ${JWT_EXPIRATION_MS:3600000}
 
   servlet:

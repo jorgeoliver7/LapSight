@@ -18,7 +18,6 @@ spring:
       max-lifetime: 1200000
 
   jpa:
-    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: false
@@ -36,6 +35,10 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: true
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
 
 server:
   port: ${PORT:8080}
@@ -72,7 +75,7 @@ app:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS}
   seed:
     admin-email: ${APP_SEED_ADMIN_EMAIL:}
-    admin-password: ${APP_SEED_ADMIN_PASSWORD}
+    admin-password: ${APP_SEED_ADMIN_PASSWORD:}
     team-name: ${APP_SEED_TEAM_NAME:Demo Racing Team}
     # En producción la demo seed está apagada por defecto. Activar solo si el deploy
     # está pensado como portfolio público con datos demo visibles.
