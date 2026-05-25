@@ -3,6 +3,7 @@ package com.lapsight.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -29,17 +30,20 @@ public class SecurityConfig {
     private final AuthRateLimitFilter authRateLimitFilter;
     private final UserDetailsService userDetailsService;
     private final String allowedOrigins;
+    private final Environment environment;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             AuthRateLimitFilter authRateLimitFilter,
             UserDetailsService userDetailsService,
-            @Value("${app.cors.allowed-origins}") String allowedOrigins
+            @Value("${app.cors.allowed-origins}") String allowedOrigins,
+            Environment environment
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authRateLimitFilter = authRateLimitFilter;
         this.userDetailsService = userDetailsService;
         this.allowedOrigins = allowedOrigins;
+        this.environment = environment;
     }
 
     @Bean
@@ -56,10 +60,14 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info",
                                 "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                                 "/swagger-ui.html"
+                         ).permitAll()
+                         .requestMatchers(matchers -> {
+                            if (!environment.matchesProfiles("prod")) {
+                                matchers.requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll();
+                            }
+                            return;
+                         }).anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
